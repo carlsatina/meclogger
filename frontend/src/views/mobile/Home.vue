@@ -1,53 +1,64 @@
 <template>
-    <div class="card border-0 home-container" @scroll="onScroll">
-        <!-- New UI starts here -->
-        <div class="card-body home-inner" style="background-color: aliceblue;">
+<div class="home-container">
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="greeting">
+            <h1 class="welcome-text">Welcome Back! 👋</h1>
+            <p class="subtitle">What would you like to manage today?</p>
+        </div>
+    </div>
 
-            <div class="row p-1">
-                <div class="col-md-2"></div>
-                <div class="col-md-8 bg-white border border-radius rounded pt-2 pb-2">
-                    <div class="d-flex persons align-center">
-                        <div><img src="@/assets/wallpaper.png" width="60" style="border-radius: 80%;"/></div>
-                        <div class="d-flex flex-column w-100">
-                            <div>RC Satina</div>
-                            <div>Phone no: 12341234</div>
-                            <div>email: rc@email.com</div>
-                        </div>
-                        <div class="align-items-center">
-                            <mdicon name="dots-vertical"  size="30"/><br>
-                        </div>
-                    </div>
+    <!-- Features Grid -->
+    <div class="features-wrapper">
+        <!-- Medical Records Card -->
+        <div class="feature-card medical" @click="navigateTo('/medical-records')">
+            <div class="card-content">
+                <div class="icon-wrapper">
+                    <mdicon name="hospital-box" size="24"/>
                 </div>
-                <div class="col-md-2"></div>
-            </div>
-
-            <div class="row p-1">
-                <div class="col-md-2"></div>
-                <div class="col-md-8 bg-white border border-radius rounded pt-2 pb-2">
-                    <div class="d-flex persons align-center">
-                        <div><img src="@/assets/wallpaper.png" width="60" style="border-radius: 80%;"/></div>
-                        <div class="d-flex flex-column w-100">
-                            <div>RC Satina</div>
-                            <div>Phone no: 12341234</div>
-                            <div>email: rc@email.com</div>
-                        </div>
-                        <div class="align-items-center">
-                            <mdicon name="dots-vertical"  size="30"/><br>
-                        </div>
-                    </div>
+                <div class="card-text">
+                    <h3 class="card-title">Medical Records</h3>
+                    <p class="card-description">Health tracking & medications</p>
                 </div>
-                <div class="col-md-2"></div>
             </div>
-
-            <div class="position-absolute bottom-0 end-0">
-                <mdicon name="plus-circle-outline"  size="50"/><br>
+            <div class="card-arrow">
+                <mdicon name="chevron-right" size="20"/>
             </div>
         </div>
-        <!-- New UI ends here -->
 
-        <!-- Loading Modal -->
-        <Loading v-if="loading"/>
+        <!-- Car Maintenance Card -->
+        <div class="feature-card vehicle" @click="navigateTo('/car-maintenance')">
+            <div class="card-content">
+                <div class="icon-wrapper">
+                    <mdicon name="car-wrench" size="24"/>
+                </div>
+                <div class="card-text">
+                    <h3 class="card-title">Car Maintenance</h3>
+                    <p class="card-description">Service history & reminders</p>
+                </div>
+            </div>
+            <div class="card-arrow">
+                <mdicon name="chevron-right" size="20"/>
+            </div>
+        </div>
+
+        <!-- Expense Tracking Card -->
+        <div class="feature-card expense" @click="navigateTo('/expense-tracking')">
+            <div class="card-content">
+                <div class="icon-wrapper">
+                    <mdicon name="cash-multiple" size="24"/>
+                </div>
+                <div class="card-text">
+                    <h3 class="card-title">Expense Tracking</h3>
+                    <p class="card-description">Budgets & financial goals</p>
+                </div>
+            </div>
+            <div class="card-arrow">
+                <mdicon name="chevron-right" size="20"/>
+            </div>
+        </div>
     </div>
+</div>
 </template>
 
 <script>
@@ -66,112 +77,195 @@ export default {
         Datepicker
     },
     setup() {
-        const services = ref(null)
-        const modalActive = ref(false)
-        const serviceDetails = ref(null)
-        const filteredData = ref({})
         const router = useRouter()
-        const viewResults = ref(false)
-        const loading = ref(false)
 
-        const toggleModal = () => {
-            modalActive.value = !modalActive
-            serviceDetails.value = null
+        const navigateTo = (path) => {
+            router.push(path)
         }
 
-
-        const onScroll = ({target: {scrollTop, clientHeight, scrollHeight}}) => {
-            if (scrollTop > 60) {
-                store.methods.setSearchIcon(true)
-            } else {
-                store.methods.setSearchIcon(false)
-            }
-        }
         return {
-            router,
-            services,
-            toggleModal,
-            modalActive,
-            serviceDetails,
-            filteredData,
-            viewResults,
-            loading,
-            onScroll
+            navigateTo
         }
     }
 }
 </script>
 
 <style scoped>
-.suggestions {
-    padding: 3px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: .2s all;
-}
-
-.suggestions:hover{
-    transform: scale(1.2)
-}
-
-.service-info {
-    font-size: 14px;
-}
-.contact-info {
-    font-size: 14px
-}
-.service-label {
-    font-size: 12px;
-}
-
-.service-value {
-    font-size: 14px;
-}
-.addr {
-    white-space: nowrap;
-    width: calc(100% - 20px);
-    overflow: hidden;
-    text-overflow: ellipsis;
-}.serv {
-    white-space: nowrap;
-    width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.persons {
-    display: grid;
-    grid-template-columns: 100px 1fr 50px;
-    justify-content: space-between;
-    gap: 1rem;
-    align-items: center;
-}
-
-.service-table:hover {
-    background-color: #F1F0E8;
-}
-
 .home-container {
-    height: 80vh;
-    overflow: scroll;
+    min-height: 100vh;
+    background: #f8f9fa;
+    padding-bottom: 80px;
 }
 
-.home-inner {
-    height: 90vh;
-    font-family: Arial, Helvetica, sans-serif;
+/* Header Section */
+.header-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 32px 20px 40px;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
 }
 
-.popular-services-container::-webkit-scrollbar {
-    display: none;
+.greeting {
+    color: white;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-    transition: all 0.6s ease;
+.welcome-text {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
+.subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Features Wrapper */
+.features-wrapper {
+    padding: 0 16px;
+    margin-top: -24px;
+}
+
+/* Feature Cards */
+.feature-card {
+    background: white;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.feature-card.medical::before {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.feature-card.vehicle::before {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.feature-card.expense::before {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.feature-card:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.feature-card::before {
+    width: 4px;
+}
+
+.feature-card:active::before {
+    width: 8px;
+}
+
+/* Card Content */
+.card-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.feature-card.medical .icon-wrapper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.feature-card.vehicle .icon-wrapper {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.feature-card.expense .icon-wrapper {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.card-text {
+    flex: 1;
+}
+
+.card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 2px 0;
+    letter-spacing: -0.2px;
+}
+
+.card-description {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.card-arrow {
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:active .card-arrow {
+    transform: translateX(4px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 375px) {
+    .welcome-text {
+        font-size: 22px;
+    }
+    
+    .subtitle {
+        font-size: 13px;
+    }
+    
+    .card-title {
+        font-size: 14px;
+    }
+    
+    .card-description {
+        font-size: 11px;
+    }
+    
+    .icon-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .feature-card {
+        padding: 12px 14px;
+    }
 }
 </style>

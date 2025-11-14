@@ -1,53 +1,39 @@
 <template>
-    <div class="card border-0 home-container" @scroll="onScroll">
-        <!-- New UI starts here -->
-        <div class="card-body home-inner" style="background-color: aliceblue;">
-
-            <div class="row p-1">
-                <div class="col-md-2"></div>
-                <div class="col-md-8 bg-white border border-radius rounded pt-2 pb-2" @click="router.push('/')">
-                    <div class="d-flex persons align-center">
-                        <div><img src="@/assets/wallpaper.png" width="60" style="border-radius: 80%;"/></div>
-                        <div class="d-flex flex-column w-100">
-                            <div>RC Satina</div>
-                            <div>Phone no: 12341234</div>
-                            <div>email: rc@email.com</div>
-                        </div>
-                        <div class="align-items-center">
-                            <mdicon name="dots-vertical"  size="30"/><br>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2"></div>
-            </div>
-
-            <div class="row p-1">
-                <div class="col-md-2"></div>
-                <div class="col-md-8 bg-white border border-radius rounded pt-2 pb-2" @click="router.push('/')">
-                    <div class="d-flex persons align-center">
-                        <div><img src="@/assets/wallpaper.png" width="60" style="border-radius: 80%;"/></div>
-                        <div class="d-flex flex-column w-100">
-                            <div>RC Satina</div>
-                            <div>Phone no: 12341234</div>
-                            <div>email: rc@email.com</div>
-                        </div>
-                        <div class="align-items-center">
-                            <mdicon name="dots-vertical"  size="30"/><br>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2"></div>
-            </div>
-
-            <div class="position-absolute bottom-0 end-0">
-                <mdicon name="plus-circle-outline"  size="50"/><br>
-            </div>
-        </div>
-        <!-- New UI ends here -->
-
-        <!-- Loading Modal -->
-        <Loading v-if="loading"/>
+<div class="home-container">
+    <div class="header">
+        <h2 class="text-center mt-5 mb-3">Record Keeper</h2>
+        <p class="text-center text-muted">Choose a feature to get started</p>
     </div>
+
+    <div class="features-grid">
+        <!-- Medical Records Feature -->
+        <div class="feature-card" @click="navigateTo('/medical-records')">
+            <div class="feature-icon medical">
+                <mdicon name="hospital-box" size="64"/>
+            </div>
+            <h3 class="feature-title">Medical Records</h3>
+            <p class="feature-description">Track health records, medications, and vitals for you and your family</p>
+        </div>
+
+        <!-- Car Maintenance Feature -->
+        <div class="feature-card" @click="navigateTo('/car-maintenance')">
+            <div class="feature-icon vehicle">
+                <mdicon name="car-wrench" size="64"/>
+            </div>
+            <h3 class="feature-title">Car Maintenance</h3>
+            <p class="feature-description">Manage vehicle service history, reminders, and maintenance logs</p>
+        </div>
+
+        <!-- Expense Tracking Feature -->
+        <div class="feature-card" @click="navigateTo('/expense-tracking')">
+            <div class="feature-icon expense">
+                <mdicon name="cash-multiple" size="64"/>
+            </div>
+            <h3 class="feature-title">Expense Tracking</h3>
+            <p class="feature-description">Monitor spending, manage budgets, and track financial goals</p>
+        </div>
+    </div>
+</div>
 </template>
 
 <script>
@@ -66,111 +52,108 @@ export default {
         Datepicker
     },
     setup() {
-        const services = ref(null)
-        const modalActive = ref(false)
-        const serviceDetails = ref(null)
-        const filteredData = ref({})
         const router = useRouter()
-        const viewResults = ref(false)
-        const loading = ref(false)
 
-        const toggleModal = () => {
-            modalActive.value = !modalActive
-            serviceDetails.value = null
+        const navigateTo = (path) => {
+            router.push(path)
         }
 
-        const onScroll = ({target: {scrollTop, clientHeight, scrollHeight}}) => {
-            if (scrollTop > 60) {
-                store.methods.setSearchIcon(true)
-            } else {
-                store.methods.setSearchIcon(false)
-            }
-        }
         return {
-            router,
-            services,
-            toggleModal,
-            modalActive,
-            serviceDetails,
-            filteredData,
-            viewResults,
-            loading,
-            onScroll
+            navigateTo
         }
     }
 }
 </script>
 
 <style scoped>
-.suggestions {
-    padding: 3px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: .2s all;
-}
-
-.suggestions:hover{
-    transform: scale(1.2)
-}
-
-.service-info {
-    font-size: 14px;
-}
-.contact-info {
-    font-size: 14px
-}
-.service-label {
-    font-size: 12px;
-}
-
-.service-value {
-    font-size: 14px;
-}
-.addr {
-    white-space: nowrap;
-    width: calc(100% - 20px);
-    overflow: hidden;
-    text-overflow: ellipsis;
-}.serv {
-    white-space: nowrap;
-    width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.persons {
-    display: grid;
-    grid-template-columns: 100px 1fr 50px;
-    justify-content: space-between;
-    gap: 1rem;
-    align-items: center;
-}
-
-.service-table:hover {
-    background-color: #F1F0E8;
-}
-
 .home-container {
-    height: 80vh;
-    overflow: scroll;
+    min-height: 100vh;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.home-inner {
-    height: 90vh;
-    font-family: Arial, Helvetica, sans-serif;
+.header {
+    margin-bottom: 50px;
 }
 
-.popular-services-container::-webkit-scrollbar {
-    display: none;
+.header h2 {
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 36px;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-    transition: all 0.6s ease;
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
+@media (min-width: 768px) {
+    .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.feature-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card:active {
+    transform: translateY(-4px);
+}
+
+.feature-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.feature-icon.medical {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.feature-icon.vehicle {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.feature-icon.expense {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.feature-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.feature-description {
+    font-size: 15px;
+    color: #7f8c8d;
+    margin: 0;
+    line-height: 1.6;
 }
 </style>

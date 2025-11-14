@@ -1,22 +1,21 @@
 <template>
-    <HomeWeb v-if="!platformIsMobile"/>
-    <HomeMobile v-else/>
+    <CarMaintenanceWeb v-if="!platformIsMobile"/>
+    <CarMaintenanceMobile v-else/>
 </template>
-
 
 <script>
 import { ref, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import store from '@/store'
-import HomeWeb from '@/views/web/Home.vue'
-import HomeMobile from '@/views/mobile/Home.vue'
+import CarMaintenanceWeb from '@/views/web/CarMaintenance/Index.vue'
+import CarMaintenanceMobile from '@/views/mobile/CarMaintenance/Index.vue'
 import isPlatformMobile from '@/composables/platform'
 
 export default {
-    name: "Login",
+    name: "CarMaintenance",
     components: {
-        HomeWeb,
-        HomeMobile
+        CarMaintenanceWeb,
+        CarMaintenanceMobile
     },
     setup () {
         const route = useRoute()

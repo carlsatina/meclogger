@@ -1,22 +1,21 @@
 <template>
-    <HomeWeb v-if="!platformIsMobile"/>
-    <HomeMobile v-else/>
+    <ExpenseTrackingWeb v-if="!platformIsMobile"/>
+    <ExpenseTrackingMobile v-else/>
 </template>
-
 
 <script>
 import { ref, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import store from '@/store'
-import HomeWeb from '@/views/web/Home.vue'
-import HomeMobile from '@/views/mobile/Home.vue'
+import ExpenseTrackingWeb from '@/views/web/ExpenseTracking/Index.vue'
+import ExpenseTrackingMobile from '@/views/mobile/ExpenseTracking/Index.vue'
 import isPlatformMobile from '@/composables/platform'
 
 export default {
-    name: "Login",
+    name: "ExpenseTracking",
     components: {
-        HomeWeb,
-        HomeMobile
+        ExpenseTrackingWeb,
+        ExpenseTrackingMobile
     },
     setup () {
         const route = useRoute()

@@ -1,22 +1,21 @@
 <template>
-    <HomeWeb v-if="!platformIsMobile"/>
-    <HomeMobile v-else/>
+    <MedicalRecordsWeb v-if="!platformIsMobile"/>
+    <MedicalRecordsMobile v-else/>
 </template>
-
 
 <script>
 import { ref, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import store from '@/store'
-import HomeWeb from '@/views/web/Home.vue'
-import HomeMobile from '@/views/mobile/Home.vue'
+import MedicalRecordsWeb from '@/views/web/MedicalRecords/Index.vue'
+import MedicalRecordsMobile from '@/views/mobile/MedicalRecords/Index.vue'
 import isPlatformMobile from '@/composables/platform'
 
 export default {
-    name: "Login",
+    name: "MedicalRecords",
     components: {
-        HomeWeb,
-        HomeMobile
+        MedicalRecordsWeb,
+        MedicalRecordsMobile
     },
     setup () {
         const route = useRoute()

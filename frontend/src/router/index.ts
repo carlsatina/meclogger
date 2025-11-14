@@ -5,6 +5,12 @@ import Home from '@/views/LandingPage/Home.vue'
 import Login from '@/views/LandingPage/Login.vue'
 import Register from '@/views/LandingPage/Register.vue'
 
+// Features
+import MedicalRecords from '@/views/LandingPage/MedicalRecords.vue'
+import AddRecord from '@/views/LandingPage/MedicalRecords/AddRecord.vue'
+import CarMaintenance from '@/views/LandingPage/CarMaintenance.vue'
+import ExpenseTracking from '@/views/LandingPage/ExpenseTracking.vue'
+
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -21,6 +27,26 @@ const routes: Array<RouteRecordRaw> = [
     path: '/register',
     name: 'register',
     component: Register
+  },
+  {
+    path: '/medical-records',
+    name: 'medical-records',
+    component: MedicalRecords
+  },
+  {
+    path: '/medical-records/add-record',
+    name: 'add-record',
+    component: AddRecord
+  },
+  {
+    path: '/car-maintenance',
+    name: 'car-maintenance',
+    component: CarMaintenance
+  },
+  {
+    path: '/expense-tracking',
+    name: 'expense-tracking',
+    component: ExpenseTracking
   },
 
 ]

@@ -21,7 +21,7 @@ import { ref, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import store from '@/store'
 import getProfile from '@/composables/getProfile'
-import { googleLogout } from 'vue3-google-login'
+import { Role } from '@/constants/enums'
 
 export default {
     name: "TopNav",
@@ -36,18 +36,14 @@ export default {
             getProfile(userToken)
             .then((data) => {
                 if (data.error.value === null) {
-                    store.methods.setUserAdmin(data.response.value.userInfo.is_admin)
-                    full_name.value = data.response.value.userInfo.full_name
+                    store.methods.setUserAdmin(data.response.value.userInfo.role === Role.ADMIN)
+                    full_name.value = data.response.value.userInfo.fullName
                 }
             })
         }
         provide('store', store)
         const logout = () => {
             store.methods.logoutUser()
-            FB.logout(function(reponse) {
-                console.log("FB Logout")
-            })
-            googleLogout()
             router.push('/login')
         }
         return {

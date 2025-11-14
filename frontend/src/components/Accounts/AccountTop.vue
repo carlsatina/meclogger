@@ -40,9 +40,8 @@ import { ref, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import store from '@/store'
 import getProfile from '@/composables/getProfile'
-import { googleLogout } from 'vue3-google-login'
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Device } from '@capacitor/device'
+import { Role } from '@/constants/enums'
 
 export default {
     name: "AccountTop",
@@ -56,21 +55,13 @@ export default {
             getProfile(userToken)
             .then((data) => {
                 if (data.error.value === null) {
-                    store.methods.setUserAdmin(data.response.value.userInfo.is_admin)
+                    store.methods.setUserAdmin(data.response.value.userInfo.role === Role.ADMIN)
                 }
             })
         }
         provide('store', store)
         const logout = async () => {
             store.methods.logoutUser()
-            FB.logout(function(reponse) {
-                console.log("FB Logout")
-            })
-            googleLogout()
-            const device = await Device.getInfo()
-            if (device.platform === 'android') {
-                GoogleAuth.signOut()
-            }
             router.push('/')
         }
 
