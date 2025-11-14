@@ -7,112 +7,12 @@ import { ExtendedRequest } from '../../extendedRequest'
 
 dotenv.config()
 
-const googleLogin = async (req: any, res: any) => {
-
-    const input = req.body
-    const {email, sub, name} = input
-
-    let user = await prisma.userInfo.findFirst({
-        where: {
-            google_id: sub
-        }
-    })
-
-    if (user) {
-        // user Exist
-        const userObj = {
-            id: user.id,
-            google_id: user.google_id,
-            full_name: user.full_name,
-            email: user.email,
-            is_admin: user.is_admin
-        }
-        const accessToken = jwt.sign(userObj, process.env.ACCESS_TOKEN_SECRET || 'defaultSecret1234')
-        res.status(201).json({
-            status: 201,
-            token: accessToken
-        })
-    } else {
-        // Create User
-        try {
-            const user = await prisma.userInfo.create({
-                data: {
-                    google_id: sub,
-                    email: email,
-                    full_name: name,
-                }
-            })
-
-            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET || 'defaultSecret1234')
-            res.status(201).json({
-                status: 201,
-                token: accessToken
-            })
-        } catch (err) {
-            console.log("google Login err: ", err)
-            res.status(401).json({
-                status: 401,
-                message: err
-            })
-        }
-    }
-}
-
-const fbLogin = async (req: any, res: any) => {
-
-    const input = req.body
-    const { facebookId, name } = input
-
-    // Find if facebookID exist in DB.
-    let user = await prisma.userInfo.findFirst({
-        where: {
-            facebook_id: facebookId
-        }
-    })
-    if (user) {
-        // user exist
-        const userObj = {
-            id: user.id,
-            facebook_id: facebookId,
-            full_name: user.full_name,
-            is_admin: user.is_admin
-        }
-        const accessToken = jwt.sign(userObj, process.env.ACCESS_TOKEN_SECRET || 'defaultSecret1234')
-        res.status(201).json({
-            status: 201,
-            token: accessToken
-        })
-    } else {
-        // User Does not exist. Create one for DB
-        try {
-            const user = await prisma.userInfo.create({
-                data: {
-                    facebook_id: facebookId,
-                    full_name: name,
-                }
-            })
-
-            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET || 'defaultSecret1234')
-            res.status(201).json({
-                status: 201,
-                token: accessToken
-            })
-        } catch (err) {
-            console.log("fb Login err: ", err)
-            res.status(401).json({
-                status: 401,
-                message: err
-            })
-        }
-    }
-}
-
 const login = async(req: any, res: any) => {
 
     const input = req.body
     const { email, password } = input
 
-    let user = await prisma.userInfo.findFirst({
+    let user = await prisma.user.findFirst({
         where: {
             email
         }
@@ -122,9 +22,9 @@ const login = async(req: any, res: any) => {
         if (await bcrypt.compare(password, user.password || '')) {
             const userObj = { 
                 id: user.id,
-                full_name: user.full_name,
+                fullName: user.fullName,
                 email: user.email,
-                is_admin: user.is_admin
+                role: user.role
              }
             const accessToken = jwt.sign(userObj, process.env.ACCESS_TOKEN_SECRET || 'defaultSecret1234')
             res.json({
@@ -171,7 +71,7 @@ const register = async (req: any, res: any) => {
 
     try {
         // create the user
-        const user = await prisma.userInfo.create({
+        const user = await prisma.user.create({
             data: {
                 ...input
             }
@@ -199,8 +99,6 @@ const getProfile = async (req: ExtendedRequest, res: any) => {
     }
 }
 export {
-    googleLogin,
-    fbLogin,
     login,
     register,
     getProfile

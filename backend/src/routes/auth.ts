@@ -4,8 +4,6 @@ import bcrypt from 'bcrypt'
 import * as dotenv from 'dotenv'
 import { ExtendedRequest } from '../../extendedRequest'
 import {
-    googleLogin,
-    fbLogin,
     login,
     register,
     getProfile
@@ -18,12 +16,6 @@ const makeRouter = (
     authenticateUser: RequestHandler
 ): Router => {
     const router = Router()
-
-    // Google Login
-    router.post('/googleLogin', googleLogin)
-    
-    // FB Login
-    router.post('/fbLogin', fbLogin)
 
     // Login
     router.post('/login', login)

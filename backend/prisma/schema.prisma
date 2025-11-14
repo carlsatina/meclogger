@@ -8,15 +8,207 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model UserInfo {
-  id          Int     @id @default(autoincrement())
-  facebook_id String? @unique
-  google_id   String? @unique
-  full_name   String?
-  email       String? @unique
-  password    String?
-  is_admin    Int     @default(0)
-  is_guest    Int     @default(0)
 
-  @@map("user_info")
+enum Role {
+  USER
+  ADMIN
+}
+
+enum RecordType {
+  PRESCRIPTION
+  DIAGNOSIS
+  LAB_RESULT
+  IMAGING
+  VACCINATION
+  DISCHARGE_SUMMARY
+  OTHER
+}
+
+enum VitalType {
+  HEART_RATE
+  BLOOD_PRESSURE_SYSTOLIC
+  BLOOD_PRESSURE_DIASTOLIC
+  BLOOD_GLUCOSE
+  SPO2
+  TEMPERATURE
+  WEIGHT
+  HEIGHT
+  BMI
+  RESPIRATORY_RATE
+  OTHER
+}
+
+enum ReminderFrequency {
+  ONCE
+  HOURLY
+  DAILY
+  WEEKLY
+  CUSTOM
+}
+
+model User {
+  id             String    @id @default(cuid())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  role           Role      @default(USER)
+  fullName       String
+  phone          String    @unique            // mobile login
+  email          String?   @unique
+  password       String?                      // hashed password for email/password login
+  dateOfBirth    DateTime?
+  // onboarding/profile picture etc.
+  imageUrl       String?
+  // relations
+  profiles       Profile[] // includes "self" + family members
+  otps           OtpCode[]
+  notifications  Notification[]
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  code      String
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@index([userId, expiresAt])
+}
+
+model Profile {
+  id              String           @id @default(cuid())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  // for family management: the “owner” is User; each Profile can represent self or a relative
+  displayName     String
+  relationToUser  String?          // e.g., "self", "spouse", "child", "parent"
+  dateOfBirth     DateTime?
+  gender          String?
+  bloodGroup      String?
+  allergies       String?
+  chronicConditions String?
+  imageUrl        String?
+  // data
+  records         MedicalRecord[]
+  medications     Medication[]
+  vitals          VitalEntry[]
+}
+
+model MedicalRecord {
+  id           String      @id @default(cuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  profile      Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    String
+  title        String
+  recordType   RecordType  @default(OTHER)
+  recordDate   DateTime
+  providerName String?     // hospital/clinic/doctor
+  notes        String?
+  tags         String[]    @default([])
+  files        FileAsset[] // PDFs, images, etc.
+  // simple sharing via signed links
+  shares       ShareLink[]
+  @@index([profileId, recordDate])
+  @@index([recordType])
+}
+
+model FileAsset {
+  id             String         @id @default(cuid())
+  createdAt      DateTime       @default(now())
+  record         MedicalRecord? @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  recordId       String?
+  // If you also want to attach files to vitals or meds later, you can add nullable FKs
+  url            String
+  mimeType       String?
+  sizeBytes      Int?
+  originalName   String?
+}
+
+model ShareLink {
+  id          String         @id @default(cuid())
+  createdAt   DateTime       @default(now())
+  expiresAt   DateTime?
+  record      MedicalRecord  @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  recordId    String
+  token       String         @unique
+  canDownload Boolean        @default(true)
+  // Optional: scope sharing to a target email/phone
+  targetEmail String?
+  targetPhone String?
+}
+
+model Medication {
+  id                 String          @id @default(cuid())
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  profile            Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId          String
+  name               String
+  dosage             String?         // "500 mg", "2 puffs" (string to support units)
+  instructions       String?         // e.g., "after meals"
+  startDate          DateTime?
+  endDate            DateTime?
+  // Inventory & low-stock alerts
+  inventoryQuantity  Int?            // e.g., tablets remaining
+  lowStockThreshold  Int?            // trigger notification when qty <= threshold
+  reminders          MedReminder[]
+  logs               MedicationLog[]
+  @@index([profileId])
+}
+
+model MedReminder {
+  id           String            @id @default(cuid())
+  createdAt    DateTime          @default(now())
+  medication   Medication        @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  medicationId String
+  frequency    ReminderFrequency @default(DAILY)
+  // Use cron-like JSON for custom or multiple times per day
+  scheduleJson Json?             // e.g., {"times":["08:00","20:00"], "daysOfWeek":[1,3,5]}
+  nextRunAt    DateTime?         // for job scheduler bookkeeping
+  active       Boolean           @default(true)
+}
+
+model MedicationLog { // adherence tracking (taken/missed)
+  id           String     @id @default(cuid())
+  medication   Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  medicationId String
+  occurredAt   DateTime
+  status       String      // "taken" | "missed" | "skipped"
+  notes        String?
+  @@index([medicationId, occurredAt])
+}
+
+model VitalEntry {
+  id           String     @id @default(cuid())
+  createdAt    DateTime   @default(now())
+  profile      Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    String
+  vitalType    VitalType  @default(OTHER)
+  // general fields to cover diverse measurements
+  valueNumber  Float?
+  unit         String?    // e.g., "bpm", "mmHg", "mg/dL", "°C", "kg"
+  // blood pressure convenience fields (optional)
+  systolic     Int?
+  diastolic    Int?
+  recordedAt   DateTime   @default(now())
+  notes        String?
+  chartGroup   String?    // group key to graph series (e.g., "morning", "fasting")
+  @@index([profileId, recordedAt])
+  @@index([vitalType])
+}
+
+model Notification {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  title       String
+  body        String?
+  readAt      DateTime?
+  // lightweight routing for devices or channels
+  channel     String?   // "push" | "sms" | "email" etc.
+  data        Json?
 }
