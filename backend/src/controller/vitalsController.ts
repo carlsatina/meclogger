@@ -111,6 +111,80 @@ const createBloodSugarRecord = async (req: ExtendedRequest, res: any) => {
     })
 }
 
+const getBloodPressureRecords = async (req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const profileId = req.query.profileId as string | undefined
+
+    if (!profileId) {
+        return res.status(400).json({
+            status: 400,
+            message: 'profileId query parameter is required.'
+        })
+    }
+
+    const profile = await resolveProfileForUser(user.id, profileId)
+    if (!profile) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Profile not found for current user.'
+        })
+    }
+
+    const records = await prisma.vitalEntry.findMany({
+        where: {
+            profileId: profile.id,
+            vitalType: VitalType.BLOOD_PRESSURE_SYSTOLIC
+        },
+        orderBy: {
+            recordedAt: 'asc'
+        }
+    })
+
+    return res.status(200).json({
+        status: 200,
+        records
+    })
+}
+
+const getBloodSugarRecords = async (req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const profileId = req.query.profileId as string | undefined
+
+    if (!profileId) {
+        return res.status(400).json({
+            status: 400,
+            message: 'profileId query parameter is required.'
+        })
+    }
+
+    const profile = await resolveProfileForUser(user.id, profileId)
+    if (!profile) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Profile not found for current user.'
+        })
+    }
+
+    const records = await prisma.vitalEntry.findMany({
+        where: {
+            profileId: profile.id,
+            vitalType: VitalType.BLOOD_GLUCOSE
+        },
+        orderBy: {
+            recordedAt: 'asc'
+        }
+    })
+
+    return res.status(200).json({
+        status: 200,
+        records
+    })
+}
+
 const createBodyWeightRecord = async (req: ExtendedRequest, res: any) => {
     const user = ensureUser(req, res)
     if (!user) return
@@ -191,5 +265,7 @@ export {
     createBloodPressureRecord,
     createBloodSugarRecord,
     createBodyWeightRecord,
-    getBodyWeightRecords
+    getBodyWeightRecords,
+    getBloodPressureRecords,
+    getBloodSugarRecords
 }

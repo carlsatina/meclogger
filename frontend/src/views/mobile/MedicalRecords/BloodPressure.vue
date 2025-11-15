@@ -46,17 +46,17 @@
                 <span>75</span>
             </div>
             <div class="chart-area">
-                <div class="chart-bars">
-                    <div class="chart-bar-group" v-for="(day, index) in weekDaysLong" :key="index">
-                        <div class="bp-bar">
-                            <div class="bp-range" :style="{ height: bloodPressureData[index].height }">
-                                <span class="bp-dot-top"></span>
-                                <span class="bp-dot-bottom"></span>
+                        <div class="chart-bars">
+                            <div class="chart-bar-group" v-for="record in bpChartRecords" :key="record.id">
+                                <div class="bp-bar">
+                                    <div class="bp-range" :style="{ height: record.height }">
+                                        <span class="bp-dot-top"></span>
+                                        <span class="bp-dot-bottom"></span>
+                                    </div>
+                                </div>
+                                <span class="chart-label">{{ record.label }}</span>
                             </div>
                         </div>
-                        <span class="chart-label">{{ day }}</span>
-                    </div>
-                </div>
             </div>
             <span class="chart-unit">mmHg</span>
         </div>
@@ -83,8 +83,9 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useBloodPressure } from '@/composables/vitals/bloodPressure'
 
 export default {
     name: 'BloodPressureDetail',
@@ -96,62 +97,73 @@ export default {
         const dateRange = ref('05 Jan - 11 Jan')
         const profileIdFromQuery = Array.isArray(route.query.profileId) ? route.query.profileId[0] : route.query.profileId
         const profileNameFromQuery = Array.isArray(route.query.profileName) ? route.query.profileName[0] : route.query.profileName
-        const activeProfileId = profileIdFromQuery || localStorage.getItem('selectedProfileId')
+        const activeProfileId = ref(profileIdFromQuery || localStorage.getItem('selectedProfileId'))
         const activeProfileName = ref(profileNameFromQuery || localStorage.getItem('selectedProfileName') || 'Profile')
-        if (activeProfileId) {
-            localStorage.setItem('selectedProfileId', activeProfileId)
+        if (activeProfileId.value) {
+            localStorage.setItem('selectedProfileId', activeProfileId.value)
         }
         if (activeProfileName.value) {
             localStorage.setItem('selectedProfileName', activeProfileName.value)
         }
         const weekDaysLong = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-        const bloodPressureData = [
-            { height: '70%' },
-            { height: '75%' },
-            { height: '78%' },
-            { height: '72%' },
-            { height: '76%' },
-            { height: '74%' },
-            { height: '80%' }
-        ]
+        const { records, fetchRecords } = useBloodPressure()
 
-        const bpRecords = ref([
-            {
-                id: 1,
-                date: 'Saturday, January 11',
-                systolic: 120,
-                diastolic: 80,
-                status: 'Normal'
-            },
-            {
-                id: 2,
-                date: 'Friday, January 10',
-                systolic: 128,
-                diastolic: 82,
-                status: 'Elevated'
-            },
-            {
-                id: 3,
-                date: 'Thursday, January 09',
-                systolic: 132,
-                diastolic: 92,
-                status: 'High'
-            },
-            {
-                id: 4,
-                date: 'Wednesday, January 08',
-                systolic: 118,
-                diastolic: 78,
-                status: 'Normal'
+        const classifyStatus = (systolic, diastolic) => {
+            if (systolic < 120 && diastolic < 80) return 'Normal'
+            if (systolic < 130 && diastolic < 80) return 'Elevated'
+            return 'High'
+        }
+
+        const bpRecords = computed(() => {
+            return records.value.map(record => ({
+                id: record.id,
+                date: new Date(record.recordedAt).toLocaleDateString(),
+                systolic: record.systolic || record.valueNumber,
+                diastolic: record.diastolic || 0,
+                status: classifyStatus(record.systolic || record.valueNumber, record.diastolic || 0)
+            }))
+        })
+
+        const loadRecords = async () => {
+            const token = localStorage.getItem('token')
+            await fetchRecords(token, activeProfileId.value)
+        }
+
+        const bpChartRecords = computed(() => {
+            const values = bpRecords.value.slice(-7)
+            if (!values.length) {
+                return weekDaysLong.map((label, index) => ({
+                    id: index,
+                    height: `${70 + index % 6}%`,
+                    label
+                }))
             }
-        ])
+            const systolicValues = values.map(val => Number(val.systolic) || 0)
+            const max = Math.max(...systolicValues)
+            const min = Math.min(...systolicValues)
+            const range = (max - min) || 1
+            return values.map((record, index) => {
+                const normalized = (systolicValues[index] - min) / range
+                return {
+                    id: record.id,
+                    height: `${60 + normalized * 30}%`,
+                    label: new Date(record.date).toLocaleDateString(undefined, { weekday: 'short' })
+                }
+            })
+        })
 
         const goBack = () => {
             router.push({ path: '/medical-records', query: { tab: 'health' } })
         }
         const goToAddRecord = () => {
-            router.push('/medical-records/blood-pressure/add')
+            router.push({
+                path: '/medical-records/blood-pressure/add',
+                query: {
+                    profileId: activeProfileId.value,
+                    profileName: activeProfileName.value
+                }
+            })
         }
 
         const previousWeek = () => {
@@ -164,12 +176,39 @@ export default {
             console.log('Next week')
         }
 
+        onMounted(() => {
+            loadRecords()
+        })
+
+        watch(
+            () => route.query.profileId,
+            (val) => {
+                const newId = Array.isArray(val) ? val[0] : val
+                if (newId && newId !== activeProfileId.value) {
+                    activeProfileId.value = newId
+                    localStorage.setItem('selectedProfileId', newId)
+                    loadRecords()
+                }
+            }
+        )
+
+        watch(
+            () => route.query.profileName,
+            (val) => {
+                const newName = Array.isArray(val) ? val[0] : val
+                if (newName) {
+                    activeProfileName.value = newName
+                    localStorage.setItem('selectedProfileName', newName)
+                }
+            }
+        )
+
         return {
             selectedPeriod,
             timePeriods,
             dateRange,
             weekDaysLong,
-            bloodPressureData,
+            bpChartRecords,
             bpRecords,
             goBack,
             previousWeek,

@@ -69,20 +69,29 @@
 
 <script>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { API_BASE_URL } from '@/constants/config'
 
 export default {
     name: 'AddBloodSugarRecord',
     setup() {
         const router = useRouter()
+        const route = useRoute()
         const reading = ref('')
         const context = ref('fasting')
         const readingDate = ref(new Date().toISOString().slice(0, 10))
         const readingTime = ref(new Date().toISOString().slice(11, 16))
         const saving = ref(false)
-        const activeProfileId = localStorage.getItem('selectedProfileId')
-        const activeProfileName = ref(localStorage.getItem('selectedProfileName') || 'Profile')
+        const profileIdFromQuery = Array.isArray(route.query.profileId) ? route.query.profileId[0] : route.query.profileId
+        const profileNameFromQuery = Array.isArray(route.query.profileName) ? route.query.profileName[0] : route.query.profileName
+        const activeProfileId = profileIdFromQuery || localStorage.getItem('selectedProfileId')
+        const activeProfileName = ref(profileNameFromQuery || localStorage.getItem('selectedProfileName') || 'Profile')
+        if (activeProfileId) {
+            localStorage.setItem('selectedProfileId', activeProfileId)
+        }
+        if (activeProfileName.value) {
+            localStorage.setItem('selectedProfileName', activeProfileName.value)
+        }
 
         const saveRecord = async () => {
             if (!activeProfileId) {
@@ -92,7 +101,7 @@ export default {
             saving.value = true
             const token = localStorage.getItem('token')
             try {
-                await fetch(`${API_BASE_URL}/api/v1/vitals/blood-sugar`, {
+                const res = await fetch(`${API_BASE_URL}/api/v1/vitals/blood-sugar`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -105,7 +114,16 @@ export default {
                         recordedAt: `${readingDate.value}T${readingTime.value}:00`
                     })
                 })
-                router.back()
+                const data = await res.json()
+                if (data.status === 201) {
+                    router.replace({
+                        path: '/medical-records/blood-sugar',
+                        query: {
+                            profileId: activeProfileId,
+                            profileName: activeProfileName.value
+                        }
+                    })
+                }
             } finally {
                 saving.value = false
             }

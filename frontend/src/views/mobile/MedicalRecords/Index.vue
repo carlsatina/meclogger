@@ -147,9 +147,13 @@
                     <div class="health-card-header">
                         <div>
                             <h4 class="health-title">Blood Pressure</h4>
-                            <p class="health-subtitle">Last 7 days</p>
+                            <p class="health-subtitle">Last 7 records</p>
                         </div>
                         <mdicon name="chevron-right" :size="20" class="health-chevron"/>
+                    </div>
+                    <div v-if="bpLatest" class="health-reading">
+                        <span class="reading-value">{{ bpLatest.systolic }}/{{ bpLatest.diastolic }}</span>
+                        <span class="reading-status">{{ bpLatest.status }}</span>
                     </div>
                     <div class="health-chart">
                         <div class="chart-y-axis">
@@ -159,14 +163,14 @@
                         </div>
                         <div class="chart-area">
                             <div class="chart-bars">
-                                <div class="chart-bar-group" v-for="(day, index) in weekDays" :key="index">
+                                <div class="chart-bar-group" v-for="record in bpChartData" :key="record.id">
                                     <div class="bp-bar">
-                                        <div class="bp-range" :style="{ height: bloodPressureData[index].height }">
+                                        <div class="bp-range" :style="{ height: record.height }">
                                             <span class="bp-dot-top"></span>
                                             <span class="bp-dot-bottom"></span>
                                         </div>
                                     </div>
-                                    <span class="chart-label">{{ day }}</span>
+                                    <span class="chart-label">{{ record.label }}</span>
                                 </div>
                             </div>
                         </div>
@@ -174,14 +178,18 @@
                     </div>
                 </div>
 
-                <!-- Blood Sugar (Fasting) Card -->
+                <!-- Blood Sugar Card -->
                 <div class="health-card" @click="navigateToBloodSugar">
                     <div class="health-card-header">
                         <div>
-                            <h4 class="health-title">Blood Sugar <span class="health-tag">(Fasting)</span></h4>
-                            <p class="health-subtitle">Last 7 days</p>
+                            <h4 class="health-title">Blood Sugar</h4>
+                            <p class="health-subtitle">Last 7 records</p>
                         </div>
                         <mdicon name="chevron-right" :size="20" class="health-chevron"/>
+                    </div>
+                    <div v-if="bsLatest" class="health-reading">
+                        <span class="reading-value">{{ bsLatest.value }} mg/dL</span>
+                        <span class="reading-status">{{ bsLatest.type }}</span>
                     </div>
                     <div class="health-chart">
                         <div class="chart-y-axis">
@@ -199,24 +207,30 @@
                                         <stop offset="100%" style="stop-color:#667eea;stop-opacity:0.05" />
                                     </linearGradient>
                                 </defs>
-                                <path d="M 0 30 L 40 35 L 80 45 L 120 50 L 160 40 L 200 20 L 240 15 L 280 35" 
-                                      fill="url(#lineGradient)" 
-                                      stroke="none"/>
-                                <path d="M 0 30 L 40 35 L 80 45 L 120 50 L 160 40 L 200 20 L 240 15 L 280 35" 
-                                      fill="none" 
-                                      stroke="#667eea" 
-                                      stroke-width="2"/>
-                                <circle cx="0" cy="30" r="3" fill="#667eea"/>
-                                <circle cx="40" cy="35" r="3" fill="#667eea"/>
-                                <circle cx="80" cy="45" r="3" fill="#667eea"/>
-                                <circle cx="120" cy="50" r="3" fill="#667eea"/>
-                                <circle cx="160" cy="40" r="3" fill="#667eea"/>
-                                <circle cx="200" cy="20" r="3" fill="#667eea"/>
-                                <circle cx="240" cy="15" r="3" fill="#667eea"/>
-                                <circle cx="280" cy="35" r="3" fill="#667eea"/>
+                                <path 
+                                    v-if="bsChartPath"
+                                    :d="bsChartPath"
+                                    fill="url(#lineGradient)"
+                                    stroke="none"
+                                />
+                                <path 
+                                    v-if="bsChartPath"
+                                    :d="bsChartPath"
+                                    fill="none"
+                                    stroke="#667eea"
+                                    stroke-width="2"
+                                />
+                                <circle 
+                                    v-for="(point, index) in bsChartPoints"
+                                    :key="index"
+                                    :cx="point.x"
+                                    :cy="point.y"
+                                    r="3"
+                                    fill="#667eea"
+                                />
                             </svg>
                             <div class="chart-x-labels">
-                                <span v-for="day in weekDays" :key="day">{{ day }}</span>
+                                <span v-for="(point, index) in bsChartPoints" :key="'bs-label-' + index">{{ point.label }}</span>
                             </div>
                         </div>
                         <span class="chart-unit">mg/dL</span>
@@ -228,11 +242,19 @@
                     <div class="health-card-header">
                         <div>
                             <h4 class="health-title">Body Weight</h4>
-                            <p class="health-subtitle">Last 7 days</p>
+                            <p class="health-subtitle">Latest measurement</p>
                         </div>
                         <mdicon name="chevron-right" :size="20" class="health-chevron"/>
                     </div>
-                    <div class="health-chart-placeholder">
+                    <div v-if="bodyWeightLatest" class="health-reading">
+                        <span class="reading-value">{{ bodyWeightLatest.weight }} kg</span>
+                        <span class="reading-status" :class="{ increase: bodyWeightLatest.change > 0, decrease: bodyWeightLatest.change < 0 }">
+                            <template v-if="bodyWeightLatest.change > 0">+{{ bodyWeightLatest.change }} kg</template>
+                            <template v-else-if="bodyWeightLatest.change < 0">{{ bodyWeightLatest.change }} kg</template>
+                            <template v-else>Stable</template>
+                        </span>
+                    </div>
+                    <div class="health-chart-placeholder" v-else>
                         <p class="placeholder-text">No data available</p>
                     </div>
                     <span class="chart-unit-bottom">kg</span>
@@ -355,6 +377,9 @@ import { useRouter, useRoute } from 'vue-router'
 import TopBar from '@/components/MedicalRecords/TopBar.vue'
 import BottomNav from '@/components/MedicalRecords/BottomNav.vue'
 import { useProfiles } from '@/composables/profiles'
+import { useBloodPressure } from '@/composables/vitals/bloodPressure'
+import { useBloodSugar } from '@/composables/vitals/bloodSugar'
+import { API_BASE_URL } from '@/constants/config'
 
 export default {
     name: "MedicalRecordsMobile",
@@ -448,16 +473,48 @@ export default {
         // Week days for charts
         const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
         
-        // Blood pressure data (height percentages for visualization)
-        const bloodPressureData = [
-            { height: '75%' },
-            { height: '70%' },
-            { height: '78%' },
-            { height: '72%' },
-            { height: '76%' },
-            { height: '74%' },
-            { height: '80%' }
-        ]
+        const { records: bpRecords, fetchRecords: fetchBpRecords } = useBloodPressure()
+        const { records: bsRecords, fetchRecords: fetchBsRecords } = useBloodSugar()
+        const bodyWeightRecords = ref([])
+
+        const fetchBodyWeightRecords = async(profileId) => {
+            const token = localStorage.getItem('token')
+            if (!token || !profileId) {
+                bodyWeightRecords.value = []
+                return
+            }
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/v1/vitals/body-weight?profileId=${profileId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+                const data = await res.json()
+                if (res.ok) {
+                    bodyWeightRecords.value = data.records || []
+                } else {
+                    bodyWeightRecords.value = []
+                }
+            } catch (err) {
+                console.error(err)
+                bodyWeightRecords.value = []
+            }
+        }
+
+        const loadHealthData = async(profileId) => {
+            const token = localStorage.getItem('token')
+            if (!token || !profileId) {
+                bpRecords.value = []
+                bsRecords.value = []
+                bodyWeightRecords.value = []
+                return
+            }
+            await Promise.all([
+                fetchBpRecords(token, profileId),
+                fetchBsRecords(token, profileId),
+                fetchBodyWeightRecords(profileId)
+            ])
+        }
 
         const profileMembers = ref([])
         const activeMemberId = ref(localStorage.getItem('selectedProfileId'))
@@ -501,6 +558,103 @@ export default {
                 return active.name
             }
             return localStorage.getItem('selectedProfileName') || ''
+        })
+
+        const classifyBloodPressureStatus = (systolic, diastolic) => {
+            if (systolic < 120 && diastolic < 80) return 'Normal'
+            if (systolic < 130 && diastolic < 80) return 'Elevated'
+            return 'High'
+        }
+
+        const bpDisplayRecords = computed(() => {
+            return bpRecords.value.map(record => ({
+                id: record.id,
+                systolic: record.systolic || record.valueNumber,
+                diastolic: record.diastolic || 0,
+                recordedAt: record.recordedAt
+            }))
+        })
+
+        const bpLatest = computed(() => {
+            if (bpDisplayRecords.value.length === 0) return null
+            const latest = bpDisplayRecords.value[bpDisplayRecords.value.length - 1]
+            const systolic = latest.systolic || latest.valueNumber || 0
+            const diastolic = latest.diastolic || 0
+            return {
+                systolic,
+                diastolic,
+                status: classifyBloodPressureStatus(systolic, diastolic)
+            }
+        })
+
+        const bpChartData = computed(() => {
+            const recent = bpDisplayRecords.value.slice(-7)
+            if (!recent.length) {
+                return weekDays.map((day, index) => ({
+                    id: index,
+                    height: `${65 + (index % 4) * 5}%`,
+                    label: day
+                }))
+            }
+            const systolics = recent.map(entry => entry.systolic || entry.valueNumber || 0)
+            const max = Math.max(...systolics)
+            const min = Math.min(...systolics)
+            const range = (max - min) || 1
+            return recent.map((record, index) => {
+                const label = new Date(record.recordedAt || record.date).toLocaleDateString(undefined, { weekday: 'short' })
+                return {
+                    id: record.id,
+                    height: `${60 + ((systolics[index] - min) / range) * 30}%`,
+                    label
+                }
+            })
+        })
+
+        const bsLatest = computed(() => {
+            if (bsRecords.value.length === 0) return null
+            const latest = bsRecords.value[bsRecords.value.length - 1]
+            return {
+                value: latest.valueNumber,
+                type: latest.chartGroup || 'Fasting',
+                recordedAt: latest.recordedAt
+            }
+        })
+
+        const bsChartPoints = computed(() => {
+            const values = bsRecords.value.slice(-7)
+            if (!values.length) return []
+            const numbers = values.map(entry => Number(entry.valueNumber) || 0)
+            const max = Math.max(...numbers)
+            const min = Math.min(...numbers)
+            const range = (max - min) || 1
+            const width = 280
+            const height = 120
+            const step = numbers.length > 1 ? width / (numbers.length - 1) : 0
+            return numbers.map((value, index) => {
+                const x = numbers.length === 1 ? width / 2 : index * step
+                const normalized = (value - min) / range
+                const y = height - (normalized * height)
+                return {
+                    x,
+                    y,
+                    label: new Date(values[index].recordedAt).toLocaleDateString(undefined, { weekday: 'short' })
+                }
+            })
+        })
+
+        const bsChartPath = computed(() => {
+            const points = bsChartPoints.value
+            if (!points.length) return ''
+            return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+        })
+
+        const bodyWeightLatest = computed(() => {
+            if (bodyWeightRecords.value.length === 0) return null
+            const latest = bodyWeightRecords.value[bodyWeightRecords.value.length - 1]
+            const previous = bodyWeightRecords.value[bodyWeightRecords.value.length - 2]
+            const weight = latest.valueNumber
+            const change = previous ? +(weight - previous.valueNumber).toFixed(1) : 0
+            return { weight, change }
         })
 
         const profilesComposable = useProfiles()
@@ -553,6 +707,16 @@ export default {
             }
         )
 
+        watch(activeMemberId, (id) => {
+            if (id) {
+                loadHealthData(id)
+            } else {
+                bpRecords.value = []
+                bsRecords.value = []
+                bodyWeightRecords.value = []
+            }
+        }, { immediate: true })
+
         const navigateProfileSection = (section) => {
             console.log('Navigate to', section)
         }
@@ -604,7 +768,7 @@ export default {
             navigateToAddRecord,
             medicalRecords,
             weekDays,
-            bloodPressureData,
+            bpChartData,
             showHealthModal,
             selectedCategory,
             healthCategories,
@@ -622,7 +786,12 @@ export default {
             activeProfileName,
             loadProfiles,
             showToast,
-            toastMessage
+            toastMessage,
+            bpLatest,
+            bsLatest,
+            bsChartPoints,
+            bsChartPath,
+            bodyWeightLatest
         }
     }
 }
@@ -1101,6 +1270,33 @@ export default {
 .chart-x-labels span {
     font-size: 12px;
     color: #6b7280;
+}
+
+.health-reading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.reading-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.reading-status {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.reading-status.increase {
+    color: #059669;
+}
+
+.reading-status.decrease {
+    color: #dc2626;
 }
 
 /* Chart Placeholder */

@@ -4,7 +4,9 @@ import {
     createBloodPressureRecord,
     createBloodSugarRecord,
     createBodyWeightRecord,
-    getBodyWeightRecords
+    getBodyWeightRecords,
+    getBloodPressureRecords,
+    getBloodSugarRecords
 } from '../controller/vitalsController'
 
 const makeVitalsRouter = (
@@ -14,7 +16,9 @@ const makeVitalsRouter = (
     const router = Router()
 
     router.post('/blood-pressure', authenticateUser, createBloodPressureRecord)
+    router.get('/blood-pressure', authenticateUser, getBloodPressureRecords)
     router.post('/blood-sugar', authenticateUser, createBloodSugarRecord)
+    router.get('/blood-sugar', authenticateUser, getBloodSugarRecords)
     router.post('/body-weight', authenticateUser, createBodyWeightRecord)
     router.get('/body-weight', authenticateUser, getBodyWeightRecords)
 

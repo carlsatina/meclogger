@@ -55,20 +55,25 @@
                             <stop offset="100%" style="stop-color:#667eea;stop-opacity:0.05" />
                         </linearGradient>
                     </defs>
-                    <path d="M 0 30 L 40 35 L 80 45 L 120 50 L 160 40 L 200 20 L 240 15" 
-                          fill="url(#lineGradient)" 
-                          stroke="none"/>
-                    <path d="M 0 30 L 40 35 L 80 45 L 120 50 L 160 40 L 200 20 L 240 15" 
-                          fill="none" 
-                          stroke="#667eea" 
-                          stroke-width="2"/>
-                    <circle cx="0" cy="30" r="3" fill="#667eea"/>
-                    <circle cx="40" cy="35" r="3" fill="#667eea"/>
-                    <circle cx="80" cy="45" r="3" fill="#667eea"/>
-                    <circle cx="120" cy="50" r="3" fill="#667eea"/>
-                    <circle cx="160" cy="40" r="3" fill="#667eea"/>
-                    <circle cx="200" cy="20" r="3" fill="#667eea"/>
-                    <circle cx="240" cy="15" r="3" fill="#667eea"/>
+                    <path 
+                        v-if="chartPath" 
+                        :d="chartPath" 
+                        fill="url(#lineGradient)" 
+                        stroke="none"/>
+                    <path 
+                        v-if="chartPath" 
+                        :d="chartPath" 
+                        fill="none" 
+                        stroke="#667eea" 
+                        stroke-width="2"/>
+                    <circle 
+                        v-for="(point, index) in chartPoints"
+                        :key="index"
+                        :cx="point.x"
+                        :cy="point.y"
+                        r="3"
+                        fill="#667eea"
+                    />
                 </svg>
                 <div class="chart-x-labels">
                     <span v-for="day in weekDaysLong" :key="day">{{ day }}</span>
@@ -99,8 +104,9 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useBloodSugar } from '@/composables/vitals/bloodSugar'
 
 export default {
     name: 'BloodSugarDetail',
@@ -112,52 +118,43 @@ export default {
         const dateRange = ref('05 Jan - 11 Jan')
         const profileIdFromQuery = Array.isArray(route.query.profileId) ? route.query.profileId[0] : route.query.profileId
         const profileNameFromQuery = Array.isArray(route.query.profileName) ? route.query.profileName[0] : route.query.profileName
-        const activeProfileId = profileIdFromQuery || localStorage.getItem('selectedProfileId')
+        const activeProfileId = ref(profileIdFromQuery || localStorage.getItem('selectedProfileId'))
         const activeProfileName = ref(profileNameFromQuery || localStorage.getItem('selectedProfileName') || 'Profile')
         if (activeProfileId) {
-            localStorage.setItem('selectedProfileId', activeProfileId)
+            localStorage.setItem('selectedProfileId', activeProfileId.value)
         }
         if (activeProfileName.value) {
             localStorage.setItem('selectedProfileName', activeProfileName.value)
         }
         const weekDaysLong = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        const { records, fetchRecords } = useBloodSugar()
 
-        const bsRecords = ref([
-            {
-                id: 1,
-                date: 'Saturday, January 11',
-                value: 95,
-                type: 'Fasting',
-                status: 'Normal'
-            },
-            {
-                id: 2,
-                date: 'Friday, January 10',
-                value: 108,
-                type: 'After meal',
-                status: 'Normal'
-            },
-            {
-                id: 3,
-                date: 'Thursday, January 09',
-                value: 88,
-                type: 'Fasting',
-                status: 'Normal'
-            },
-            {
-                id: 4,
-                date: 'Wednesday, January 08',
-                value: 125,
-                type: 'After meal',
-                status: 'Elevated'
-            }
-        ])
+        const bsRecords = computed(() => {
+            return records.value.map((record) => ({
+                id: record.id,
+                date: new Date(record.recordedAt).toLocaleDateString(),
+                value: record.valueNumber,
+                type: record.chartGroup || 'Fasting',
+                status: record.status || 'Normal'
+            }))
+        })
+
+        const loadRecords = async () => {
+            const token = localStorage.getItem('token')
+            await fetchRecords(token, activeProfileId.value)
+        }
 
         const goBack = () => {
             router.push({ path: '/medical-records', query: { tab: 'health' } })
         }
         const goToAddRecord = () => {
-            router.push('/medical-records/blood-sugar/add')
+            router.push({
+                path: '/medical-records/blood-sugar/add',
+                query: {
+                    profileId: activeProfileId.value,
+                    profileName: activeProfileName.value
+                }
+            })
         }
 
         const previousWeek = () => {
@@ -167,6 +164,56 @@ export default {
         const nextWeek = () => {
             console.log('Next week')
         }
+
+        onMounted(() => {
+            loadRecords()
+        })
+
+        watch(
+            () => route.query.profileId,
+            (val) => {
+                const newId = Array.isArray(val) ? val[0] : val
+                if (newId && newId !== activeProfileId.value) {
+                    activeProfileId.value = newId
+                    localStorage.setItem('selectedProfileId', newId)
+                    loadRecords()
+                }
+            }
+        )
+
+        watch(
+            () => route.query.profileName,
+            (val) => {
+                const newName = Array.isArray(val) ? val[0] : val
+                if (newName) {
+                    activeProfileName.value = newName
+                    localStorage.setItem('selectedProfileName', newName)
+                }
+            }
+        )
+
+        const chartPoints = computed(() => {
+            const values = bsRecords.value.map(record => Number(record.value)).filter(val => !Number.isNaN(val))
+            if (!values.length) return []
+            const max = Math.max(...values)
+            const min = Math.min(...values)
+            const range = (max - min) || 1
+            const height = 120
+            const width = 280
+            const step = values.length > 1 ? width / (values.length - 1) : 0
+            return values.map((value, index) => {
+                const x = values.length === 1 ? width / 2 : index * step
+                const normalized = (value - min) / range
+                const y = height - (normalized * height)
+                return { x, y }
+            })
+        })
+
+        const chartPath = computed(() => {
+            const points = chartPoints.value
+            if (!points.length) return ''
+            return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+        })
 
         return {
             selectedPeriod,
@@ -178,7 +225,9 @@ export default {
             previousWeek,
             nextWeek,
             goToAddRecord,
-            activeProfileName
+            activeProfileName,
+            chartPoints,
+            chartPath
         }
     }
 }
