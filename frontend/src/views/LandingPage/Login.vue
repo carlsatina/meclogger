@@ -29,11 +29,21 @@ export default {
             platformIsMobile.value = data
         })
 
+        const redirect = () => {
+            const redirectPath = route.query.redirect
+            if (redirectPath && typeof redirectPath === 'string') {
+                router.replace(redirectPath)
+            } else {
+                router.replace('/')
+            }
+        }
+
         return {
             store,
             route,
             router,
-            platformIsMobile
+            platformIsMobile,
+            redirect
         }
     }
 }

@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { API_BASE_URL } from '@/constants/config'
 
 const googleLogin = async(email, sub, name) => {
     const response = ref(null)
@@ -15,7 +16,7 @@ const googleLogin = async(email, sub, name) => {
             })
         }
         // const data = await fetch("http://localhost:5000/services", reqOptions)
-        const data = await fetch(process.env.VUE_APP_BACKEND_API + '/api/v1/auth/googleLogin', reqOptions)
+        const data = await fetch(API_BASE_URL + '/api/v1/auth/googleLogin', reqOptions)
         response.value = await data.json()
 
     } catch (err) {

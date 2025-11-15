@@ -11,6 +11,9 @@ import AddRecord from '@/views/LandingPage/MedicalRecords/AddRecord.vue'
 import BloodPressure from '@/views/mobile/MedicalRecords/BloodPressure.vue'
 import BloodSugar from '@/views/mobile/MedicalRecords/BloodSugar.vue'
 import BodyWeight from '@/views/mobile/MedicalRecords/BodyWeight.vue'
+import AddBloodPressureRecord from '@/views/mobile/MedicalRecords/AddBloodPressureRecord.vue'
+import AddBloodSugarRecord from '@/views/mobile/MedicalRecords/AddBloodSugarRecord.vue'
+import AddBodyWeightRecord from '@/views/mobile/MedicalRecords/AddBodyWeightRecord.vue'
 import CarMaintenance from '@/views/LandingPage/CarMaintenance.vue'
 import ExpenseTracking from '@/views/LandingPage/ExpenseTracking.vue'
 
@@ -19,7 +22,8 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'home',
-    component: Home
+    component: Home,
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
@@ -34,37 +38,62 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/medical-records',
     name: 'medical-records',
-    component: MedicalRecords
+    component: MedicalRecords,
+    meta: { requiresAuth: true }
   },
   {
     path: '/medical-records/add-record',
     name: 'add-record',
-    component: AddRecord
+    component: AddRecord,
+    meta: { requiresAuth: true }
   },
   {
     path: '/medical-records/blood-pressure',
     name: 'blood-pressure',
-    component: BloodPressure
+    component: BloodPressure,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/blood-pressure/add',
+    name: 'blood-pressure-add',
+    component: AddBloodPressureRecord,
+    meta: { requiresAuth: true }
   },
   {
     path: '/medical-records/blood-sugar',
     name: 'blood-sugar',
-    component: BloodSugar
+    component: BloodSugar,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/blood-sugar/add',
+    name: 'blood-sugar-add',
+    component: AddBloodSugarRecord,
+    meta: { requiresAuth: true }
   },
   {
     path: '/medical-records/body-weight',
     name: 'body-weight',
-    component: BodyWeight
+    component: BodyWeight,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/body-weight/add',
+    name: 'body-weight-add',
+    component: AddBodyWeightRecord,
+    meta: { requiresAuth: true }
   },
   {
     path: '/car-maintenance',
     name: 'car-maintenance',
-    component: CarMaintenance
+    component: CarMaintenance,
+    meta: { requiresAuth: true }
   },
   {
     path: '/expense-tracking',
     name: 'expense-tracking',
-    component: ExpenseTracking
+    component: ExpenseTracking,
+    meta: { requiresAuth: true }
   },
 
 ]
@@ -72,6 +101,17 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth) {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      next({ name: 'login', query: { redirect: to.fullPath } })
+      return
+    }
+  }
+  next()
 })
 
 export default router

@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { API_BASE_URL } from '@/constants/config'
 
 const register = async(userInfo) => {
     const response = ref(null)
@@ -12,7 +13,7 @@ const register = async(userInfo) => {
                 ...userInfo
             })
         }
-        const data = await fetch(process.env.VUE_APP_BACKEND_API + '/api/v1/auth/register', reqOptions)
+        const data = await fetch(API_BASE_URL + '/api/v1/auth/register', reqOptions)
         response.value = await data.json()
 
     } catch (err) {

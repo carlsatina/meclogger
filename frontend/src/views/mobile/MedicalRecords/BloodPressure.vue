@@ -73,7 +73,7 @@
     </div>
 
     <!-- Add New Record Button -->
-    <button class="add-record-btn">
+    <button class="add-record-btn" @click="goToAddRecord">
         Add new record
     </button>
 </div>
@@ -136,6 +136,9 @@ export default {
         const goBack = () => {
             router.back()
         }
+        const goToAddRecord = () => {
+            router.push('/medical-records/blood-pressure/add')
+        }
 
         const previousWeek = () => {
             // TODO: Implement previous week logic
@@ -156,7 +159,8 @@ export default {
             bpRecords,
             goBack,
             previousWeek,
-            nextWeek
+            nextWeek,
+            goToAddRecord
         }
     }
 }

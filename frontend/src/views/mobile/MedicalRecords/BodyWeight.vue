@@ -89,7 +89,7 @@
     </div>
 
     <!-- Add New Record Button -->
-    <button class="add-record-btn">
+    <button class="add-record-btn" @click="goToAddRecord">
         Add new record
     </button>
 </div>
@@ -142,6 +142,9 @@ export default {
         const goBack = () => {
             router.back()
         }
+        const goToAddRecord = () => {
+            router.push('/medical-records/body-weight/add')
+        }
 
         const previousWeek = () => {
             console.log('Previous week')
@@ -159,7 +162,8 @@ export default {
             weightRecords,
             goBack,
             previousWeek,
-            nextWeek
+            nextWeek,
+            goToAddRecord
         }
     }
 }

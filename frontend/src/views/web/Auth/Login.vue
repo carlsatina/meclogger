@@ -9,7 +9,7 @@
             <p class="brand-subtitle">Welcome back! Please login to continue</p>
         </div>
 
-        <div class="login-panel">
+        <form class="login-panel" @submit.prevent="handleLogin">
             <div class="panel-header">
                 <h2 class="panel-title">Sign in</h2>
                 <p class="panel-subtitle">Enter your credentials to access your records</p>
@@ -24,6 +24,7 @@
                         class="form-input"
                         placeholder="Enter your email"
                         v-model="email"
+                        autocomplete="email"
                     />
                 </div>
             </div>
@@ -37,6 +38,7 @@
                         class="form-input"
                         placeholder="Enter your password"
                         v-model="password"
+                        autocomplete="current-password"
                         @keypress.enter="handleLogin"
                     />
                     <button class="toggle-password" @click="showPassword = !showPassword">
@@ -50,11 +52,11 @@
                 <span>{{ errorMsg }}</span>
             </div>
 
-            <button class="forgot-password" @click="router.push('/forgot-password')">
+            <button class="forgot-password" type="button" @click="router.push('/forgot-password')">
                 Forgot Password?
             </button>
 
-            <button class="login-btn" @click="handleLogin" :disabled="loadingModal">
+            <button class="login-btn" type="submit" :disabled="loadingModal">
                 <span v-if="!loadingModal">Log In</span>
                 <span v-else class="loading-spinner"></span>
             </button>
@@ -65,7 +67,7 @@
                     Sign Up
                 </button>
             </div>
-        </div>
+        </form>
     </div>
 
     <Loading v-if="loadingModal"/>
@@ -74,7 +76,7 @@
 
 <script>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import login from '@/composables/auth/login'
 import store from '@/store'
 import getProfile from '@/composables/getProfile'
@@ -88,6 +90,7 @@ export default {
     },
     setup() {
         const router = useRouter()
+        const route = useRoute()
         const email = ref('')
         const password = ref('')
         const showPassword = ref(false)
@@ -116,7 +119,12 @@ export default {
                         store.methods.setUserAdmin(profile.role === Role.ADMIN)
                         store.methods.setUserProfile(profile)
                     }
-                    router.push('/')
+                    const redirectTarget = route.query.redirect
+                    if (typeof redirectTarget === 'string' && redirectTarget.length) {
+                        router.replace(redirectTarget)
+                    } else {
+                        router.push('/')
+                    }
                 }
 
             }
@@ -125,6 +133,7 @@ export default {
 
         return {
             router,
+            route,
             email,
             password,
             showPassword,

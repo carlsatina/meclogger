@@ -32,6 +32,7 @@
 <script>
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { API_BASE_URL } from '@/constants/config'
 
 export default {
     name: "ServiceDisplay",
@@ -39,7 +40,7 @@ export default {
     setup() {
         const route = useRoute()
         const router = useRouter()
-        const baseUrl = process.env.VUE_APP_BACKEND_API + '/logo/'
+        const baseUrl = API_BASE_URL + '/logo/'
 
         const displayServiceDetails = (id) => {
             setTimeout(() => {
