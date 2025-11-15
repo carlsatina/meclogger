@@ -190,7 +190,7 @@
                         <span class="reading-value">{{ bpLatest.systolic }}/{{ bpLatest.diastolic }}</span>
                         <span class="reading-status">{{ bpLatest.status }}</span>
                     </div>
-                    <div class="health-chart">
+                    <div v-if="bpChartData.length" class="health-chart">
                         <div class="chart-y-axis">
                             <span>145</span>
                             <span>110</span>
@@ -200,7 +200,7 @@
                             <div class="chart-bars">
                                 <div class="chart-bar-group" v-for="record in bpChartData" :key="record.id">
                                     <div class="bp-bar">
-                                        <div class="bp-range" :style="{ height: record.height }">
+                                        <div class="bp-range" :style="{ height: record.rangeHeight, top: record.topOffset }">
                                             <span class="bp-dot-top"></span>
                                             <span class="bp-dot-bottom"></span>
                                         </div>
@@ -210,6 +210,9 @@
                             </div>
                         </div>
                         <span class="chart-unit">mmHg</span>
+                    </div>
+                    <div v-else class="health-chart-placeholder">
+                        <p class="placeholder-text">No data available</p>
                     </div>
                 </div>
 
@@ -402,7 +405,13 @@
 </div>
 
 <div v-if="showToast" class="toast-notification">
-    {{ toastMessage }}
+    <div class="toast-icon">
+        <mdicon name="account-check" :size="22"/>
+    </div>
+    <div class="toast-text">
+        <p class="toast-title">Profile Selected</p>
+        <p class="toast-message">{{ toastMessage }}</p>
+    </div>
 </div>
 </template>
 
@@ -799,22 +808,24 @@ export default {
         const bpChartData = computed(() => {
             const recent = bpDisplayRecords.value.slice(-7)
             if (!recent.length) {
-                return weekDays.map((day, index) => ({
-                    id: index,
-                    height: `${65 + (index % 4) * 5}%`,
-                    label: day
-                }))
+                return []
             }
             const systolics = recent.map(entry => entry.systolic || entry.valueNumber || 0)
+            const diastolics = recent.map(entry => entry.diastolic || 0)
             const max = Math.max(...systolics)
-            const min = Math.min(...systolics)
+            const min = Math.min(...diastolics)
             const range = (max - min) || 1
             return recent.map((record, index) => {
+                const systolic = systolics[index]
+                const diastolic = diastolics[index]
                 const label = new Date(record.recordedAt || record.date).toLocaleDateString(undefined, { weekday: 'short' })
+                const topOffset = ((max - systolic) / range) * 70
+                const bottomOffset = ((max - diastolic) / range) * 70
                 return {
                     id: record.id,
-                    height: `${60 + ((systolics[index] - min) / range) * 30}%`,
-                    label
+                    label,
+                    rangeHeight: `${Math.max(bottomOffset - topOffset, 6)}%`,
+                    topOffset: `${topOffset}%`
                 }
             })
         })
@@ -1471,16 +1482,17 @@ export default {
 }
 
 .bp-bar {
+    width: 8px;
     height: 100px;
-    display: flex;
-    align-items: flex-end;
+    position: relative;
 }
 
 .bp-range {
     width: 8px;
     background: linear-gradient(180deg, #a5b4fc 0%, #c7d2fe 100%);
     border-radius: 4px;
-    position: relative;
+    position: absolute;
+    left: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -1811,15 +1823,45 @@ export default {
 
 .toast-notification {
     position: fixed;
-    bottom: 80px;
+    bottom: 90px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(17, 24, 39, 0.9);
+    background: linear-gradient(135deg, #c084fc, #7c3aed);
     color: white;
-    padding: 12px 20px;
-    border-radius: 999px;
-    font-size: 14px;
+    padding: 14px 18px;
+    border-radius: 20px;
+    font-size: 13px;
     z-index: 1500;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 30px rgba(124, 58, 237, 0.35);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+}
+
+.toast-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-text {
+    flex: 1;
+}
+
+.toast-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.toast-message {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
 }
 </style>

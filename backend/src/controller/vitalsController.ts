@@ -71,7 +71,7 @@ const createBloodPressureRecord = async (req: ExtendedRequest, res: any) => {
             systolic: systolicValue,
             diastolic: diastolicValue,
             unit: 'mmHg',
-            recordedAt: recordedAt ? new Date(recordedAt) : undefined,
+            recordedAt: recordedAt ? new Date(recordedAt) : new Date(),
             notes
         }
     })
@@ -111,7 +111,7 @@ const createBloodSugarRecord = async (req: ExtendedRequest, res: any) => {
             valueNumber: readingValue,
             unit: 'mg/dL',
             chartGroup: context,
-            recordedAt: recordedAt ? new Date(recordedAt) : undefined,
+            recordedAt: recordedAt ? new Date(recordedAt) : new Date(),
             notes
         }
     })
@@ -224,7 +224,7 @@ const createBodyWeightRecord = async (req: ExtendedRequest, res: any) => {
             vitalType: VitalType.WEIGHT,
             valueNumber: weightValue,
             unit: 'kg',
-            recordedAt: recordedAt ? new Date(recordedAt) : undefined,
+            recordedAt: recordedAt ? new Date(recordedAt) : new Date(),
             notes
         }
     })

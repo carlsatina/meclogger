@@ -94,10 +94,23 @@ export default {
     name: 'AddBloodPressureRecord',
     setup() {
         const router = useRouter()
+        const padNumber = (value) => value.toString().padStart(2, '0')
+        const getTimeInZone = (tz) => {
+            return new Date().toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: tz,
+                hour12: false
+            })
+        }
+        const getDateInZone = (tz) => {
+            const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: tz })
+            return formatter.format(new Date())
+        }
         const systolic = ref('')
         const diastolic = ref('')
-        const readingDate = ref(new Date().toISOString().slice(0, 10))
-        const readingTime = ref(new Date().toISOString().slice(11, 16))
+        const readingDate = ref(getDateInZone('Asia/Manila'))
+        const readingTime = ref(getTimeInZone('Asia/Manila'))
         const notes = ref('')
         const saving = ref(false)
         const activeProfileId = localStorage.getItem('selectedProfileId')
@@ -122,7 +135,7 @@ export default {
                         systolic: systolic.value,
                         diastolic: diastolic.value,
                         notes: notes.value,
-                        recordedAt: `${readingDate.value}T${readingTime.value}:00`
+                        recordedAt: `${readingDate.value}T${readingTime.value}:00+08:00`
                     })
                 })
                 router.back()

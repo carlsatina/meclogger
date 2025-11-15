@@ -93,10 +93,28 @@ export default {
     setup() {
         const router = useRouter()
         const route = useRoute()
+        const padNumber = (value) => value.toString().padStart(2, '0')
+        const getManilaNow = () => {
+            const now = new Date()
+            const manilaOffsetMinutes = 8 * 60
+            const utcMillis = now.getTime() + (now.getTimezoneOffset() * 60000)
+            return new Date(utcMillis + manilaOffsetMinutes * 60000)
+        }
+        const getTimeInZone = (tz) => {
+            return new Date().toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: tz,
+                hour12: false
+            })
+        }
+        const formatDateInput = (date) => `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}`
+
         const reading = ref('')
         const context = ref('fasting')
-        const readingDate = ref(new Date().toISOString().slice(0, 10))
-        const readingTime = ref(new Date().toISOString().slice(11, 16))
+        const manilaNow = getManilaNow()
+        const readingDate = ref(formatDateInput(manilaNow))
+        const readingTime = ref(getTimeInZone('Asia/Manila'))
         const notes = ref('')
         const saving = ref(false)
         const profileIdFromQuery = Array.isArray(route.query.profileId) ? route.query.profileId[0] : route.query.profileId
@@ -129,7 +147,7 @@ export default {
                         reading: reading.value,
                         context: context.value,
                         notes: notes.value,
-                        recordedAt: `${readingDate.value}T${readingTime.value}:00`
+                        recordedAt: `${readingDate.value}T${readingTime.value}:00+08:00`
                     })
                 })
                 const data = await res.json()

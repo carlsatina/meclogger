@@ -78,8 +78,20 @@ export default {
         const route = useRoute()
         const weight = ref('')
         const notes = ref('')
-        const readingDate = ref(new Date().toISOString().slice(0, 10))
-        const readingTime = ref(new Date().toISOString().slice(11, 16))
+        const getTimeInZone = (tz) => {
+            return new Date().toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: tz,
+                hour12: false
+            })
+        }
+        const getDateInZone = (tz) => {
+            const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: tz })
+            return formatter.format(new Date())
+        }
+        const readingDate = ref(getDateInZone('Asia/Manila'))
+        const readingTime = ref(getTimeInZone('Asia/Manila'))
         const saving = ref(false)
         const profileIdFromQuery = Array.isArray(route.query.profileId) ? route.query.profileId[0] : route.query.profileId
         const profileNameFromQuery = Array.isArray(route.query.profileName) ? route.query.profileName[0] : route.query.profileName
@@ -113,7 +125,7 @@ export default {
                         profileId: activeProfileId,
                         weight: weight.value,
                         notes: notes.value,
-                        recordedAt: `${readingDate.value}T${readingTime.value}:00`
+                        recordedAt: `${readingDate.value}T${readingTime.value}:00+08:00`
                     })
                 })
                 const data = await res.json()
