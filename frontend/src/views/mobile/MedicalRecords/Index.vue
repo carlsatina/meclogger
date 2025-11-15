@@ -86,50 +86,64 @@
                 <h3 class="section-title">Recent records</h3>
             </div>
             <div class="records-list">
-                <div class="record-item">
-                    <div class="record-icon">
-                        <mdicon name="file-document" :size="24"/>
-                    </div>
-                    <div class="record-content">
-                        <h4 class="record-name">Eye check-up</h4>
-                        <p class="record-type">Prescription</p>
-                    </div>
-                    <mdicon name="chevron-right" :size="20" class="record-arrow"/>
+                <div v-if="medicalRecordsLoading" class="records-loading">
+                    Loading records...
                 </div>
-                <div class="record-item">
-                    <div class="record-icon">
-                        <mdicon name="file-document" :size="24"/>
+                <template v-else>
+                    <div 
+                        class="record-item"
+                        v-for="record in recentMedicalRecords"
+                        :key="record.id"
+                    >
+                        <div class="record-icon">
+                            <mdicon :name="getRecordIcon(record.recordType)" :size="24"/>
+                        </div>
+                        <div class="record-content">
+                            <h4 class="record-name">{{ record.title }}</h4>
+                            <p class="record-type">
+                                {{ getRecordTypeLabel(record.recordType) }} · {{ formatRecordDate(record.recordDate) }}
+                            </p>
+                        </div>
+                        <mdicon name="chevron-right" :size="20" class="record-arrow"/>
                     </div>
-                    <div class="record-content">
-                        <h4 class="record-name">Blood Test</h4>
-                        <p class="record-type">Lab Report</p>
+                    <div v-if="recentMedicalRecords.length === 0" class="empty-state small">
+                        <p class="empty-title">No records yet</p>
+                        <p class="empty-text">Add your first record to see it here.</p>
                     </div>
-                    <mdicon name="chevron-right" :size="20" class="record-arrow"/>
-                </div>
+                </template>
             </div>
         </div>
 
         <!-- Records Tab -->
         <div v-if="activeTab === 'records'" class="tab-content">
             <div class="records-list-view">
-                <!-- Sample Records -->
-                <div class="record-card" v-for="record in medicalRecords" :key="record.id">
-                    <div class="record-icon-large">
-                        <mdicon :name="record.icon" :size="24"/>
-                    </div>
-                    <div class="record-info">
-                        <h4 class="record-title">{{ record.title }}</h4>
-                        <p class="record-meta">{{ record.type }} | {{ record.date }}</p>
-                    </div>
-                    <mdicon name="chevron-right" :size="20" class="record-chevron"/>
+                <div v-if="medicalRecordsLoading" class="records-loading large">
+                    Loading medical records...
                 </div>
+                <template v-else>
+                    <div class="record-card" v-for="record in medicalRecords" :key="record.id">
+                        <div class="record-icon-large">
+                            <mdicon :name="getRecordIcon(record.recordType)" :size="24"/>
+                        </div>
+                        <div class="record-info">
+                            <h4 class="record-title">{{ record.title }}</h4>
+                            <p class="record-meta">
+                                {{ getRecordTypeLabel(record.recordType) }} | {{ formatRecordDate(record.recordDate) }}
+                            </p>
+                        </div>
+                        <mdicon name="chevron-right" :size="20" class="record-chevron"/>
+                    </div>
 
-                <!-- Empty State (show when no records) -->
-                <div v-if="medicalRecords.length === 0" class="empty-state">
-                    <mdicon name="file-document-multiple" :size="64" class="empty-icon"/>
-                    <p class="empty-title">No Records Yet</p>
-                    <p class="empty-text">Start adding medical records to track your health history</p>
-                </div>
+                    <div v-if="medicalRecords.length === 0" class="empty-state">
+                        <mdicon name="file-document-multiple" :size="64" class="empty-icon"/>
+                        <p class="empty-title">No Records Yet</p>
+                        <p class="empty-text">Start adding medical records to track your health history</p>
+                    </div>
+
+                    <p v-if="medicalRecordsError" class="records-error">
+                        {{ medicalRecordsError.message || 'Something went wrong while loading records.' }}
+                    </p>
+                </template>
             </div>
 
             <!-- Floating Action Button -->
@@ -378,6 +392,7 @@ import BottomNav from '@/components/MedicalRecords/BottomNav.vue'
 import { useProfiles } from '@/composables/profiles'
 import { useBloodPressure } from '@/composables/vitals/bloodPressure'
 import { useBloodSugar } from '@/composables/vitals/bloodSugar'
+import { useMedicalRecords } from '@/composables/medicalRecords'
 import { API_BASE_URL } from '@/constants/config'
 
 export default {
@@ -474,6 +489,12 @@ export default {
         
         const { records: bpRecords, fetchRecords: fetchBpRecords } = useBloodPressure()
         const { records: bsRecords, fetchRecords: fetchBsRecords } = useBloodSugar()
+        const {
+            records: medicalRecords,
+            loading: medicalRecordsLoading,
+            error: medicalRecordsError,
+            fetchRecords: fetchMedicalRecords
+        } = useMedicalRecords()
         const bodyWeightRecords = ref([])
 
         const fetchBodyWeightRecords = async(profileId) => {
@@ -515,6 +536,17 @@ export default {
             ])
         }
 
+        const loadMedicalRecords = async(profileId) => {
+            const token = localStorage.getItem('token')
+            if (!token || !profileId) {
+                medicalRecords.value = []
+                medicalRecordsError.value = null
+                return
+            }
+            medicalRecordsError.value = null
+            await fetchMedicalRecords(token, profileId)
+        }
+
         const profileMembers = ref([])
         const activeMemberId = ref(localStorage.getItem('selectedProfileId'))
 
@@ -530,6 +562,45 @@ export default {
             { label: 'Settings', icon: 'cog-outline', action: 'settings' },
             { label: 'Help Center', icon: 'help-circle-outline', action: 'help' }
         ]
+
+        const recordTypeLabels = {
+            PRESCRIPTION: 'Prescription',
+            DIAGNOSIS: 'Diagnosis',
+            LAB_RESULT: 'Lab Report',
+            IMAGING: 'Imaging',
+            VACCINATION: 'Vaccination',
+            DISCHARGE_SUMMARY: 'Discharge Summary',
+            OTHER: 'Other'
+        }
+
+        const recordTypeIcons = {
+            PRESCRIPTION: 'file-document-edit',
+            DIAGNOSIS: 'stethoscope',
+            LAB_RESULT: 'flask-outline',
+            IMAGING: 'image-multiple',
+            VACCINATION: 'needle',
+            DISCHARGE_SUMMARY: 'clipboard-text-outline',
+            OTHER: 'file-document'
+        }
+
+        const getRecordTypeLabel = (type) => {
+            return recordTypeLabels[type] || recordTypeLabels.OTHER
+        }
+
+        const getRecordIcon = (type) => {
+            return recordTypeIcons[type] || recordTypeIcons.OTHER
+        }
+
+        const formatRecordDate = (date) => {
+            if (!date) return ''
+            const parsed = new Date(date)
+            if (Number.isNaN(parsed.getTime())) return ''
+            return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+        }
+
+        const recentMedicalRecords = computed(() => {
+            return medicalRecords.value.slice(0, 3)
+        })
 
         const addFamilyMember = () => {
             router.push('/medical-records/profile/add')
@@ -709,55 +780,19 @@ export default {
         watch(activeMemberId, (id) => {
             if (id) {
                 loadHealthData(id)
+                loadMedicalRecords(id)
             } else {
                 bpRecords.value = []
                 bsRecords.value = []
                 bodyWeightRecords.value = []
+                medicalRecords.value = []
+                medicalRecordsError.value = null
             }
         }, { immediate: true })
 
         const navigateProfileSection = (section) => {
             console.log('Navigate to', section)
         }
-
-        const medicalRecords = ref([
-            {
-                id: 1,
-                title: 'Eye check-up',
-                type: 'Prescription',
-                date: 'Nov 10, 2025',
-                description: 'Regular eye examination with vision test',
-                tags: ['Vision', 'Routine'],
-                icon: 'file-document'
-            },
-            {
-                id: 2,
-                title: 'Blood Test Results',
-                type: 'Lab Report',
-                date: 'Nov 8, 2025',
-                description: 'Complete blood count and lipid profile',
-                tags: ['Lab', 'Blood Work'],
-                icon: 'file-document'
-            },
-            {
-                id: 3,
-                title: 'Annual Physical',
-                type: 'Prescription',
-                date: 'Nov 5, 2025',
-                description: 'Yearly health checkup and consultation',
-                tags: ['Checkup', 'General'],
-                icon: 'file-document'
-            },
-            {
-                id: 4,
-                title: 'Dental Cleaning',
-                type: 'Invoice',
-                date: 'Nov 1, 2025',
-                description: 'Professional teeth cleaning and examination',
-                tags: ['Dental', 'Routine'],
-                icon: 'receipt'
-            }
-        ])
 
         return {
             router,
@@ -766,6 +801,12 @@ export default {
             getTabTitle,
             navigateToAddRecord,
             medicalRecords,
+            medicalRecordsLoading,
+            medicalRecordsError,
+            recentMedicalRecords,
+            getRecordTypeLabel,
+            getRecordIcon,
+            formatRecordDate,
             weekDays,
             bpChartData,
             showHealthModal,
@@ -978,6 +1019,31 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.records-loading {
+    padding: 16px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.records-loading.large {
+    padding: 40px 16px;
+}
+
+.records-error {
+    color: #dc2626;
+    text-align: center;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+.empty-state.small {
+    padding: 24px 12px;
 }
 
 .record-item {

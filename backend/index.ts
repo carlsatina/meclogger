@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import authRouter from './src/routes/auth'
 import vitalsRouter from './src/routes/vitals'
 import profileRouter from './src/routes/profile'
+import medicalRecordsRouter from './src/routes/medicalRecords'
 import { PrismaClient} from '@prisma/client';
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
@@ -25,6 +26,7 @@ app.use(express.json())
 
 app.use('/logo', express.static("./uploaded-images/logo"))
 app.use('/portfolio', express.static("./uploaded-images/portfolio"))
+app.use('/records', express.static("./uploaded-images/records"))
 
 app.get('/', (req, res) => {
     res.send("Hello World!")
@@ -49,6 +51,7 @@ function authenticateUser (req:any, res:any , next: any) {
 app.use('/api/v1/auth', authRouter(dbClient, authenticateUser))
 app.use('/api/v1/vitals', vitalsRouter(dbClient, authenticateUser))
 app.use('/api/v1/profiles', profileRouter(dbClient, authenticateUser))
+app.use('/api/v1/medical-records', medicalRecordsRouter(dbClient, authenticateUser))
 
 const options = {
     definition: {

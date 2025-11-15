@@ -1,0 +1,265 @@
+import prisma from '../../lib/prisma'
+import { ExtendedRequest } from '../../extendedRequest'
+import { RecordType } from '@prisma/client'
+import fs from 'fs'
+import path from 'path'
+
+const RECORDS_PUBLIC_PATH = '/records'
+const RECORDS_UPLOAD_PATH = path.join(__dirname, '../../uploaded-images/records')
+
+const normalizeRecordType = (type?: string): RecordType => {
+    if (!type || typeof type !== 'string') return RecordType.OTHER
+    const normalized = type.toUpperCase().replace(/[\s-]+/g, '_')
+    const validTypes = Object.values(RecordType) as string[]
+    if (validTypes.includes(normalized)) {
+        return normalized as RecordType
+    }
+    return RecordType.OTHER
+}
+
+const resolveDiskPathForFile = (fileUrl: string) => {
+    const normalized = fileUrl.replace(/^\/+/, '') // strip leading slash
+    return path.join(RECORDS_UPLOAD_PATH, normalized.replace(/^records\/?/, ''))
+}
+
+const resolveProfileForUser = async(userId: string, profileId?: string) => {
+    if (!profileId) return null
+    return prisma.profile.findFirst({
+        where: {
+            id: profileId,
+            userId
+        }
+    })
+}
+
+const ensureUser = (req: ExtendedRequest, res: any) => {
+    if (!req.user) {
+        res.status(401).json({
+            status: 401,
+            message: 'Unauthorized'
+        })
+        return null
+    }
+    return req.user
+}
+
+const listMedicalRecords = async (req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const profileId = req.query.profileId as string | undefined
+    if (!profileId) {
+        return res.status(400).json({
+            status: 400,
+            message: 'profileId query parameter is required.'
+        })
+    }
+
+    const profile = await resolveProfileForUser(user.id, profileId)
+    if (!profile) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Profile not found for current user.'
+        })
+    }
+
+    const records = await prisma.medicalRecord.findMany({
+        where: { profileId: profile.id },
+        orderBy: { recordDate: 'desc' },
+        include: {
+            files: true
+        }
+    })
+
+    res.status(200).json({
+        status: 200,
+        records
+    })
+}
+
+const createMedicalRecord = async (req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const {
+        profileId,
+        title,
+        recordType = RecordType.OTHER,
+        recordDate,
+        providerName,
+        notes
+    } = req.body
+
+    if (!profileId || !title || !recordDate) {
+        return res.status(400).json({
+            status: 400,
+            message: 'profileId, title and recordDate are required.'
+        })
+    }
+
+    const profile = await resolveProfileForUser(user.id, profileId)
+    if (!profile) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Profile not found for current user.'
+        })
+    }
+
+    const files = (req.files as Express.Multer.File[]) || []
+
+    const record = await prisma.medicalRecord.create({
+        data: {
+            profileId: profile.id,
+            title,
+            recordType: normalizeRecordType(recordType as string),
+            recordDate: new Date(recordDate),
+            providerName,
+            notes
+        },
+        include: {
+            files: true
+        }
+    })
+
+    if (files.length) {
+        const fileData = files.map(file => ({
+            url: `${RECORDS_PUBLIC_PATH}/${path.basename(file.path)}`,
+            mimeType: file.mimetype,
+            sizeBytes: file.size,
+            originalName: file.originalname,
+            recordId: record.id
+        }))
+        await prisma.fileAsset.createMany({
+            data: fileData
+        })
+    }
+
+    const recordWithFiles = await prisma.medicalRecord.findUnique({
+        where: { id: record.id },
+        include: { files: true }
+    })
+
+    res.status(201).json({
+        status: 201,
+        record: recordWithFiles
+    })
+}
+
+const updateMedicalRecord = async (req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const recordId = req.params.id
+    const existing = await prisma.medicalRecord.findFirst({
+        where: {
+            id: recordId,
+            profile: {
+                userId: user.id
+            }
+        }
+    })
+
+    if (!existing) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Record not found.'
+        })
+    }
+
+    const {
+        title,
+        recordType,
+        recordDate,
+        providerName,
+        notes
+    } = req.body
+    const files = (req.files as Express.Multer.File[]) || []
+
+    const updated = await prisma.medicalRecord.update({
+        where: { id: recordId },
+        data: {
+            title,
+            recordType: recordType ? normalizeRecordType(recordType as string) : existing.recordType,
+            recordDate: recordDate ? new Date(recordDate) : existing.recordDate,
+            providerName,
+            notes
+        },
+        include: { files: true }
+    })
+
+    if (files.length) {
+        const fileData = files.map(file => ({
+            url: `${RECORDS_PUBLIC_PATH}/${path.basename(file.path)}`,
+            mimeType: file.mimetype,
+            sizeBytes: file.size,
+            originalName: file.originalname,
+            recordId: recordId
+        }))
+        await prisma.fileAsset.createMany({
+            data: fileData
+        })
+    }
+
+    const updatedWithFiles = await prisma.medicalRecord.findUnique({
+        where: { id: recordId },
+        include: { files: true }
+    })
+
+    res.status(200).json({
+        status: 200,
+        record: updatedWithFiles
+    })
+}
+
+const deleteMedicalRecord = async (req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const recordId = req.params.id
+    const existing = await prisma.medicalRecord.findFirst({
+        where: {
+            id: recordId,
+            profile: {
+                userId: user.id
+            }
+        }
+    })
+
+    if (!existing) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Record not found.'
+        })
+    }
+
+    const files = await prisma.fileAsset.findMany({
+        where: { recordId }
+    })
+
+    await prisma.fileAsset.deleteMany({
+        where: { recordId }
+    })
+
+    await prisma.medicalRecord.delete({
+        where: { id: recordId }
+    })
+
+    files.forEach(file => {
+        const filePath = resolveDiskPathForFile(file.url)
+        fs.unlink(filePath, () => {
+            // ignore errors
+        })
+    })
+
+    res.status(200).json({
+        status: 200,
+        message: 'Record deleted successfully.'
+    })
+}
+
+export {
+    listMedicalRecords,
+    createMedicalRecord,
+    updateMedicalRecord,
+    deleteMedicalRecord
+}

@@ -12,20 +12,54 @@
     <div class="content">
         <!-- Image Upload Section -->
         <div class="image-upload-section">
-            <div class="image-preview" v-if="uploadedImage">
-                <img :src="uploadedImage" alt="Uploaded record" />
+            <div 
+                class="image-preview" 
+                v-for="(file, index) in selectedFiles" 
+                :key="file.id"
+            >
+                <img :src="file.preview" alt="Uploaded record" />
+                <button 
+                    type="button" 
+                    class="remove-image-btn"
+                    @click="removeSelectedFile(index)"
+                >
+                    <mdicon name="close" :size="16"/>
+                </button>
             </div>
-            <div class="add-image-card" @click="triggerFileUpload">
-                <mdicon name="plus" :size="48" class="plus-icon"/>
-                <p>Add more images</p>
-                <input 
-                    type="file" 
-                    ref="fileInput" 
-                    @change="handleFileUpload" 
-                    accept="image/*"
-                    style="display: none"
-                />
-            </div>
+            <button 
+                type="button" 
+                class="add-image-card" 
+                @click="triggerFileUpload('device')"
+                :disabled="selectedFiles.length >= maxAttachments"
+            >
+                <mdicon name="image-plus" :size="36" class="plus-icon"/>
+                <p>Upload from device</p>
+            </button>
+            <button 
+                type="button" 
+                class="add-image-card" 
+                @click="triggerFileUpload('camera')"
+                :disabled="selectedFiles.length >= maxAttachments"
+            >
+                <mdicon name="camera-plus" :size="36" class="plus-icon"/>
+                <p>Use camera</p>
+            </button>
+            <input 
+                type="file" 
+                ref="deviceInput" 
+                class="sr-only"
+                accept="image/*"
+                multiple
+                @change="handleFileUpload"
+            />
+            <input 
+                type="file" 
+                ref="cameraInput" 
+                class="sr-only"
+                accept="image/*"
+                capture="environment"
+                @change="handleFileUpload"
+            />
         </div>
 
         <!-- Form Fields -->
@@ -62,15 +96,12 @@
             <!-- Record Created On -->
             <div class="form-group">
                 <label class="form-label">Record created on</label>
-                <div class="date-input-wrapper">
-                    <input 
-                        type="date" 
-                        v-model="recordDate" 
-                        placeholder="Add record date"
-                        class="form-input date-input"
-                    />
-                    <mdicon name="calendar" :size="20" class="date-icon"/>
-                </div>
+                <input 
+                    type="date" 
+                    v-model="recordDate" 
+                    placeholder="Add record date"
+                    class="form-input"
+                />
             </div>
 
             <!-- Type of Record -->
@@ -79,35 +110,23 @@
                 <div class="record-types">
                     <div 
                         class="record-type-card"
-                        :class="{ active: recordType === 'lab-report' }"
-                        @click="recordType = 'lab-report'"
+                        v-for="option in recordTypeOptions"
+                        :key="option.id"
+                        :class="{ active: recordType === option.id }"
+                        @click="recordType = option.id"
                     >
-                        <mdicon name="file-document" :size="32"/>
-                        <span>Lab Report</span>
-                    </div>
-                    <div 
-                        class="record-type-card"
-                        :class="{ active: recordType === 'prescription' }"
-                        @click="recordType = 'prescription'"
-                    >
-                        <mdicon name="file-document-edit" :size="32"/>
-                        <span>Prescription</span>
-                    </div>
-                    <div 
-                        class="record-type-card"
-                        :class="{ active: recordType === 'invoice' }"
-                        @click="recordType = 'invoice'"
-                    >
-                        <mdicon name="receipt" :size="32"/>
-                        <span>Invoice</span>
+                        <mdicon :name="option.icon" :size="32"/>
+                        <span>{{ option.label }}</span>
                     </div>
                 </div>
             </div>
+
+            <p v-if="formError" class="form-error">{{ formError }}</p>
         </div>
 
         <!-- Save Button -->
-        <button class="save-btn" @click="saveRecord">
-            Save record
+        <button class="save-btn" @click="saveRecord" :disabled="saving">
+            {{ saving ? 'Saving...' : 'Save record' }}
         </button>
     </div>
 </div>
@@ -117,49 +136,116 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProfiles } from '@/composables/profiles'
+import { useMedicalRecords } from '@/composables/medicalRecords'
 
 export default {
     name: 'AddRecordMobile',
     setup() {
         const router = useRouter()
-        const fileInput = ref(null)
-        const uploadedImage = ref(null)
-        const recordFor = ref('')
+        const deviceInput = ref(null)
+        const cameraInput = ref(null)
+        const selectedFiles = ref([])
+        const recordFor = ref(localStorage.getItem('selectedProfileId') || '')
         const fileName = ref('')
-        const recordDate = ref('')
-        const recordType = ref('')
+        const recordDate = ref(new Date().toISOString().split('T')[0])
+        const recordType = ref('LAB_RESULT')
         const profileMembers = ref([])
         const { fetchProfiles } = useProfiles()
+        const { createRecord } = useMedicalRecords()
+        const maxAttachments = 5
+        const saving = ref(false)
+        const formError = ref('')
+        const recordTypeOptions = [
+            { id: 'LAB_RESULT', label: 'Lab Report', icon: 'file-document' },
+            { id: 'PRESCRIPTION', label: 'Prescription', icon: 'file-document-edit' },
+            { id: 'OTHER', label: 'Invoice', icon: 'receipt' }
+        ]
 
         const goBack = () => {
             router.back()
         }
 
-        const triggerFileUpload = () => {
-            fileInput.value.click()
-        }
-
-        const handleFileUpload = (event) => {
-            const file = event.target.files[0]
-            if (file) {
-                const reader = new FileReader()
-                reader.onload = (e) => {
-                    uploadedImage.value = e.target.result
-                }
-                reader.readAsDataURL(file)
+        const triggerFileUpload = (mode = 'device') => {
+            if (selectedFiles.value.length >= maxAttachments) {
+                formError.value = `You can upload up to ${maxAttachments} files.`
+                return
             }
+            formError.value = ''
+            const target = mode === 'camera' ? cameraInput.value : deviceInput.value
+            target?.click()
         }
 
-        const saveRecord = () => {
-            // TODO: Implement save logic
-            console.log('Saving record:', {
-                recordFor: recordFor.value,
-                fileName: fileName.value,
-                recordDate: recordDate.value,
-                recordType: recordType.value,
-                image: uploadedImage.value
+        const toPreviewEntry = (file) => new Promise((resolve) => {
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                resolve({
+                    id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                    file,
+                    preview: typeof e.target?.result === 'string' ? e.target.result : ''
+                })
+            }
+            reader.readAsDataURL(file)
+        })
+
+        const handleFileUpload = async(event) => {
+            const files = Array.from(event.target.files || [])
+            if (!files.length) return
+            const availableSlots = maxAttachments - selectedFiles.value.length
+            if (availableSlots <= 0) {
+                formError.value = `You can upload up to ${maxAttachments} files.`
+                event.target.value = ''
+                return
+            }
+            const filesToUse = files.slice(0, availableSlots)
+            const previews = await Promise.all(filesToUse.map(toPreviewEntry))
+            selectedFiles.value = [...selectedFiles.value, ...previews]
+            formError.value = ''
+            event.target.value = ''
+        }
+
+        const removeSelectedFile = (index) => {
+            selectedFiles.value.splice(index, 1)
+        }
+
+        const saveRecord = async() => {
+            formError.value = ''
+            if (!recordFor.value) {
+                formError.value = 'Please select a profile for this record.'
+                return
+            }
+            if (!fileName.value.trim()) {
+                formError.value = 'Please enter a file name.'
+                return
+            }
+            if (!recordDate.value) {
+                formError.value = 'Please select a record date.'
+                return
+            }
+            const token = localStorage.getItem('token')
+            if (!token) {
+                formError.value = 'Please log in again to continue.'
+                router.push('/login')
+                return
+            }
+
+            const formData = new FormData()
+            formData.append('profileId', recordFor.value)
+            formData.append('title', fileName.value.trim())
+            formData.append('recordType', recordType.value)
+            formData.append('recordDate', recordDate.value)
+            selectedFiles.value.forEach(fileEntry => {
+                formData.append('files', fileEntry.file)
             })
-            router.back()
+
+            try {
+                saving.value = true
+                await createRecord(token, formData)
+                router.replace({ path: '/medical-records', query: { tab: 'records' } })
+            } catch (err) {
+                formError.value = err.message || 'Unable to save record. Please try again.'
+            } finally {
+                saving.value = false
+            }
         }
 
         const loadProfiles = async () => {
@@ -171,6 +257,13 @@ export default {
                     id: profile.id,
                     name: profile.displayName || 'Profile'
                 }))
+                const savedId = localStorage.getItem('selectedProfileId')
+                const hasSavedProfile = profileMembers.value.find(member => member.id === savedId)
+                if (hasSavedProfile) {
+                    recordFor.value = hasSavedProfile.id
+                } else if (profileMembers.value.length) {
+                    recordFor.value = profileMembers.value[0].id
+                }
             }
         }
 
@@ -179,17 +272,23 @@ export default {
         })
 
         return {
-            fileInput,
-            uploadedImage,
+            deviceInput,
+            cameraInput,
+            selectedFiles,
+            maxAttachments,
             recordFor,
             fileName,
             recordDate,
             recordType,
+            recordTypeOptions,
             goBack,
             triggerFileUpload,
             handleFileUpload,
+            removeSelectedFile,
             saveRecord,
-            profileMembers
+            profileMembers,
+            saving,
+            formError
         }
     }
 }
@@ -251,7 +350,7 @@ export default {
 /* Image Upload Section */
 .image-upload-section {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     margin-bottom: 32px;
 }
@@ -261,6 +360,7 @@ export default {
     border-radius: 12px;
     overflow: hidden;
     aspect-ratio: 1;
+    position: relative;
 }
 
 .image-preview img {
@@ -269,7 +369,24 @@ export default {
     object-fit: cover;
 }
 
+.remove-image-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border: none;
+    border-radius: 999px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    cursor: pointer;
+}
+
 .add-image-card {
+    border: none;
     background: white;
     border: 2px dashed #d1d5db;
     border-radius: 12px;
@@ -281,11 +398,17 @@ export default {
     gap: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
+    color: #1a1a1a;
 }
 
 .add-image-card:active {
     transform: scale(0.98);
     border-color: #667eea;
+}
+
+.add-image-card:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .plus-icon {
@@ -376,26 +499,6 @@ export default {
     pointer-events: none;
 }
 
-/* Date Input */
-.date-input-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.date-input {
-    padding-right: 40px;
-    width: 100%;
-}
-
-.date-icon {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #6b7280;
-    pointer-events: none;
-}
-
 /* Record Types */
 .record-types {
     display: grid;
@@ -447,8 +550,31 @@ export default {
     transition: all 0.3s ease;
 }
 
+.save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .save-btn:active {
     transform: scale(0.98);
     background: #5568d3;
+}
+
+.form-error {
+    color: #dc2626;
+    font-size: 14px;
+    margin: 4px 0 0 0;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 </style>
