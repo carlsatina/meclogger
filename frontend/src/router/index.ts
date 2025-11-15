@@ -19,6 +19,8 @@ import AddBloodSugarRecord from '@/views/mobile/MedicalRecords/AddBloodSugarReco
 import AddBodyWeightRecord from '@/views/mobile/MedicalRecords/AddBodyWeightRecord.vue'
 import AddFamilyMember from '@/views/mobile/MedicalRecords/AddFamilyMember.vue'
 import PersonalInformation from '@/views/mobile/Profile/PersonalInformation.vue'
+import MedicineReminder from '@/views/mobile/MedicalRecords/MedicineReminder.vue'
+import AddMedicineReminder from '@/views/mobile/MedicalRecords/AddMedicineReminder.vue'
 import RecordDetail from '@/views/mobile/MedicalRecords/RecordDetail.vue'
 import CarMaintenance from '@/views/LandingPage/CarMaintenance.vue'
 import ExpenseTracking from '@/views/LandingPage/ExpenseTracking.vue'
@@ -87,6 +89,18 @@ const routes: Array<RouteRecordRaw> = [
     path: '/medical-records/blood-pressure/add',
     name: 'blood-pressure-add',
     component: AddBloodPressureRecord,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/medicine-reminders',
+    name: 'medicine-reminders',
+    component: MedicineReminder,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/medicine-reminders/add',
+    name: 'medicine-reminders-add',
+    component: AddMedicineReminder,
     meta: { requiresAuth: true }
   },
   {

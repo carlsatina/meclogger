@@ -4,6 +4,7 @@ import authRouter from './src/routes/auth'
 import vitalsRouter from './src/routes/vitals'
 import profileRouter from './src/routes/profile'
 import medicalRecordsRouter from './src/routes/medicalRecords'
+import medicineReminderRouter from './src/routes/medicineReminders'
 import { PrismaClient} from '@prisma/client';
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
@@ -52,6 +53,7 @@ app.use('/api/v1/auth', authRouter(dbClient, authenticateUser))
 app.use('/api/v1/vitals', vitalsRouter(dbClient, authenticateUser))
 app.use('/api/v1/profiles', profileRouter(dbClient, authenticateUser))
 app.use('/api/v1/medical-records', medicalRecordsRouter(dbClient, authenticateUser))
+app.use('/api/v1/medicine-reminders', medicineReminderRouter(dbClient, authenticateUser))
 
 const options = {
     definition: {

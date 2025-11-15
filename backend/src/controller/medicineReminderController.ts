@@ -1,0 +1,392 @@
+import prisma from '../../lib/prisma'
+import { ExtendedRequest } from '../../extendedRequest'
+
+const ensureUser = (req: ExtendedRequest, res: any) => {
+    if (!req.user) {
+        res.status(401).json({
+            status: 401,
+            message: 'Unauthorized'
+        })
+        return null
+    }
+    return req.user
+}
+
+const resolveProfileForUser = async(userId: string, profileId?: string) => {
+    if (!profileId) return null
+    return prisma.profile.findFirst({
+        where: {
+            id: profileId,
+            userId
+        }
+    })
+}
+
+const ensureReminderForUser = async(userId: string, reminderId: string) => {
+    return prisma.medicineReminder.findFirst({
+        where: {
+            id: reminderId,
+            profile: {
+                userId
+            }
+        },
+        include: {
+            medication: true
+        }
+    })
+}
+
+const startOfDay = (date: Date) => {
+    const start = new Date(date)
+    start.setHours(0, 0, 0, 0)
+    return start
+}
+
+const endOfDay = (date: Date) => {
+    const end = new Date(date)
+    end.setHours(23, 59, 59, 999)
+    return end
+}
+
+const isSameDay = (a: Date, b: Date) => {
+    return startOfDay(a).getTime() === startOfDay(b).getTime()
+}
+
+const combineDateAndTime = (date: Date, time?: string | null) => {
+    const result = new Date(date)
+    if (time) {
+        const [hours, minutes] = time.split(':').map(Number)
+        result.setHours(hours || 0, minutes || 0, 0, 0)
+    } else {
+        result.setHours(8, 0, 0, 0)
+    }
+    return result
+}
+
+const parseReferenceDate = (value?: string | string[] | null) => {
+    if (!value) return null
+    const raw = Array.isArray(value) ? value[0] : value
+    if (!raw) return null
+    const parsed = new Date(raw)
+    if (Number.isNaN(parsed.getTime())) return null
+    return parsed
+}
+
+const getLogForDate = async(medicationId: string, reference: Date) => {
+    return prisma.medicationLog.findFirst({
+        where: {
+            medicationId,
+            occurredAt: {
+                gte: startOfDay(reference),
+                lte: endOfDay(reference)
+            }
+        }
+    })
+}
+
+const listMedicineReminders = async(req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const profileId = req.query.profileId as string | undefined
+    if (!profileId) {
+        return res.status(400).json({
+            status: 400,
+            message: 'profileId query parameter is required.'
+        })
+    }
+
+    const profile = await resolveProfileForUser(user.id, profileId)
+    if (!profile) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Profile not found for current user.'
+        })
+    }
+
+    const today = new Date()
+    const referenceDate = parseReferenceDate(req.query.date as string | string[] | undefined) || today
+    const reminders = await prisma.medicineReminder.findMany({
+        where: {
+            profileId: profile.id
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        include: {
+            medication: {
+                include: {
+                    logs: {
+                        where: {
+                            occurredAt: {
+                                gte: startOfDay(referenceDate),
+                                lte: endOfDay(referenceDate)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+
+    const formatted = []
+    for (const reminder of reminders) {
+        let status = reminder.medication?.logs?.[0]?.status || null
+        if (reminder.medicationId && !status) {
+            const reminderDateTime = combineDateAndTime(referenceDate, reminder.time)
+            const hasExistingLog = reminder.medication?.logs?.length
+            const isPastDate = startOfDay(referenceDate) < startOfDay(today)
+            const isToday = isSameDay(referenceDate, today)
+
+            if (!hasExistingLog && (isPastDate || (isToday && reminderDateTime < today))) {
+                await prisma.medicationLog.create({
+                    data: {
+                        medicationId: reminder.medicationId,
+                        occurredAt: reminderDateTime,
+                        status: 'missed'
+                    }
+                })
+                status = 'missed'
+            }
+        }
+        formatted.push({
+            ...reminder,
+            status
+        })
+    }
+
+    res.status(200).json({
+        status: 200,
+        reminders: formatted
+    })
+}
+
+const createMedicineReminder = async(req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const {
+        profileId,
+        medicineName,
+        unit,
+        dosage,
+        frequency,
+        time,
+        duration,
+        intakeMethod,
+        notes
+    } = req.body
+
+    if (!profileId || !medicineName || !frequency) {
+        return res.status(400).json({
+            status: 400,
+            message: 'profileId, medicineName and frequency are required.'
+        })
+    }
+
+    const profile = await resolveProfileForUser(user.id, profileId)
+    if (!profile) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Profile not found for current user.'
+        })
+    }
+
+    const medication = await prisma.medication.create({
+        data: {
+            profileId: profile.id,
+            name: medicineName,
+            dosage: `${dosage || 1} ${unit || ''}`.trim(),
+            instructions: intakeMethod || '',
+            startDate: new Date()
+        }
+    })
+
+    const reminder = await prisma.medicineReminder.create({
+        data: {
+            profileId: profile.id,
+            medicationId: medication.id,
+            medicineName,
+            unit,
+            dosage: typeof dosage === 'number' ? dosage : Number(dosage) || 1,
+            frequency,
+            time,
+            duration,
+            intakeMethod,
+            notes
+        }
+    })
+
+    res.status(201).json({
+        status: 201,
+        reminder
+    })
+}
+
+const updateMedicineReminder = async(req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const reminderId = req.params.id
+    const existing = await ensureReminderForUser(user.id, reminderId)
+    if (!existing) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Reminder not found.'
+        })
+    }
+
+    const {
+        medicineName,
+        unit,
+        dosage,
+        frequency,
+        time,
+        duration,
+        intakeMethod,
+        notes,
+        active
+    } = req.body
+
+    const data: any = {}
+    if (typeof medicineName !== 'undefined') data.medicineName = medicineName
+    if (typeof unit !== 'undefined') data.unit = unit
+    if (typeof dosage !== 'undefined') {
+        const parsed = Number(dosage)
+        if (!Number.isNaN(parsed)) data.dosage = parsed
+    }
+    if (typeof frequency !== 'undefined') data.frequency = frequency
+    if (typeof time !== 'undefined') data.time = time
+    if (typeof duration !== 'undefined') data.duration = duration
+    if (typeof intakeMethod !== 'undefined') data.intakeMethod = intakeMethod
+    if (typeof notes !== 'undefined') data.notes = notes
+    if (typeof active !== 'undefined') data.active = Boolean(active)
+
+    if (existing.medicationId) {
+        const medicationData: any = {}
+        if (typeof medicineName !== 'undefined') medicationData.name = medicineName
+        if (typeof intakeMethod !== 'undefined') medicationData.instructions = intakeMethod
+        if (typeof dosage !== 'undefined' || typeof unit !== 'undefined') {
+            const newDosage = typeof dosage !== 'undefined' ? dosage : existing.dosage
+            const newUnit = typeof unit !== 'undefined' ? unit : existing.unit
+            medicationData.dosage = `${newDosage || 1} ${newUnit || ''}`.trim()
+        }
+        if (Object.keys(medicationData).length) {
+            await prisma.medication.update({
+                where: { id: existing.medicationId },
+                data: medicationData
+            })
+        }
+    }
+
+    const reminder = await prisma.medicineReminder.update({
+        where: { id: reminderId },
+        data
+    })
+
+    res.status(200).json({
+        status: 200,
+        reminder
+    })
+}
+
+const deleteMedicineReminder = async(req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const reminderId = req.params.id
+    const existing = await ensureReminderForUser(user.id, reminderId)
+    if (!existing) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Reminder not found.'
+        })
+    }
+
+    await prisma.medicineReminder.delete({
+        where: { id: reminderId }
+    })
+
+    if (existing.medicationId) {
+        await prisma.medication.delete({
+            where: { id: existing.medicationId }
+        })
+    }
+
+    res.status(200).json({
+        status: 200,
+        message: 'Reminder deleted successfully.'
+    })
+}
+
+const setMedicineReminderStatus = async(req: ExtendedRequest, res: any) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+
+    const reminderId = req.params.id
+    const { status, date } = req.body
+
+    if (!['taken', 'missed', 'pending'].includes(status)) {
+        return res.status(400).json({
+            status: 400,
+            message: 'Invalid status. Use taken, missed, or pending.'
+        })
+    }
+
+    const reminder = await ensureReminderForUser(user.id, reminderId)
+    if (!reminder || !reminder.medicationId) {
+        return res.status(404).json({
+            status: 404,
+            message: 'Reminder not found.'
+        })
+    }
+
+    const referenceDate = parseReferenceDate(date as string | string[] | undefined) || new Date()
+    const logDateTime = combineDateAndTime(referenceDate, reminder.time)
+    const existingLog = await getLogForDate(reminder.medicationId, referenceDate)
+
+    if (status === 'pending') {
+        if (existingLog) {
+            await prisma.medicationLog.delete({
+                where: { id: existingLog.id }
+            })
+        }
+        return res.status(200).json({
+            status: 200,
+            log: null
+        })
+    }
+
+    if (existingLog) {
+        const updated = await prisma.medicationLog.update({
+            where: { id: existingLog.id },
+            data: {
+                status
+            }
+        })
+        return res.status(200).json({
+            status: 200,
+            log: updated
+        })
+    } else {
+        const created = await prisma.medicationLog.create({
+            data: {
+                medicationId: reminder.medicationId,
+                occurredAt: logDateTime,
+                status
+            }
+        })
+        return res.status(200).json({
+            status: 200,
+            log: created
+        })
+    }
+}
+
+export {
+    listMedicineReminders,
+    createMedicineReminder,
+    updateMedicineReminder,
+    deleteMedicineReminder,
+    setMedicineReminderStatus
+}

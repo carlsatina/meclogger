@@ -41,7 +41,7 @@
                     </div>
                     <h4>Add medical record</h4>
                 </div>
-                <div class="action-card-large">
+                <div class="action-card-large" @click="navigateToMedicineReminder">
                     <div class="action-icon-wrapper">
                         <mdicon name="pill" :size="48"/>
                     </div>
@@ -55,30 +55,35 @@
                 <a href="#" class="see-all-link">See all</a>
             </div>
             <div class="reminder-list">
-                <div class="reminder-item">
-                    <div class="reminder-checkbox"></div>
-                    <div class="reminder-content">
-                        <h4 class="reminder-name">Vitamin D</h4>
-                        <p class="reminder-details">1 Tablet, after meal</p>
-                    </div>
-                    <span class="reminder-time">12:00 PM</span>
+                <div v-if="!hasActiveProfile" class="reminder-empty">
+                    Select or add a profile to see reminders here.
                 </div>
-                <div class="reminder-item">
-                    <div class="reminder-checkbox"></div>
-                    <div class="reminder-content">
-                        <h4 class="reminder-name">Calcium</h4>
-                        <p class="reminder-details">1 Tablet, after meal</p>
-                    </div>
-                    <span class="reminder-time">1:00 PM</span>
+                <div v-else-if="remindersLoading" class="reminder-empty">
+                    Loading reminders...
                 </div>
-                <div class="reminder-item">
-                    <div class="reminder-checkbox"></div>
-                    <div class="reminder-content">
-                        <h4 class="reminder-name">Cefixime</h4>
-                        <p class="reminder-details">1 Tablet, after meal</p>
+                <template v-else>
+                    <div 
+                        class="reminder-item"
+                        v-for="reminder in todaysReminders"
+                        :key="reminder.id"
+                        @click="toggleHomeReminder(reminder)"
+                    >
+                        <div class="reminder-checkbox" :class="{ checked: reminder.status === 'taken' }"></div>
+                        <div class="reminder-content">
+                            <h4 class="reminder-name">{{ reminder.medicineName }}</h4>
+                            <p class="reminder-details">
+                                {{ formatDosage(reminder) }} · {{ reminder.intakeMethod || 'Anytime' }}
+                            </p>
+                        </div>
+                        <span class="reminder-time">{{ reminder.time || '—' }}</span>
                     </div>
-                    <span class="reminder-time">1:30 PM</span>
-                </div>
+                    <div 
+                        v-if="!todaysReminders.length" 
+                        class="reminder-empty"
+                    >
+                        No reminders yet. Tap "Add medicine reminder".
+                    </div>
+                </template>
             </div>
 
             <!-- Recent Records Section -->
@@ -399,6 +404,7 @@ import { useProfiles } from '@/composables/profiles'
 import { useBloodPressure } from '@/composables/vitals/bloodPressure'
 import { useBloodSugar } from '@/composables/vitals/bloodSugar'
 import { useMedicalRecords } from '@/composables/medicalRecords'
+import { useMedicineReminders } from '@/composables/medicineReminders'
 import { API_BASE_URL } from '@/constants/config'
 
 export default {
@@ -433,6 +439,10 @@ export default {
 
         const navigateToAddRecord = () => {
             router.push('/medical-records/add-record')
+        }
+
+        const navigateToMedicineReminder = () => {
+            router.push('/medical-records/medicine-reminders')
         }
 
         const openRecordDetail = (record) => {
@@ -516,6 +526,12 @@ export default {
             error: medicalRecordsError,
             fetchRecords: fetchMedicalRecords
         } = useMedicalRecords()
+        const {
+            reminders: medicineReminders,
+            loading: remindersLoading,
+            fetchReminders: fetchMedicineReminders,
+            setReminderStatus: setMedicineReminderStatus
+        } = useMedicineReminders()
         const bodyWeightRecords = ref([])
 
         const fetchBodyWeightRecords = async(profileId) => {
@@ -568,8 +584,18 @@ export default {
             await fetchMedicalRecords(token, profileId)
         }
 
+        const loadMedicineReminders = async(profileId, referenceDate = new Date()) => {
+            const token = localStorage.getItem('token')
+            if (!token || !profileId) {
+                medicineReminders.value = []
+                return
+            }
+            await fetchMedicineReminders(token, profileId, { date: referenceDate })
+        }
+
         const profileMembers = ref([])
         const activeMemberId = ref(localStorage.getItem('selectedProfileId'))
+        const hasActiveProfile = computed(() => Boolean(activeMemberId.value))
 
         const profileSections = [
             { label: 'Personal information', icon: 'account-outline', action: 'personal' },
@@ -655,6 +681,31 @@ export default {
             if (systolic < 120 && diastolic < 80) return 'Normal'
             if (systolic < 130 && diastolic < 80) return 'Elevated'
             return 'High'
+        }
+
+        const todaysReminders = computed(() => {
+            return medicineReminders.value.slice(0, 3)
+        })
+
+        const formatDosage = (reminder) => {
+            const dosage = reminder.dosage ? `${reminder.dosage}x` : ''
+            const unit = reminder.unit || ''
+            return [dosage, unit].filter(Boolean).join(' ')
+        }
+
+        const toggleHomeReminder = async(reminder) => {
+            const token = localStorage.getItem('token')
+            if (!token) return
+            const newStatus = reminder.status === 'taken' ? 'pending' : 'taken'
+            try {
+                await setMedicineReminderStatus(token, reminder.id, newStatus, new Date())
+                const target = medicineReminders.value.find(r => r.id === reminder.id)
+                if (target) {
+                    target.status = newStatus === 'pending' ? null : newStatus
+                }
+            } catch (err) {
+                console.error(err)
+            }
         }
 
         const bpDisplayRecords = computed(() => {
@@ -753,6 +804,9 @@ export default {
             const token = localStorage.getItem('token')
             if (!token) {
                 profileMembers.value = []
+                activeMemberId.value = null
+                localStorage.removeItem('selectedProfileId')
+                localStorage.removeItem('selectedProfileName')
                 return
             }
             const { response, error } = await profilesComposable.fetchProfiles(token)
@@ -773,6 +827,8 @@ export default {
                     }
                 } else {
                     activeMemberId.value = null
+                    localStorage.removeItem('selectedProfileId')
+                    localStorage.removeItem('selectedProfileName')
                 }
             }
         }
@@ -802,12 +858,14 @@ export default {
             if (id) {
                 loadHealthData(id)
                 loadMedicalRecords(id)
+                loadMedicineReminders(id)
             } else {
                 bpRecords.value = []
                 bsRecords.value = []
                 bodyWeightRecords.value = []
                 medicalRecords.value = []
                 medicalRecordsError.value = null
+                medicineReminders.value = []
             }
         }, { immediate: true })
 
@@ -830,6 +888,7 @@ export default {
             handleTabChange,
             getTabTitle,
             navigateToAddRecord,
+            navigateToMedicineReminder,
             openRecordDetail,
             medicalRecords,
             medicalRecordsLoading,
@@ -862,7 +921,13 @@ export default {
             bsLatest,
             bsChartPoints,
             bsChartPath,
-            bodyWeightLatest
+            bodyWeightLatest,
+            medicineReminders,
+            remindersLoading,
+            todaysReminders,
+            formatDosage,
+            toggleHomeReminder,
+            hasActiveProfile
         }
     }
 }
@@ -995,6 +1060,13 @@ export default {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+.reminder-empty {
+    text-align: center;
+    padding: 20px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
 .reminder-item {
     display: flex;
     align-items: center;
@@ -1015,6 +1087,12 @@ export default {
     flex-shrink: 0;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.reminder-checkbox.checked {
+    border-color: #4ade80;
+    background: #4ade80;
+    box-shadow: inset 0 0 0 4px white;
 }
 
 .reminder-checkbox:active {
