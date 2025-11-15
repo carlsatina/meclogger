@@ -19,6 +19,13 @@
                 :size="24" 
                 class="action-icon"
             />
+            <mdicon 
+                v-if="activeTab === 'health'"
+                name="plus" 
+                :size="24" 
+                class="action-icon"
+                @click="showHealthModal = true"
+            />
         </template>
     </TopBar>
 
@@ -135,7 +142,7 @@
         <div v-if="activeTab === 'health'" class="tab-content">
             <div class="health-metrics">
                 <!-- Blood Pressure Card -->
-                <div class="health-card">
+                <div class="health-card" @click="navigateToBloodPressure">
                     <div class="health-card-header">
                         <div>
                             <h4 class="health-title">Blood Pressure</h4>
@@ -167,7 +174,7 @@
                 </div>
 
                 <!-- Blood Sugar (Fasting) Card -->
-                <div class="health-card">
+                <div class="health-card" @click="navigateToBloodSugar">
                     <div class="health-card-header">
                         <div>
                             <h4 class="health-title">Blood Sugar <span class="health-tag">(Fasting)</span></h4>
@@ -215,11 +222,11 @@
                     </div>
                 </div>
 
-                <!-- Blood Sugar (After meal) Card -->
-                <div class="health-card">
+                <!-- Body Weight Card -->
+                <div class="health-card" @click="navigateToBodyWeight">
                     <div class="health-card-header">
                         <div>
-                            <h4 class="health-title">Blood Sugar <span class="health-tag">(After meal)</span></h4>
+                            <h4 class="health-title">Body Weight</h4>
                             <p class="health-subtitle">Last 7 days</p>
                         </div>
                         <mdicon name="chevron-right" :size="20" class="health-chevron"/>
@@ -227,7 +234,7 @@
                     <div class="health-chart-placeholder">
                         <p class="placeholder-text">No data available</p>
                     </div>
-                    <span class="chart-unit-bottom">mg/dL</span>
+                    <span class="chart-unit-bottom">kg</span>
                 </div>
             </div>
         </div>
@@ -247,6 +254,29 @@
         :active-tab="activeTab"
         @change-tab="handleTabChange"
     />
+
+    <!-- Health Category Modal -->
+    <div v-if="showHealthModal" class="modal-overlay" @click="showHealthModal = false">
+        <div class="modal-content" @click.stop>
+            <div class="modal-header">
+                <mdicon name="plus" :size="24" class="modal-icon"/>
+                <h3 class="modal-title">Add new category</h3>
+            </div>
+            <div class="modal-options">
+                <div 
+                    class="modal-option"
+                    v-for="category in healthCategories" 
+                    :key="category.id"
+                    @click="selectHealthCategory(category.id)"
+                >
+                    <div class="option-radio" :class="{ selected: selectedCategory === category.id }">
+                        <div class="radio-dot" v-if="selectedCategory === category.id"></div>
+                    </div>
+                    <span class="option-label">{{ category.name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </template>
 
@@ -265,6 +295,8 @@ export default {
     setup() {
         const router = useRouter()
         const activeTab = ref('home')
+        const showHealthModal = ref(false)
+        const selectedCategory = ref('blood-pressure')
 
         const handleTabChange = (tab) => {
             activeTab.value = tab
@@ -282,6 +314,32 @@ export default {
 
         const navigateToAddRecord = () => {
             router.push('/medical-records/add-record')
+        }
+
+        // Health categories for modal
+        const healthCategories = [
+            { id: 'blood-pressure', name: 'Blood pressure' },
+            { id: 'blood-sugar', name: 'Blood sugar' },
+            { id: 'body-weight', name: 'Body weight' }
+        ]
+
+        const selectHealthCategory = (categoryId) => {
+            selectedCategory.value = categoryId
+            // TODO: Navigate to add health data page or show form
+            console.log('Selected category:', categoryId)
+            showHealthModal.value = false
+        }
+
+        const navigateToBloodPressure = () => {
+            router.push('/medical-records/blood-pressure')
+        }
+
+        const navigateToBloodSugar = () => {
+            router.push('/medical-records/blood-sugar')
+        }
+
+        const navigateToBodyWeight = () => {
+            router.push('/medical-records/body-weight')
         }
 
         // Week days for charts
@@ -346,7 +404,14 @@ export default {
             navigateToAddRecord,
             medicalRecords,
             weekDays,
-            bloodPressureData
+            bloodPressureData,
+            showHealthModal,
+            selectedCategory,
+            healthCategories,
+            selectHealthCategory,
+            navigateToBloodPressure,
+            navigateToBloodSugar,
+            navigateToBodyWeight
         }
     }
 }
@@ -684,6 +749,13 @@ export default {
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.health-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .health-card-header {
@@ -864,5 +936,115 @@ export default {
     margin: 0;
     line-height: 1.5;
     max-width: 280px;
+}
+
+/* Health Category Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: flex-end;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    padding: 24px;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.modal-icon {
+    color: #667eea;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.modal-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.modal-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-radius: 12px;
+}
+
+.modal-option:active {
+    background: #f9fafb;
+}
+
+.option-radio {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.option-radio.selected {
+    border-color: #667eea;
+    background: #667eea;
+}
+
+.radio-dot {
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+}
+
+.option-label {
+    font-size: 16px;
+    color: #1a1a1a;
+    font-weight: 400;
 }
 </style>

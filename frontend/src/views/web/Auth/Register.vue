@@ -1,84 +1,108 @@
 <template>
-    <div class="container">
-        <div class="row mt-5">
-            <div class="col-md-3"></div>
-            <div class="col-md-6 text-center">
-                <h4>Register an account </h4>
+<div class="register-page">
+    <div class="register-grid">
+        <div class="brand-panel">
+            <div class="brand-icon">
+                <mdicon name="file-document-multiple" :size="72"/>
             </div>
-            <div class="col-md-3"></div>
+            <h1 class="brand-title">Record Keeper</h1>
+            <p class="brand-subtitle">Organize and safeguard your records effortlessly</p>
         </div>
-        <form @submit.prevent="handleRegister">
-            <div class="row mt-4">
-                <div class="col-md-3"></div>
-                <div class="col-md-6 d-flex flex-column align-items-start">
-                    <span class="text-label">Fullname</span>
-                    <input type="text" class="form-control shadow-sm" placeholder="Enter Full Name" v-model="userInfo.full_name" required/>
-                </div>
-                <div class="col-md-3"></div>
-            </div>
-            <!-- <div class="row mt-4">
-                <div class="col-md-3"></div>
-                <div class="col-md-6 d-flex flex-column align-items-start">
-                    <span class="text-label">Contact Number</span>
-                    <input type="text" class="form-control shadow-sm" placeholder="Enter Contact Number" v-model="userInfo.contact_number" required/>
-                </div>
-                <div class="col-md-3"></div>
-            </div> -->
-            <div class="row mt-4">
-                <div class="col-md-3"></div>
-                <div class="col-md-6 d-flex flex-column align-items-start">
-                    <span class="text-label">Email</span>
-                    <input type="text" class="form-control shadow-sm" :class="isValidEmailFormat ? 'is-valid' : 'is-invalid'" placeholder="Enter email address" v-model="userInfo.email" required/>
-                    <div v-if="hasError" class="error-message small text-danger"><strong>{{errorMsg.email}}</strong></div>
-                </div>
-                <div class="col-md-3"></div>
-            </div>
-            <div class="row mt-4">
-                <div class="col-md-3"></div>
-                <div class="col-md-6  d-flex flex-column align-items-start">
-                    <span class="text-label">Password</span>
-                    <input type="password" class="form-control shadow-sm" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" v-model="userInfo.password" requied/>
-                </div>
-                <div class="col-md-3"></div>
-            </div>
-            <div class="row mt-4">
-                <div class="col-md-3"></div>
-                <div class="col-md-6  d-flex flex-column align-items-start">
-                    <span class="text-label">Confirm Password</span>
-                    <input type="password" class="form-control shadow-sm" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" v-model="userInfo.verifyPassword" required/>
-                    <div v-if="hasError" class="error-message small text-danger"><strong>{{errorMsg.password}}</strong></div>
 
-                    <div class="text-start mt-1" style="font-size: 13px;">
-                        <div class="password-text small" :class="{'password-accepted': hasMinimumChar}"><mdicon name="check" size="12"/> Your
-                            password should be 8 to 20 characters long. </div>
-                        <div class="password-text small mt-1" :class="{'password-accepted': isStrongPassword}"><mdicon name="check" size="12"/>
-                            Combine uppercase and lowercase letters, number, and special characters (e.g., ! @ # ?
-                            ], etc.) </div>
-                    </div>
-                </div>
-                <div class="col-md-3"></div>
+        <form class="register-panel" @submit.prevent="handleRegister">
+            <div class="panel-header">
+                <h2 class="panel-title">Create an account</h2>
+                <p class="panel-subtitle">Join Record Keeper in a few quick steps</p>
             </div>
-            <div class="row mt-5">
-                <div class="col-md-3"></div>
-                <div class="col-md-6  d-flex flex-column align-items-start">
-                    <button type="submit" class="btn btn-secondary w-100">Register</button>
+
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <div class="input-wrapper">
+                    <mdicon name="account-outline" :size="20" class="input-icon"/>
+                    <input
+                        type="text"
+                        class="form-input"
+                        placeholder="Enter your full name"
+                        v-model="userInfo.full_name"
+                        required
+                    />
                 </div>
-                <div class="col-md-3"></div>
             </div>
-            <div class="row mt-3">
-                <div class="col-md-3"></div>
-                <div class="col-md-6  d-flex flex-column align-items-center">
-                    <span>Already have an acocunt? Login <span style="cursor: pointer; font-weight: 700;" @click="router.push('/login')">here</span></span>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <div class="input-wrapper">
+                    <mdicon name="email-outline" :size="20" class="input-icon"/>
+                    <input
+                        type="email"
+                        class="form-input"
+                        :class="{ 'invalid-input': userInfo.email && !isValidEmailFormat }"
+                        placeholder="Enter your email"
+                        v-model="userInfo.email"
+                        required
+                    />
                 </div>
-                <div class="col-md-3"></div>    
+                <p v-if="hasError && errorMsg.email" class="field-error">{{ errorMsg.email }}</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <mdicon name="lock-outline" :size="20" class="input-icon"/>
+                    <input
+                        type="password"
+                        class="form-input"
+                        placeholder="Enter your password"
+                        v-model="userInfo.password"
+                        required
+                    />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <div class="input-wrapper">
+                    <mdicon name="lock-check-outline" :size="20" class="input-icon"/>
+                    <input
+                        type="password"
+                        class="form-input"
+                        placeholder="Re-enter your password"
+                        v-model="userInfo.verifyPassword"
+                        required
+                    />
+                </div>
+                <p v-if="hasError && errorMsg.password" class="field-error">{{ errorMsg.password }}</p>
+            </div>
+
+            <div class="password-hints">
+                <div class="password-hint" :class="{ accepted: hasMinimumChar }">
+                    <mdicon name="check" size="14"/>
+                    <span>8 to 20 characters long</span>
+                </div>
+                <div class="password-hint" :class="{ accepted: isStrongPassword }">
+                    <mdicon name="check" size="14"/>
+                    <span>Use upper & lowercase letters, numbers, and symbols</span>
+                </div>
+            </div>
+
+            <button type="submit" class="register-btn">
+                Create Account
+            </button>
+
+            <div class="login-redirect">
+                <span>Already have an account?</span>
+                <button class="login-link" type="button" @click="router.push('/login')">
+                    Log In
+                </button>
             </div>
         </form>
     </div>
+</div>
 </template>
     
  <script>
 import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import register from '@/composables/auth/register'
 import store from '@/store'
 
@@ -147,11 +171,222 @@ export default {
 </script>
     
 <style scoped>
-.password-accepted {
-    color: darkgreen
+.register-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
 }
 
-.text-label {
+.register-grid {
+    width: 100%;
+    max-width: 1100px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 32px;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+}
+
+.brand-panel {
+    color: white;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+}
+
+.brand-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.brand-title {
+    font-size: 42px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.5px;
+}
+
+.brand-subtitle {
+    font-size: 17px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+
+.register-panel {
+    background: white;
+    border-radius: 28px;
+    padding: 36px;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    margin-bottom: 32px;
+}
+
+.panel-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.panel-subtitle {
+    margin: 8px 0 0 0;
+    color: #6b7280;
+    font-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
     font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px 14px 48px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #1a1a1a;
+    transition: all 0.2s ease;
+    background: #f9fafb;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.form-input::placeholder {
+    color: #9ca3af;
+}
+
+.invalid-input {
+    border-color: #f87171;
+}
+
+.field-error {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #dc2626;
+}
+
+.password-hints {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.password-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.password-hint + .password-hint {
+    margin-top: 8px;
+}
+
+.password-hint svg {
+    color: #d1d5db;
+}
+
+.password-hint.accepted {
+    color: #166534;
+}
+
+.password-hint.accepted svg {
+    color: #16a34a;
+}
+
+.register-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.register-btn:active {
+    transform: scale(0.98);
+}
+
+.login-redirect {
+    text-align: center;
+    margin-top: 24px;
+    color: #6b7280;
+}
+
+.login-link {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 8px;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .register-page {
+        padding: 24px 16px;
+    }
+
+    .register-panel {
+        padding: 28px 24px;
+    }
+
+    .brand-panel {
+        text-align: center;
+        align-items: center;
+    }
 }
 </style>

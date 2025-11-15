@@ -1,52 +1,71 @@
 <template>
-<div class="container">
-    <!-- <div class="row">
-        <div class="col-md-3"></div>
-        <div class="col-md-6  d-flex flex-row justify-content-between align-items-center">
-            <div class="d-flex flex-row justify-content-start align-items-center mt-2">
-                <mdicon name="chevron-left" @click="router.push('/account')" size="30"/>
-                <span class="ms-3">Sign in</span>
+<div class="login-page">
+    <div class="login-grid">
+        <div class="brand-panel">
+            <div class="brand-icon">
+                <mdicon name="file-document-multiple" :size="72"/>
+            </div>
+            <h1 class="brand-title">Record Keeper</h1>
+            <p class="brand-subtitle">Welcome back! Please login to continue</p>
+        </div>
+
+        <div class="login-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Sign in</h2>
+                <p class="panel-subtitle">Enter your credentials to access your records</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <div class="input-wrapper">
+                    <mdicon name="email-outline" :size="20" class="input-icon"/>
+                    <input
+                        type="email"
+                        class="form-input"
+                        placeholder="Enter your email"
+                        v-model="email"
+                    />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <mdicon name="lock-outline" :size="20" class="input-icon"/>
+                    <input
+                        :type="showPassword ? 'text' : 'password'"
+                        class="form-input"
+                        placeholder="Enter your password"
+                        v-model="password"
+                        @keypress.enter="handleLogin"
+                    />
+                    <button class="toggle-password" @click="showPassword = !showPassword">
+                        <mdicon :name="showPassword ? 'eye-off-outline' : 'eye-outline'" :size="20"/>
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="hasError" class="error-message">
+                <mdicon name="alert-circle" :size="16"/>
+                <span>{{ errorMsg }}</span>
+            </div>
+
+            <button class="forgot-password" @click="router.push('/forgot-password')">
+                Forgot Password?
+            </button>
+
+            <button class="login-btn" @click="handleLogin" :disabled="loadingModal">
+                <span v-if="!loadingModal">Log In</span>
+                <span v-else class="loading-spinner"></span>
+            </button>
+
+            <div class="signup-section">
+                <span class="signup-text">Don't have an account?</span>
+                <button class="signup-link" @click="router.push('/register')">
+                    Sign Up
+                </button>
             </div>
         </div>
-        <div class="col-md-3"></div>
-    </div>
-    <hr> -->
-    <div class="row mt-5">
-        <div class="col-md-3"></div>
-        <div class="col-md-6 text-center">
-            <h4>Log In to your account Web </h4>
-        </div>
-        <div class="col-md-3"></div>
-    </div>
-    <div class="row mt-3">
-        <div class="col-md-3"></div>
-        <div class="col-md-6 d-flex flex-column align-items-start">
-            <input type="email" class="form-control shadow-sm" placeholder="Email address" v-model="email"/>
-        </div>
-        <div class="col-md-3"></div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-md-3"></div>
-        <div class="col-md-6  d-flex flex-column align-items-start">
-            <input type="password" class="form-control shadow-sm" placeholder="Password" v-model="password" @keypress.enter="handleLogin"/>
-            <div v-if="hasError" class="error-message small text-danger"><strong>{{errorMsg}}</strong></div>
-        </div>
-        <div class="col-md-3"></div>
-    </div>
-    <div class="row mt-4">
-        <div class="col-md-3"></div>
-        <div class="col-md-6  d-flex flex-column align-items-start">
-            <button type="button" class="btn btn-success w-100 login fw-bold" @click="handleLogin">Log In</button>
-        </div>
-        <div class="col-md-3"></div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-md-3"></div>
-        <div class="col-md-6  d-flex flex-row justify-content-between">
-            <span style="cursor: pointer;">Forgot Password?</span>
-            <span style="cursor: pointer; font-weight: 700; color: #c8ae7d" @click="router.push('/register')">Sign up</span>
-        </div>
-        <div class="col-md-3"></div>
     </div>
 
     <Loading v-if="loadingModal"/>
@@ -54,7 +73,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import login from '@/composables/auth/login'
 import store from '@/store'
@@ -71,11 +90,10 @@ export default {
         const router = useRouter()
         const email = ref('')
         const password = ref('')
+        const showPassword = ref(false)
         const hasError = ref(false)
         const errorMsg = ref('')
         const loadingModal = ref(false)
-
-        console.log("Login from web")
 
         const handleLogin = async() => {
             hasError.value = false
@@ -107,6 +125,7 @@ export default {
             router,
             email,
             password,
+            showPassword,
             handleLogin,
             hasError,
             errorMsg,
@@ -117,11 +136,249 @@ export default {
 </script>
 
 <style scoped>
-.text-label {
-    font-size: 14px;
+.login-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
 }
 
-.login {
-    background-color: #738678;
+.login-grid {
+    width: 100%;
+    max-width: 1100px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 32px;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+}
+
+.brand-panel {
+    color: white;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+}
+
+.brand-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.brand-title {
+    font-size: 42px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.5px;
+}
+
+.brand-subtitle {
+    font-size: 17px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+
+.login-panel {
+    background: white;
+    border-radius: 28px;
+    padding: 36px;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    margin-bottom: 32px;
+}
+
+.panel-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.panel-subtitle {
+    margin: 8px 0 0 0;
+    color: #6b7280;
+    font-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px 14px 48px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #1a1a1a;
+    transition: all 0.2s ease;
+    background: #f9fafb;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.form-input::placeholder {
+    color: #9ca3af;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-password:active {
+    transform: scale(0.9);
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    color: #dc2626;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.forgot-password {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin: 8px 0 24px auto;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.login-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.login-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.signup-section {
+    text-align: center;
+    margin-top: 24px;
+}
+
+.signup-text {
+    color: #6b7280;
+    font-size: 15px;
+}
+
+.signup-link {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 8px;
+    text-decoration: underline;
+}
+
+.signup-link:active {
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .login-page {
+        padding: 24px 16px;
+    }
+
+    .login-panel {
+        padding: 28px 24px;
+    }
+
+    .brand-panel {
+        text-align: center;
+        align-items: center;
+    }
 }
 </style>

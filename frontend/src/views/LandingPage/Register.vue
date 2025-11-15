@@ -6,7 +6,6 @@
 
 <script>
 import { ref, provide } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import store from '@/store'
 import RegisterWeb from '@/views/web/Auth/Register.vue'
 import RegisterMobile from '@/views/mobile/Auth/Register.vue'
@@ -19,14 +18,13 @@ export default {
         RegisterMobile
     },
     setup () {
-        const platformIsMobile = ref(false);
+        const platformIsMobile = ref(false)
         provide('store', store)
 
-        isPlatformMobile()
-        .then((data) => {
+        isPlatformMobile().then((data) => {
             platformIsMobile.value = data
         })
-        document.querySelector('body').style.height = '60%'
+
         return {
             store,
             platformIsMobile
@@ -35,14 +33,5 @@ export default {
 }
 </script>
 
-<style>
-#app {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
-    height: 88vh;
-    overflow: scroll;
-}
-
-
+<style scoped>
 </style>

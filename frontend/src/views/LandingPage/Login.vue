@@ -29,7 +29,6 @@ export default {
             platformIsMobile.value = data
         })
 
-        document.querySelector('body').style.height = '60%'
         return {
             store,
             route,
@@ -40,14 +39,5 @@ export default {
 }
 </script>
 
-<style>
-#app {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
-    height: 88vh;
-    overflow: scroll;
-}
-
-
+<style scoped>
 </style>
