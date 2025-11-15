@@ -40,6 +40,9 @@
                 />
             </div>
         </div>
+        <div v-if="statusLabel" class="status-pill" :class="statusClass">
+            {{ statusLabel }}
+        </div>
     </div>
 
     <div class="card notes-card">
@@ -86,7 +89,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { API_BASE_URL } from '@/constants/config'
 
@@ -109,12 +112,34 @@ export default {
         }
         const systolic = ref('')
         const diastolic = ref('')
+        const statusLabel = ref('')
+        const statusClass = ref('')
         const readingDate = ref(getDateInZone('Asia/Manila'))
         const readingTime = ref(getTimeInZone('Asia/Manila'))
         const notes = ref('')
         const saving = ref(false)
         const activeProfileId = localStorage.getItem('selectedProfileId')
         const activeProfileName = ref(localStorage.getItem('selectedProfileName') || 'Profile')
+
+        const updateStatus = () => {
+            const systolicValue = Number(systolic.value)
+            const diastolicValue = Number(diastolic.value)
+            if (Number.isNaN(systolicValue) || Number.isNaN(diastolicValue)) {
+                statusLabel.value = ''
+                statusClass.value = ''
+                return
+            }
+            if (systolicValue < 120 && diastolicValue < 80) {
+                statusLabel.value = 'Normal'
+                statusClass.value = 'status-normal'
+            } else if (systolicValue < 130 && diastolicValue < 80) {
+                statusLabel.value = 'Elevated'
+                statusClass.value = 'status-elevated'
+            } else {
+                statusLabel.value = 'High'
+                statusClass.value = 'status-high'
+            }
+        }
 
         const saveRecord = async () => {
             if (!activeProfileId) {
@@ -144,10 +169,16 @@ export default {
             }
         }
 
+        watch([systolic, diastolic], () => {
+            updateStatus()
+        }, { immediate: true })
+
         return {
             router,
             systolic,
             diastolic,
+            statusLabel,
+            statusClass,
             readingDate,
             readingTime,
             notes,
@@ -277,6 +308,30 @@ export default {
     font-size: 28px;
     font-weight: 700;
     color: #94a3b8;
+}
+
+.status-pill {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 13px;
+}
+
+.status-normal {
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+}
+
+.status-elevated {
+    background: rgba(251, 191, 36, 0.15);
+    color: #b45309;
+}
+
+.status-high {
+    background: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
 }
 
 .date-time-grid {

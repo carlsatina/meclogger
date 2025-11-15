@@ -129,14 +129,31 @@ export default {
         const weekDaysLong = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
         const { records, fetchRecords } = useBloodSugar()
 
+        const classifyStatus = (value, type = '') => {
+            if (typeof value !== 'number') return 'Normal'
+            const normalizedType = (type || '').toLowerCase()
+            if (normalizedType.includes('after')) {
+                if (value < 140) return 'Normal'
+                if (value < 200) return 'Elevated'
+                return 'High'
+            }
+            if (value < 100) return 'Normal'
+            if (value < 126) return 'Elevated'
+            return 'High'
+        }
+
         const bsRecords = computed(() => {
-            return records.value.map((record) => ({
-                id: record.id,
-                date: new Date(record.recordedAt).toLocaleDateString(),
-                value: record.valueNumber,
-                type: record.chartGroup || 'Fasting',
-                status: record.status || 'Normal'
-            }))
+            return records.value.map((record) => {
+                const value = Number(record.valueNumber) || 0
+                const type = record.chartGroup || 'Fasting'
+                return {
+                    id: record.id,
+                    date: new Date(record.recordedAt).toLocaleDateString(),
+                    value,
+                    type,
+                    status: classifyStatus(value, type)
+                }
+            })
         })
 
         const loadRecords = async () => {

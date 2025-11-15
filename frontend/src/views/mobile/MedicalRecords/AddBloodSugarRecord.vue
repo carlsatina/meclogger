@@ -38,6 +38,9 @@
                 </select>
             </div>
         </div>
+        <div v-if="statusLabel" class="status-pill" :class="statusClass">
+            {{ statusLabel }}
+        </div>
     </div>
 
     <div class="card notes-card">
@@ -84,7 +87,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { API_BASE_URL } from '@/constants/config'
 
@@ -112,6 +115,8 @@ export default {
 
         const reading = ref('')
         const context = ref('fasting')
+        const statusLabel = ref('')
+        const statusClass = ref('')
         const manilaNow = getManilaNow()
         const readingDate = ref(formatDateInput(manilaNow))
         const readingTime = ref(getTimeInZone('Asia/Manila'))
@@ -126,6 +131,38 @@ export default {
         }
         if (activeProfileName.value) {
             localStorage.setItem('selectedProfileName', activeProfileName.value)
+        }
+
+        const updateStatus = () => {
+            const value = Number(reading.value)
+            if (Number.isNaN(value)) {
+                statusLabel.value = ''
+                statusClass.value = ''
+                return
+            }
+            if (context.value === 'after-meal') {
+                if (value < 140) {
+                    statusLabel.value = 'Normal'
+                    statusClass.value = 'status-normal'
+                } else if (value < 200) {
+                    statusLabel.value = 'Elevated'
+                    statusClass.value = 'status-elevated'
+                } else {
+                    statusLabel.value = 'High'
+                    statusClass.value = 'status-high'
+                }
+            } else {
+                if (value < 100) {
+                    statusLabel.value = 'Normal'
+                    statusClass.value = 'status-normal'
+                } else if (value < 126) {
+                    statusLabel.value = 'Elevated'
+                    statusClass.value = 'status-elevated'
+                } else {
+                    statusLabel.value = 'High'
+                    statusClass.value = 'status-high'
+                }
+            }
         }
 
         const saveRecord = async () => {
@@ -165,10 +202,22 @@ export default {
             }
         }
 
+        watch([reading, context], () => {
+            updateStatus()
+        }, { immediate: true })
+
+        watch([reading, context], () => {
+            updateStatus()
+        }, { immediate: true })
+
         return {
             router,
             reading,
             context,
+            statusLabel,
+            statusClass,
+            statusLabel,
+            statusClass,
             readingDate,
             readingTime,
             notes,
@@ -262,6 +311,30 @@ export default {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 16px;
+}
+
+.status-pill {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 13px;
+}
+
+.status-normal {
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+}
+
+.status-elevated {
+    background: rgba(251, 191, 36, 0.15);
+    color: #b45309;
+}
+
+.status-high {
+    background: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
 }
 
 select {

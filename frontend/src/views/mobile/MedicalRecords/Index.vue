@@ -227,7 +227,7 @@
                     </div>
                     <div v-if="bsLatest" class="health-reading">
                         <span class="reading-value">{{ bsLatest.value }} mg/dL</span>
-                        <span class="reading-status">{{ bsLatest.type }}</span>
+                        <span class="reading-status">{{ bsStatusLabel || bsLatest.type }}</span>
                     </div>
                     <div class="health-chart">
                         <div class="chart-y-axis">
@@ -840,6 +840,25 @@ export default {
             }
         })
 
+        const classifyBloodSugarStatusLabel = (value, context = '') => {
+            const ctx = context.toLowerCase()
+            if (ctx.includes('after')) {
+                if (value < 140) return 'Normal'
+                if (value < 200) return 'Elevated'
+                return 'High'
+            }
+            if (value < 100) return 'Normal'
+            if (value < 126) return 'Elevated'
+            return 'High'
+        }
+
+        const bsStatusLabel = computed(() => {
+            if (!bsLatest.value) return ''
+            const value = Number(bsLatest.value.value)
+            if (Number.isNaN(value)) return ''
+            return classifyBloodSugarStatusLabel(value, bsLatest.value.type || '')
+        })
+
         const bsChartPoints = computed(() => {
             const values = bsRecords.value.slice(-7)
             if (!values.length) return []
@@ -997,6 +1016,7 @@ export default {
             toastMessage,
             bpLatest,
             bsLatest,
+            bsStatusLabel,
             bsChartPoints,
             bsChartPath,
             bodyWeightLatest,
