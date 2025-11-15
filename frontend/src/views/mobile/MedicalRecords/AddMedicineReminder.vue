@@ -40,6 +40,12 @@
         <section class="input-card">
             <p class="section-label">Schedule</p>
             <div class="schedule-grid">
+                <div class="schedule-row select-row">
+                    <label>Start date</label>
+                    <div class="styled-select">
+                        <input type="date" v-model="startDate"/>
+                    </div>
+                </div>
                 <div class="schedule-row">
                     <span>Dosage</span>
                     <div class="dosage-controls">
@@ -112,6 +118,7 @@ export default {
         const time = ref('08:00')
         const duration = ref('5 days')
         const intakeMethod = ref('Before meal')
+        const startDate = ref(new Date().toISOString().slice(0, 10))
         const showUnitOptions = ref(false)
         const unitOptions = ['Tablet', 'Capsule', 'Syrup', 'Drops']
         const frequencyOptions = ['Once daily', 'Twice daily', 'Thrice daily', 'Weekly']
@@ -144,7 +151,8 @@ export default {
                     frequency: frequency.value,
                     time: time.value,
                     duration: duration.value,
-                    intakeMethod: intakeMethod.value
+                    intakeMethod: intakeMethod.value,
+                    startDate: startDate.value
                 })
                 router.back()
             } catch (err) {
@@ -170,6 +178,7 @@ export default {
             duration,
             intakeMethod,
             intakeOptions,
+            startDate,
             saveReminder
         }
     }
@@ -360,7 +369,8 @@ export default {
 }
 
 .styled-select select,
-.styled-select input[type="time"] {
+.styled-select input[type="time"],
+.styled-select input[type="date"] {
     width: 100%;
     border: none;
     background: transparent;
@@ -372,7 +382,8 @@ export default {
 }
 
 .styled-select select:focus,
-.styled-select input[type="time"]:focus {
+.styled-select input[type="time"]:focus,
+.styled-select input[type="date"]:focus {
     outline: none;
 }
 

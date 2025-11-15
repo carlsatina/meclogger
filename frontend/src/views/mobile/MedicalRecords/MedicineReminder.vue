@@ -83,6 +83,7 @@
                     <div class="reminder-info">
                         <p class="reminder-name">{{ reminder.title }}</p>
                         <p class="reminder-details">{{ reminder.subtitle }}</p>
+                        <p class="reminder-start">Start: {{ reminder.startDate }}</p>
                     </div>
                     <div class="reminder-meta">
                         <span class="reminder-time">{{ reminder.time }}</span>
@@ -172,10 +173,6 @@ export default {
             }
         )
 
-        watch(currentDate, () => {
-            loadReminders()
-        })
-
         const monthLabel = computed(() => {
             return currentDate.value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
         })
@@ -210,38 +207,51 @@ export default {
             showMonthPicker.value = !showMonthPicker.value
         }
 
-        const selectMonth = (monthIndex) => {
-            const updated = new Date(currentDate.value)
-            updated.setMonth(monthIndex)
+        const hasActiveProfile = computed(() => Boolean(activeProfileId.value))
+
+        const applyDateChange = (modifier) => {
+            const updated = modifier(new Date(currentDate.value))
             currentDate.value = updated
+            if (hasActiveProfile.value) {
+                loadReminders()
+            }
+        }
+
+        const selectMonth = (monthIndex) => {
+            applyDateChange((prev) => {
+                prev.setMonth(monthIndex)
+                return prev
+            })
             showMonthPicker.value = false
         }
 
         const previousMonth = () => {
-            const updated = new Date(currentDate.value)
-            updated.setMonth(updated.getMonth() - 1)
-            currentDate.value = updated
+            applyDateChange((prev) => {
+                prev.setMonth(prev.getMonth() - 1)
+                return prev
+            })
         }
 
         const nextMonth = () => {
-            const updated = new Date(currentDate.value)
-            updated.setMonth(updated.getMonth() + 1)
-            currentDate.value = updated
+            applyDateChange((prev) => {
+                prev.setMonth(prev.getMonth() + 1)
+                return prev
+            })
         }
 
         const previousWeek = () => {
-            const updated = new Date(currentDate.value)
-            updated.setDate(updated.getDate() - 7)
-            currentDate.value = updated
+            applyDateChange((prev) => {
+                prev.setDate(prev.getDate() - 7)
+                return prev
+            })
         }
 
         const nextWeek = () => {
-            const updated = new Date(currentDate.value)
-            updated.setDate(updated.getDate() + 7)
-            currentDate.value = updated
+            applyDateChange((prev) => {
+                prev.setDate(prev.getDate() + 7)
+                return prev
+            })
         }
-
-        const hasActiveProfile = computed(() => Boolean(activeProfileId.value))
 
         const weekDays = computed(() => {
             const today = new Date()
@@ -262,6 +272,9 @@ export default {
         const selectDay = (dateObj) => {
             if (!dateObj) return
             currentDate.value = new Date(dateObj)
+            if (hasActiveProfile.value) {
+                loadReminders()
+            }
         }
 
         const formatTime = (timeString) => {
@@ -272,12 +285,20 @@ export default {
             return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
         }
 
+        const formatDate = (value) => {
+            if (!value) return '—'
+            const date = new Date(value)
+            if (Number.isNaN(date.getTime())) return '—'
+            return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+        }
+
         const formattedReminders = computed(() => {
             return reminders.value.map(reminder => ({
                 id: reminder.id,
                 title: reminder.medicineName,
                 subtitle: `${reminder.dosage || 1} ${reminder.unit || ''}, ${reminder.intakeMethod || 'Anytime'}`,
                 time: formatTime(reminder.time),
+                startDate: formatDate(reminder.startDate || reminder.medication?.startDate || reminder.createdAt),
                 status: reminder.status || null
             }))
         })
@@ -541,6 +562,12 @@ export default {
     margin: 2px 0 0;
     color: #6b7280;
     font-size: 13px;
+}
+
+.reminder-start {
+    margin: 4px 0 0;
+    color: #9ca3af;
+    font-size: 12px;
 }
 
 .reminder-meta {

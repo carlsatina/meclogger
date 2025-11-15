@@ -129,8 +129,27 @@ const listMedicineReminders = async(req: ExtendedRequest, res: any) => {
         }
     })
 
+    const parseDurationDays = (duration?: string | null) => {
+        if (!duration) return 1
+        const match = duration.match(/(\d+)/)
+        if (!match) return 1
+        const days = Number(match[1])
+        return Number.isNaN(days) ? 1 : Math.max(days, 1)
+    }
+
     const formatted = []
     for (const reminder of reminders) {
+        const startDateRaw = reminder.medication?.startDate || reminder.createdAt || today
+        const startDate = startOfDay(startDateRaw)
+        const durationDays = parseDurationDays(reminder.duration)
+        const endDate = new Date(startDate)
+        endDate.setDate(endDate.getDate() + durationDays - 1)
+        const referenceStart = startOfDay(referenceDate).getTime()
+        const inWindow = referenceStart >= startDate.getTime() && referenceStart <= endDate.getTime()
+        if (!inWindow) {
+            continue
+        }
+
         let status = reminder.medication?.logs?.[0]?.status || null
         if (reminder.medicationId && !status) {
             const reminderDateTime = combineDateAndTime(referenceDate, reminder.time)
@@ -151,7 +170,8 @@ const listMedicineReminders = async(req: ExtendedRequest, res: any) => {
         }
         formatted.push({
             ...reminder,
-            status
+            status,
+            startDate: startDateRaw
         })
     }
 
@@ -176,12 +196,25 @@ const createMedicineReminder = async(req: ExtendedRequest, res: any) => {
         intakeMethod,
         notes
     } = req.body
+    const startDateInput = req.body.startDate
 
     if (!profileId || !medicineName || !frequency) {
         return res.status(400).json({
             status: 400,
             message: 'profileId, medicineName and frequency are required.'
         })
+    }
+
+    let reminderStartDate: Date | null = null
+    if (startDateInput) {
+        const parsed = new Date(startDateInput)
+        if (Number.isNaN(parsed.getTime())) {
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid startDate format.'
+            })
+        }
+        reminderStartDate = parsed
     }
 
     const profile = await resolveProfileForUser(user.id, profileId)
@@ -198,7 +231,7 @@ const createMedicineReminder = async(req: ExtendedRequest, res: any) => {
             name: medicineName,
             dosage: `${dosage || 1} ${unit || ''}`.trim(),
             instructions: intakeMethod || '',
-            startDate: new Date()
+            startDate: reminderStartDate || new Date()
         }
     })
 
@@ -219,7 +252,10 @@ const createMedicineReminder = async(req: ExtendedRequest, res: any) => {
 
     res.status(201).json({
         status: 201,
-        reminder
+        reminder: {
+            ...reminder,
+            startDate: reminderStartDate || reminder.createdAt
+        }
     })
 }
 
@@ -245,7 +281,8 @@ const updateMedicineReminder = async(req: ExtendedRequest, res: any) => {
         duration,
         intakeMethod,
         notes,
-        active
+        active,
+        startDate
     } = req.body
 
     const data: any = {}
@@ -270,6 +307,12 @@ const updateMedicineReminder = async(req: ExtendedRequest, res: any) => {
             const newDosage = typeof dosage !== 'undefined' ? dosage : existing.dosage
             const newUnit = typeof unit !== 'undefined' ? unit : existing.unit
             medicationData.dosage = `${newDosage || 1} ${newUnit || ''}`.trim()
+        }
+        if (typeof startDate !== 'undefined') {
+            const parsedStart = new Date(startDate)
+            if (!Number.isNaN(parsedStart.getTime())) {
+                medicationData.startDate = parsedStart
+            }
         }
         if (Object.keys(medicationData).length) {
             await prisma.medication.update({
