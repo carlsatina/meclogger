@@ -111,7 +111,9 @@ export default {
                     store.methods.loginUser(response.value.token)
                     const profileData = await getProfile(response.value.token)
                     if (profileData.error.value === null) {
-                        store.methods.setUserAdmin(profileData.response.value.userInfo.role === Role.ADMIN)
+                        const profile = profileData.response.value.userInfo
+                        store.methods.setUserAdmin(profile.role === Role.ADMIN)
+                        store.methods.setUserProfile(profile)
                     }
                     router.push('/')
                 }

@@ -23,10 +23,25 @@
                         type="text"
                         class="form-input"
                         placeholder="Enter your full name"
-                        v-model="userInfo.full_name"
+                        v-model="userInfo.fullName"
                         required
                     />
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Contact Number</label>
+                <div class="input-wrapper">
+                    <mdicon name="phone-outline" :size="20" class="input-icon"/>
+                    <input
+                        type="tel"
+                        class="form-input"
+                        placeholder="Enter your contact number"
+                        v-model="userInfo.phone"
+                        required
+                    />
+                </div>
+                <p v-if="hasError && errorMsg.phone" class="field-error">{{ errorMsg.phone }}</p>
             </div>
 
             <div class="form-group">
@@ -112,34 +127,48 @@ export default {
         const router = useRouter()
         const validated = ref(null)
         const userInfo = ref({
-            full_name: '',
-            contact_number: '',
+            fullName: '',
+            phone: '',
             email: '',
             password: '',
             verifyPassword: ''
         })
-        const errorMsg = ref({email: '', password: ''})
+        const errorMsg = ref({email: '', password: '', phone: ''})
         const hasError = ref(false)
 
         const handleRegister = async() => {
             hasError.value = false
             errorMsg.value.email = ''
             errorMsg.value.password = ''
+            errorMsg.value.phone = ''
 
             if (!validated.value) {
                 hasError.value = true
                 errorMsg.value.email = "Invalid Email Format!"
-            } else { 
-                const { response, error } = await register(userInfo.value)
-                if (error.value === null) {
-                    console.log("register response: ", response.value)
-                    if (response.value.status > 201) {
-                        console.log("response.value: ", response.value.message)
-                        hasError.value = true
-                        errorMsg.value.password = response.value.message
-                    } else {
-                        router.push('/login')
-                    }
+                return
+            }
+
+            if (!userInfo.value.phone) {
+                hasError.value = true
+                errorMsg.value.phone = "Contact number is required."
+                return
+            }
+
+            const payload = {
+                fullName: userInfo.value.fullName.trim(),
+                phone: userInfo.value.phone.trim(),
+                email: userInfo.value.email.trim(),
+                password: userInfo.value.password,
+                verifyPassword: userInfo.value.verifyPassword
+            }
+
+            const { response, error } = await register(payload)
+            if (error.value === null) {
+                if (response.value.status > 201) {
+                    hasError.value = true
+                    errorMsg.value.password = response.value.message
+                } else {
+                    router.push('/login')
                 }
             }
         }

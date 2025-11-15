@@ -1,12 +1,19 @@
 <template>
 <div class="home-container">
     <!-- Header Section -->
-    <div class="header-section">
+<div class="header-section">
+    <div class="header-top">
         <div class="greeting">
-            <h1 class="welcome-text">Welcome Back! 👋</h1>
-            <p class="subtitle">What would you like to manage today?</p>
+            <p class="welcome-chip">Welcome back 👋</p>
+            <h1 class="welcome-text">{{ userName }}</h1>
         </div>
+        <button class="logout-btn" @click="logout">
+            <mdicon name="logout" size="18"/>
+            <span>Logout</span>
+        </button>
     </div>
+    <p class="subtitle">What would you like to manage today?</p>
+</div>
 
     <!-- Features Grid -->
     <div class="features-wrapper">
@@ -62,12 +69,14 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Modal from '@/components/Modal.vue'
 import Loading from '@/components/Loading.vue'
 import store from '@/store'
 import Datepicker from 'vuejs3-datepicker'
+import getProfile from '@/composables/getProfile'
+import { Role } from '@/constants/enums'
 
 export default {
     name: "HomeMobile",
@@ -83,8 +92,40 @@ export default {
             router.push(path)
         }
 
+        const logout = () => {
+            store.methods.logoutUser()
+            router.push('/login')
+        }
+
+        const ensureProfile = async () => {
+            const token = localStorage.getItem('token')
+            if (!token) {
+                logout()
+                return
+            }
+            store.methods.loginUser(token)
+            if (!store.state.userProfile) {
+                const { response, error } = await getProfile(token)
+                if (error.value === null && response.value?.userInfo) {
+                    const profile = response.value.userInfo
+                    store.methods.setUserAdmin(profile.role === Role.ADMIN)
+                    store.methods.setUserProfile(profile)
+                } else {
+                    logout()
+                }
+            }
+        }
+
+        onMounted(() => {
+            ensureProfile()
+        })
+
+        const userName = computed(() => store.state.userProfile?.fullName || 'there')
+
         return {
-            navigateTo
+            navigateTo,
+            logout,
+            userName
         }
     }
 }
@@ -105,8 +146,16 @@ export default {
     box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
 }
 
-.greeting {
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     color: white;
+}
+
+.greeting {
+    flex: 1;
 }
 
 .welcome-text {
@@ -121,6 +170,33 @@ export default {
     opacity: 0.9;
     margin: 0;
     font-weight: 400;
+}
+
+.welcome-chip {
+    margin: 0 0 6px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.logout-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 999px;
+    color: white;
+    font-weight: 600;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.logout-btn:active {
+    transform: scale(0.97);
 }
 
 /* Features Wrapper */

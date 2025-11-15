@@ -56,6 +56,7 @@ export default {
             .then((data) => {
                 if (data.error.value === null) {
                     store.methods.setUserAdmin(data.response.value.userInfo.role === Role.ADMIN)
+                    store.methods.setUserProfile(data.response.value.userInfo)
                 }
             })
         }

@@ -3,7 +3,8 @@ import { reactive } from 'vue'
 const state = reactive ({
     isUserLoggedIn: false,
     isUserAdmin: false,
-    showSearchIcon: false
+    showSearchIcon: false,
+    userProfile: null
 })
 
 const methods = {
@@ -14,6 +15,8 @@ const methods = {
     logoutUser() {
         localStorage.removeItem('token')
         state.isUserLoggedIn = false
+        state.isUserAdmin = false
+        state.userProfile = null
     },
     isStrongPassword(password) {
         return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,20}$/.test(password)
@@ -29,6 +32,9 @@ const methods = {
     },
     setSearchIcon(val) {
         state.showSearchIcon = val
+    },
+    setUserProfile(profile) {
+        state.userProfile = profile
     }
 }
 

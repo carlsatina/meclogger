@@ -29,6 +29,13 @@ export default {
             platformIsMobile.value = data
         })
 
+        const token = localStorage.getItem('token')
+        if (!token) {
+            router.replace('/login')
+        } else {
+            store.methods.loginUser(token)
+        }
+
         return {
             store,
             route,
