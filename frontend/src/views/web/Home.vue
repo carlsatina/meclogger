@@ -47,13 +47,14 @@
 </template>
 
 <script>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Modal from '@/components/Modal.vue'
 import Loading from '@/components/Loading.vue'
 import store from '@/store'
 import Datepicker from 'vuejs3-datepicker'
 import getProfile from '@/composables/getProfile'
+import { useMedicineReminders } from '@/composables/medicineReminders'
 import { Role } from '@/constants/enums'
 
 export default {
@@ -65,6 +66,7 @@ export default {
     },
     setup() {
         const router = useRouter()
+        const activeProfileId = ref(localStorage.getItem('selectedProfileId') || null)
 
         const navigateTo = (path) => {
             router.push(path)
@@ -94,8 +96,61 @@ export default {
             }
         }
 
+        const {
+            reminders: reminderSource,
+            loading: remindersLoading,
+            error: remindersError,
+            fetchReminders
+        } = useMedicineReminders()
+
+        const formatReminderTime = (timeString) => {
+            if (!timeString) return '—'
+            const [hour, minute] = timeString.split(':')
+            const date = new Date()
+            date.setHours(Number(hour), Number(minute), 0, 0)
+            return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        }
+
+        const todaysReminders = computed(() => {
+            return reminderSource.value.slice(0, 3).map(reminder => {
+                const reminderSlots = Array.isArray(reminder.slots) && reminder.slots.length
+                    ? reminder.slots
+                    : [{ time: reminder.time, status: reminder.status }]
+                const slots = reminderSlots
+                    .map((slot, index) => {
+                        const rawTime = typeof slot === 'string' ? slot : slot.time
+                        if (!rawTime) return null
+                        return {
+                            id: `${reminder.id}-${rawTime}-${index}`,
+                            reminderId: reminder.id,
+                            rawTime,
+                            status: slot.status || null,
+                            label: formatReminderTime(rawTime)
+                        }
+                    })
+                    .filter(Boolean)
+                return {
+                    id: reminder.id,
+                    medicineName: reminder.medicineName,
+                    intakeMethod: reminder.intakeMethod,
+                    slots
+                }
+            })
+        })
+
+        const loadReminders = async () => {
+            const token = localStorage.getItem('token')
+            activeProfileId.value = localStorage.getItem('selectedProfileId')
+            if (!token || !activeProfileId.value) {
+                reminderSource.value = []
+                return
+            }
+            await fetchReminders(token, activeProfileId.value, { date: new Date() })
+        }
+
         onMounted(() => {
             ensureProfile()
+            loadReminders()
         })
 
         const userName = computed(() => store.state.userProfile?.fullName || 'there')
@@ -103,7 +158,11 @@ export default {
         return {
             navigateTo,
             logout,
-            userName
+            userName,
+            todaysReminders,
+            remindersLoading,
+            remindersError,
+            activeProfileId
         }
     }
 }
@@ -117,7 +176,141 @@ export default {
 }
 
 .header {
-    margin-bottom: 50px;
+    margin-bottom: 40px;
+}
+
+.reminders-section {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+}
+
+.reminders-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.reminders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.reminders-header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.view-all-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.view-all-link:hover {
+    color: #5568d3;
+}
+
+.reminders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.reminder-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.reminder-item:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.reminder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.reminder-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.reminder-method {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 12px 0;
+}
+
+.reminder-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.time-slot {
+    background: white;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #374151;
+}
+
+.time-slot.taken {
+    border-color: #22c55e;
+    color: #15803d;
+    background: #f0fdf4;
+}
+
+.time-slot.missed {
+    border-color: #f97316;
+    color: #c2410c;
+    background: #fff7ed;
+}
+
+.slot-status-icon {
+    font-size: 12px;
+}
+
+.reminders-empty {
+    text-align: center;
+    padding: 30px;
+    color: #94a3b8;
+}
+
+.reminders-error {
+    text-align: center;
+    padding: 20px;
+    color: #dc2626;
+    font-size: 14px;
+}
+
+.reminders-loading {
+    text-align: center;
+    padding: 30px;
+    color: #6b7280;
 }
 
 .header h2 {

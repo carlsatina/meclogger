@@ -90,17 +90,18 @@
                                     {{ reminder.intakeMethod || 'Anytime' }}
                                 </p>
                                 <div class="reminder-slots" v-if="reminder.slots.length">
-                                    <span 
+                                    <button 
                                         class="slot-chip" 
                                         v-for="slot in reminder.slots" 
                                         :key="slot.id"
                                         :class="{ checked: slot.status === 'taken', missed: slot.status === 'missed' }"
+                                        @click="toggleHomeReminder(reminder, slot)"
                                     >
                                         {{ slot.label }}
                                         <span class="slot-status" v-if="slot.status">
                                             {{ slot.status === 'taken' ? '☑︎' : '✖︎' }}
                                         </span>
-                                    </span>
+                                    </button>
                                 </div>
                             </div>
                             <p v-if="!todaysReminders.length" class="home-empty">
@@ -444,7 +445,8 @@ export default {
             reminders: reminderSource,
             loading: remindersLoading,
             error: remindersError,
-            fetchReminders
+            fetchReminders,
+            setReminderStatus: setMedicineReminderStatus
         } = useMedicineReminders()
 
         const medicalRecords = computed(() => {
@@ -650,6 +652,25 @@ export default {
             return mapped.slice(0, 3)
         })
 
+        const toggleHomeReminder = async(reminder, reminderSlot) => {
+            const token = localStorage.getItem('token')
+            if (!token) return
+            const newStatus = reminderSlot.status === 'taken' ? 'pending' : 'taken'
+            try {
+                await setMedicineReminderStatus(token, reminderSlot.reminderId, newStatus, new Date(), reminderSlot.rawTime)
+                const target = reminderSource.value.find(r => r.id === reminderSlot.reminderId)
+                if (target?.slots) {
+                    const targetSlot = target.slots.find(slot => slot.time === reminderSlot.rawTime)
+                    if (targetSlot) {
+                        targetSlot.status = newStatus === 'pending' ? null : newStatus
+                    }
+                }
+                reminderSlot.status = newStatus === 'pending' ? null : newStatus
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
         const loadHealthData = async () => {
             const token = localStorage.getItem('token')
             activeProfileId.value = localStorage.getItem('selectedProfileId')
@@ -765,6 +786,7 @@ export default {
             remindersError,
             todaysReminders,
             formatFrequency,
+            toggleHomeReminder,
             healthLoading,
             bpLatest,
             bsLatest,
@@ -772,7 +794,8 @@ export default {
             bpChartData,
             bsChartPoints,
             bsChartPath,
-            profileChipName
+            profileChipName,
+            activeProfileId
         }
     }
 }
