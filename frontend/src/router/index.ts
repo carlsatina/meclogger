@@ -24,6 +24,7 @@ import AddMedicineReminder from '@/views/mobile/MedicalRecords/AddMedicineRemind
 import MedicineReminderHistory from '@/views/mobile/MedicalRecords/MedicineReminderHistory.vue'
 import RecordDetail from '@/views/mobile/MedicalRecords/RecordDetail.vue'
 import WebRecordDetail from '@/views/web/MedicalRecords/RecordDetail.vue'
+import WebMedicineReminderCalendar from '@/views/web/MedicalRecords/MedicineReminderCalendar.vue'
 import BloodPressureWeb from '@/views/web/MedicalRecords/BloodPressureDetail.vue'
 import BloodSugarWeb from '@/views/web/MedicalRecords/BloodSugarDetail.vue'
 import BodyWeightWeb from '@/views/web/MedicalRecords/BodyWeightDetail.vue'
@@ -124,6 +125,12 @@ const routes: Array<RouteRecordRaw> = [
     path: '/medical-records/medicine-reminders',
     name: 'medicine-reminders',
     component: MedicineReminder,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/web/medicine-reminders/week',
+    name: 'medicine-reminders-web-week',
+    component: WebMedicineReminderCalendar,
     meta: { requiresAuth: true }
   },
   {

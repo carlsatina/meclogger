@@ -227,7 +227,6 @@ export default {
             }
         }
 
-
         const goBack = () => {
             router.back()
         }

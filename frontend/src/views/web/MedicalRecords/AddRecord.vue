@@ -223,7 +223,7 @@ export default {
         }
 
         const triggerFileUpload = () => {
-            fileInput.value?.click()
+            fileInput.value?.clifick()
         }
 
         const handleFileUpload = (event) => {

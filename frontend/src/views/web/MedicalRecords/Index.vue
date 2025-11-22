@@ -395,7 +395,7 @@ export default {
         }
 
         const navigateToMedicineReminder = () => {
-            router.push('/medical-records/medicine-reminders/add')
+            router.push('/medical-records/web/medicine-reminders/week')
         }
 
         const navigateToBloodPressure = () => {
