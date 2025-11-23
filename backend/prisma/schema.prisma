@@ -304,7 +304,7 @@ model VehicleReminder {
   vehicleId       String
   title           String
   description     String?
-  maintenanceType MaintenanceType @default(OTHER)
+  maintenanceType String          @default("OTHER")
   dueDate         DateTime?
   dueMileage      Int?
   notifyInAdvance Int?

@@ -375,3 +375,189 @@ export const deleteMaintenanceRecord = async(req: Request, res: Response) => {
         })
     }
 }
+
+export const listReminders = async(req: Request, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const vehicleId = req.query.vehicleId as string | undefined
+
+    try {
+        const ownedVehicles = await prisma.vehicle.findMany({
+            where: { userId: user.id },
+            select: { id: true }
+        })
+        const ownedIds = ownedVehicles.map(v => v.id)
+        if (!ownedIds.length) {
+            return res.status(200).json({ status: 200, reminders: [] })
+        }
+        const reminders = await prisma.vehicleReminder.findMany({
+            where: {
+                vehicleId: vehicleId ? vehicleId : { in: ownedIds },
+                vehicle: { userId: user.id }
+            },
+            orderBy: [
+                { dueDate: 'asc' },
+                { createdAt: 'desc' }
+            ]
+        })
+        return res.status(200).json({
+            status: 200,
+            reminders
+        })
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 500,
+            message: error?.message || 'Unable to fetch reminders'
+        })
+    }
+}
+
+export const addReminder = async(req: Request, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const {
+        vehicleId,
+        maintenanceType,
+        title,
+        description,
+        dueDate,
+        dueMileage,
+        notifyInAdvance
+    } = req.body || {}
+
+    if (!vehicleId) {
+        return res.status(400).json({ status: 400, message: 'vehicleId is required' })
+    }
+    if (!maintenanceType && !title) {
+        return res.status(400).json({ status: 400, message: 'maintenanceType is required' })
+    }
+
+    try {
+        const vehicle = await prisma.vehicle.findFirst({
+            where: { id: vehicleId, userId: user.id }
+        })
+        if (!vehicle) {
+            return res.status(404).json({ status: 404, message: 'Vehicle not found' })
+        }
+
+        const reminder = await prisma.vehicleReminder.create({
+            data: {
+                vehicleId,
+                maintenanceType: maintenanceType || title,
+                title: title || maintenanceType,
+                description: description || null,
+                dueDate: dueDate ? new Date(dueDate) : null,
+                dueMileage: dueMileage ? Number(dueMileage) : null,
+                notifyInAdvance: notifyInAdvance ? Number(notifyInAdvance) : null
+            }
+        })
+
+        return res.status(201).json({
+            status: 201,
+            reminder
+        })
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 500,
+            message: error?.message || 'Unable to create reminder'
+        })
+    }
+}
+
+export const updateReminder = async(req: Request, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const { id } = req.params
+    const {
+        maintenanceType,
+        title,
+        description,
+        dueDate,
+        dueMileage,
+        notifyInAdvance,
+        completed,
+        active
+    } = req.body || {}
+
+    try {
+        const existing = await prisma.vehicleReminder.findFirst({
+            where: {
+                id,
+                vehicle: { userId: user.id }
+            }
+        })
+        if (!existing) {
+            return res.status(404).json({ status: 404, message: 'Reminder not found' })
+        }
+
+        const updateData: any = {}
+        if (maintenanceType !== undefined) updateData.maintenanceType = maintenanceType
+        if (title !== undefined) updateData.title = title
+        if (description !== undefined) updateData.description = description
+        if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null
+        if (dueMileage !== undefined) updateData.dueMileage = dueMileage ? Number(dueMileage) : null
+        if (notifyInAdvance !== undefined) updateData.notifyInAdvance = notifyInAdvance ? Number(notifyInAdvance) : null
+        if (active !== undefined) updateData.active = Boolean(active)
+        if (completed !== undefined) {
+            const completedVal = completed === true || completed === 'true' || completed === 1 || completed === '1'
+            updateData.completed = completedVal
+            updateData.completedAt = completedVal ? new Date() : null
+        }
+
+        const reminder = await prisma.vehicleReminder.update({
+            where: { id },
+            data: updateData
+        })
+
+        return res.status(200).json({
+            status: 200,
+            reminder
+        })
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 500,
+            message: error?.message || 'Unable to update reminder'
+        })
+    }
+}
+
+export const getReminder = async(req: Request, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const { id } = req.params
+    try {
+        const reminder = await prisma.vehicleReminder.findFirst({
+            where: { id, vehicle: { userId: user.id } }
+        })
+        if (!reminder) {
+            return res.status(404).json({ status: 404, message: 'Reminder not found' })
+        }
+        return res.status(200).json({ status: 200, reminder })
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 500,
+            message: error?.message || 'Unable to fetch reminder'
+        })
+    }
+}
+
+export const deleteReminder = async(req: Request, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const { id } = req.params
+    try {
+        const existing = await prisma.vehicleReminder.findFirst({
+            where: { id, vehicle: { userId: user.id } }
+        })
+        if (!existing) {
+            return res.status(404).json({ status: 404, message: 'Reminder not found' })
+        }
+        await prisma.vehicleReminder.delete({ where: { id } })
+        return res.status(200).json({ status: 200, deleted: true })
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 500,
+            message: error?.message || 'Unable to delete reminder'
+        })
+    }
+}

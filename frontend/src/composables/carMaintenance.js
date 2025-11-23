@@ -123,6 +123,85 @@ export const useCarMaintenance = () => {
         return data.records || []
     }
 
+    const listReminders = async(token, vehicleId) => {
+        if (!token) throw new Error('Missing auth token')
+        const params = new URLSearchParams()
+        if (vehicleId) params.append('vehicleId', vehicleId)
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/reminders?${params.toString()}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to load schedules')
+        }
+        return data.reminders || []
+    }
+
+    const createReminder = async(token, payload) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/reminders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to save schedule')
+        }
+        return data.reminder
+    }
+
+    const updateReminder = async(token, reminderId, payload) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/reminders/${reminderId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to update reminder')
+        }
+        return data.reminder
+    }
+
+    const getReminder = async(token, reminderId) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/reminders/${reminderId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to fetch schedule')
+        }
+        return data.reminder
+    }
+
+    const deleteReminder = async(token, reminderId) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/reminders/${reminderId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to delete schedule')
+        }
+        return true
+    }
+
     return {
         createVehicle,
         updateVehicle,
@@ -131,6 +210,11 @@ export const useCarMaintenance = () => {
         createMaintenanceRecord,
         getMaintenanceRecord,
         deleteMaintenanceRecord,
-        listMaintenanceRecords
+        listMaintenanceRecords,
+        listReminders,
+        createReminder,
+        updateReminder,
+        getReminder,
+        deleteReminder
     }
 }

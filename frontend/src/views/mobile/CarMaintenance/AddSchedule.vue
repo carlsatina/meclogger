@@ -18,30 +18,29 @@
                 </option>
             </select>
         </div>
-        <div class="field">
+        <div class="field type-field">
             <label>Maintenance Type</label>
-            <input
-                v-model="form.maintenanceType"
-                list="maintenance-options"
-                type="text"
-                placeholder="Select or type"
-            />
-            <datalist id="maintenance-options">
-                <option value="Oil Change"></option>
-                <option value="Brake Pad Replacement"></option>
-                <option value="Tire Rotation"></option>
-                <option value="Tire Replacement"></option>
-                <option value="Battery Replacement"></option>
-                <option value="Air Filter Replacement"></option>
-                <option value="Transmission Service"></option>
-                <option value="Coolant Flush"></option>
-                <option value="Spark Plug Replacement"></option>
-                <option value="Brake Fluid Change"></option>
-                <option value="Alignment"></option>
-                <option value="Inspection"></option>
-                <option value="Repair"></option>
-                <option value="Other"></option>
-            </datalist>
+            <div class="type-input-wrapper">
+                <input
+                    v-model="form.maintenanceType"
+                    type="text"
+                    placeholder="Select or type"
+                />
+                <button type="button" class="type-toggle" @click="toggleTypeDropdown">
+                    <mdicon name="chevron-down" :size="22"/>
+                </button>
+            </div>
+            <div v-if="showTypeDropdown" class="type-dropdown">
+                <button
+                    v-for="option in typeOptions"
+                    :key="option"
+                    type="button"
+                    class="type-option"
+                    @click="chooseType(option)"
+                >
+                    {{ option }}
+                </button>
+            </div>
         </div>
         <div class="two-col">
             <div class="field">
@@ -69,14 +68,15 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useCarMaintenance } from '@/composables/carMaintenance'
 
 export default {
     name: 'CarMaintenanceAddSchedule',
     setup() {
         const router = useRouter()
-        const { listVehicles } = useCarMaintenance()
+        const route = useRoute()
+        const { listVehicles, createReminder, getReminder, updateReminder } = useCarMaintenance()
 
         const vehicles = ref([])
         const form = ref({
@@ -86,9 +86,27 @@ export default {
             dueMileage: '',
             notes: ''
         })
+        const editingId = ref('')
         const submitting = ref(false)
         const errorMessage = ref('')
         const successMessage = ref('')
+        const showTypeDropdown = ref(false)
+        const typeOptions = ref([
+            'Oil Change',
+            'Brake Pad Replacement',
+            'Tire Rotation',
+            'Tire Replacement',
+            'Battery Replacement',
+            'Air Filter Replacement',
+            'Transmission Service',
+            'Coolant Flush',
+            'Spark Plug Replacement',
+            'Brake Fluid Change',
+            'Alignment',
+            'Inspection',
+            'Repair',
+            'Other'
+        ])
 
         const displayName = (vehicle) => {
             const parts = [vehicle.make, vehicle.model, vehicle.year].filter(Boolean)
@@ -100,9 +118,9 @@ export default {
                 const token = localStorage.getItem('token')
                 if (!token) throw new Error('You must be logged in.')
                 vehicles.value = await listVehicles(token)
-                if (vehicles.value.length) {
-                    form.value.vehicleId = vehicles.value[0].id
-                }
+                const preferredId = route.query.vehicleId || localStorage.getItem('selectedVehicleId')
+                const preferred = vehicles.value.find(v => v.id === preferredId)
+                form.value.vehicleId = preferred ? preferred.id : (vehicles.value[0]?.id || '')
             } catch (err) {
                 errorMessage.value = err?.message || 'Unable to load vehicles'
                 vehicles.value = []
@@ -114,9 +132,30 @@ export default {
             successMessage.value = ''
             submitting.value = true
             try {
-                // placeholder save; wire to backend when available
-                successMessage.value = 'Schedule saved (placeholder)'
-                setTimeout(() => router.push('/car-maintenance/schedules'), 600)
+                const token = localStorage.getItem('token')
+                if (!token) throw new Error('You must be logged in.')
+                if (editingId.value) {
+                    await updateReminder(token, editingId.value, {
+                        vehicleId: form.value.vehicleId,
+                        maintenanceType: form.value.maintenanceType,
+                        title: form.value.maintenanceType,
+                        description: form.value.notes,
+                        dueDate: form.value.dueDate,
+                        dueMileage: form.value.dueMileage ? Number(form.value.dueMileage) : null
+                    })
+                    successMessage.value = 'Schedule updated'
+                } else {
+                    await createReminder(token, {
+                        vehicleId: form.value.vehicleId,
+                        maintenanceType: form.value.maintenanceType,
+                        title: form.value.maintenanceType,
+                        description: form.value.notes,
+                        dueDate: form.value.dueDate,
+                        dueMileage: form.value.dueMileage ? Number(form.value.dueMileage) : null
+                    })
+                    successMessage.value = 'Schedule saved'
+                }
+                setTimeout(() => router.push('/car-maintenance/schedules'), 400)
             } catch (err) {
                 errorMessage.value = err?.message || 'Unable to save schedule'
             } finally {
@@ -124,10 +163,45 @@ export default {
             }
         }
 
+        const toggleTypeDropdown = () => {
+            showTypeDropdown.value = !showTypeDropdown.value
+        }
+
+        const chooseType = (option) => {
+            form.value.maintenanceType = option
+            showTypeDropdown.value = false
+        }
+
         const goBack = () => router.back()
+
+        const loadReminder = async(id) => {
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) return
+                const reminder = await getReminder(token, id)
+                if (reminder) {
+                    editingId.value = reminder.id
+                    form.value = {
+                        vehicleId: reminder.vehicleId || '',
+                        maintenanceType: reminder.maintenanceType || '',
+                        dueDate: reminder.dueDate ? reminder.dueDate.substring(0, 10) : '',
+                        dueMileage: reminder.dueMileage || '',
+                        notes: reminder.description || ''
+                    }
+                }
+            } catch (err) {
+                // ignore load errors
+            }
+        }
 
         onMounted(() => {
             loadVehicles()
+            const paramId = route.params.id
+            const queryId = route.query.reminderId
+            const resolvedId = (typeof paramId === 'string' && paramId) || (typeof queryId === 'string' && queryId) || ''
+            if (resolvedId) {
+                loadReminder(resolvedId)
+            }
         })
 
         return {
@@ -138,7 +212,11 @@ export default {
             successMessage,
             goBack,
             submitSchedule,
-            displayName
+            displayName,
+            showTypeDropdown,
+            typeOptions,
+            toggleTypeDropdown,
+            chooseType
         }
     }
 }
@@ -190,6 +268,59 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+.type-field {
+    position: relative;
+}
+
+.type-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.type-input-wrapper input {
+    width: 100%;
+    padding-right: 44px;
+}
+
+.type-toggle {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    bottom: 6px;
+    width: 36px;
+    border: none;
+    border-radius: 10px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+}
+
+.type-dropdown {
+    margin-top: 6px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.type-option {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 14px;
+    color: #111827;
+}
+
+.type-option + .type-option {
+    border-top: 1px solid #f3f4f6;
 }
 
 label {
