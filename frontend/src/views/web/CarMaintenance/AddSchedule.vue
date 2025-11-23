@@ -5,11 +5,11 @@
             <button class="icon-btn" @click="router.back()">
                 <mdicon name="chevron-left" :size="22"/>
             </button>
-            <h2 class="title">Add Maintenance</h2>
+            <h2 class="title">Add Schedule</h2>
         </div>
     </header>
     <main class="content">
-        <form class="panel form" @submit.prevent="submitRecord">
+        <form class="panel form" @submit.prevent="submitSchedule">
             <div class="field">
                 <label>Vehicle</label>
                 <select v-model="form.vehicleId" required>
@@ -22,12 +22,18 @@
                 <label>Maintenance Type</label>
                 <div class="type-input">
                     <input v-model="form.maintenanceType" type="text" placeholder="Select or type" />
-                    <button type="button" class="type-toggle" @click="showTypeList = !showTypeList">
+                    <button type="button" class="type-toggle" @click="showTypeDropdown = !showTypeDropdown">
                         <mdicon name="menu-down" :size="20"/>
                     </button>
                 </div>
-                <div v-if="showTypeList" class="type-list">
-                    <button v-for="option in typeOptions" :key="option" type="button" class="type-option" @click="selectType(option)">
+                <div v-if="showTypeDropdown" class="type-list">
+                    <button
+                        v-for="option in typeOptions"
+                        :key="option"
+                        type="button"
+                        class="type-option"
+                        @click="chooseType(option)"
+                    >
                         {{ option }}
                     </button>
                 </div>
@@ -35,56 +41,21 @@
 
             <div class="two-col">
                 <div class="field">
-                    <label>Service Date</label>
-                    <input v-model="form.serviceDate" type="date" required />
+                    <label>Due Date</label>
+                    <input v-model="form.dueDate" type="date" required />
                 </div>
                 <div class="field">
-                    <label>Mileage at Service</label>
-                    <input v-model="form.mileageAtService" type="number" min="0" :placeholder="distanceUnit === 'mi' ? '50000' : '80456'" />
+                    <label>Due Mileage</label>
+                    <input v-model="form.dueMileage" type="number" min="0" placeholder="100000" />
                 </div>
             </div>
-
-            <div class="two-col">
-                <div class="field">
-                    <label>Cost</label>
-                    <input v-model="form.cost" type="number" min="0" step="0.01" placeholder="4000" />
-                </div>
-                <div class="field">
-                    <label>Currency</label>
-                    <select v-model="form.currency">
-                        <option v-for="c in currencyOptions" :key="c" :value="c">{{ c }}</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="two-col">
-                <div class="field">
-                    <label>Serviced By</label>
-                    <input v-model="form.servicedBy" type="text" placeholder="Service Center" />
-                </div>
-                <div class="field">
-                    <label>Location</label>
-                    <input v-model="form.location" type="text" placeholder="City / Garage" />
-                </div>
-            </div>
-
             <div class="field">
-                <label>Parts Used</label>
-                <textarea v-model="form.partsUsed" rows="2" placeholder="List parts used"></textarea>
-            </div>
-
-            <div class="field">
-                <label>Labor Hours</label>
-                <input v-model="form.laborHours" type="number" min="0" step="0.1" placeholder="2.5" />
-            </div>
-
-            <div class="field">
-                <label>Description</label>
-                <textarea v-model="form.description" rows="3" placeholder="Notes or details"></textarea>
+                <label>Notes</label>
+                <textarea v-model="form.notes" rows="3" placeholder="Add details"></textarea>
             </div>
 
             <button class="primary-btn" type="submit" :disabled="submitting">
-                {{ submitting ? 'Saving...' : 'Save Maintenance' }}
+                {{ submitting ? 'Saving...' : 'Save Schedule' }}
             </button>
             <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
             <p v-if="successMessage" class="success">{{ successMessage }}</p>
@@ -116,38 +87,29 @@ const defaultTypes = [
 ]
 
 export default {
-    name: 'CarMaintenanceAddMaintenanceWeb',
+    name: 'CarMaintenanceAddScheduleWeb',
     setup() {
         const router = useRouter()
         const route = useRoute()
-        const { listVehicles, createMaintenanceRecord, getPreferences } = useCarMaintenance()
+        const { listVehicles, createReminder, getPreferences } = useCarMaintenance()
+
         const vehicles = ref([])
         const form = ref({
             vehicleId: '',
             maintenanceType: '',
-            serviceDate: '',
-            mileageAtService: '',
-            cost: '',
-            currency: 'USD',
-            servicedBy: '',
-            location: '',
-            partsUsed: '',
-            laborHours: '',
-            description: ''
+            dueDate: '',
+            dueMileage: '',
+            notes: ''
         })
         const typeOptions = ref([...defaultTypes])
-        const currencyOptions = ref(['USD', 'PHP', 'EUR', 'JPY', 'SGD'])
-        const distanceUnit = ref('km')
-        const showTypeList = ref(false)
+        const showTypeDropdown = ref(false)
         const submitting = ref(false)
         const errorMessage = ref('')
         const successMessage = ref('')
 
         const displayName = (vehicle) => {
-            if (!vehicle) return 'Vehicle'
             const parts = [vehicle.make, vehicle.model, vehicle.year].filter(Boolean)
-            const assembled = parts.join(' ').trim()
-            return assembled || vehicle.licensePlate || vehicle.vin || 'Vehicle'
+            return parts.join(' ').trim() || 'Vehicle'
         }
 
         const loadPreferences = async() => {
@@ -158,11 +120,6 @@ export default {
                 if (Array.isArray(prefs?.maintenanceTypes) && prefs.maintenanceTypes.length) {
                     typeOptions.value = prefs.maintenanceTypes
                 }
-                if (prefs?.currency) {
-                    form.value.currency = prefs.currency
-                    currencyOptions.value = Array.from(new Set([prefs.currency, ...currencyOptions.value]))
-                }
-                if (prefs?.distanceUnit) distanceUnit.value = prefs.distanceUnit
             } catch (err) {
                 // ignore
             }
@@ -173,7 +130,7 @@ export default {
                 const token = localStorage.getItem('token')
                 if (!token) throw new Error('You must be logged in.')
                 vehicles.value = await listVehicles(token)
-                if (!form.value.vehicleId && vehicles.value.length) {
+                if (vehicles.value.length) {
                     form.value.vehicleId = vehicles.value[0].id
                 }
                 const vehicleId = route.query.vehicleId
@@ -187,52 +144,57 @@ export default {
             }
         }
 
-        const selectType = (option) => {
-            form.value.maintenanceType = option
-            showTypeList.value = false
-        }
-
-        const submitRecord = async() => {
+        const submitSchedule = async() => {
             errorMessage.value = ''
             successMessage.value = ''
             submitting.value = true
             try {
                 const token = localStorage.getItem('token')
                 if (!token) throw new Error('You must be logged in.')
-                await createMaintenanceRecord(token, {
-                    ...form.value,
-                    mileageAtService: form.value.mileageAtService || undefined,
-                    cost: form.value.cost || undefined,
-                    laborHours: form.value.laborHours || undefined
+                await createReminder(token, {
+                    vehicleId: form.value.vehicleId,
+                    maintenanceType: form.value.maintenanceType,
+                    title: form.value.maintenanceType,
+                    description: form.value.notes,
+                    dueDate: form.value.dueDate,
+                    dueMileage: form.value.dueMileage ? Number(form.value.dueMileage) : null
                 })
-                successMessage.value = 'Maintenance saved'
-                setTimeout(() => router.push('/web/car-maintenance'), 600)
+                successMessage.value = 'Schedule saved'
+                setTimeout(() => router.push('/web/car-maintenance'), 400)
             } catch (err) {
-                errorMessage.value = err?.message || 'Unable to save maintenance'
+                errorMessage.value = err?.message || 'Unable to save schedule'
             } finally {
                 submitting.value = false
             }
         }
 
-        onMounted(async() => {
-            await loadPreferences()
-            await loadVehicles()
+        const toggleTypeDropdown = () => {
+            showTypeDropdown.value = !showTypeDropdown.value
+        }
+
+        const chooseType = (option) => {
+            form.value.maintenanceType = option
+            showTypeDropdown.value = false
+        }
+
+        onMounted(() => {
+            loadPreferences()
+            loadVehicles()
         })
 
         return {
             router,
             vehicles,
             form,
-            displayName,
             typeOptions,
-            currencyOptions,
-            distanceUnit,
-            showTypeList,
-            selectType,
-            submitRecord,
+            showTypeDropdown,
+            toggleTypeDropdown,
+            chooseType,
+            submitSchedule,
             submitting,
             errorMessage,
-            successMessage
+            successMessage,
+            displayName
         }
     }
 }
@@ -241,15 +203,12 @@ export default {
 <style scoped>
 .page { min-height: 100vh; background: #f6f7fb; }
 .hero {
-    padding: 18px 22px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 20px;
     background: linear-gradient(135deg, #6f6cf7, #f093fb);
     color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     box-shadow: 0 8px 18px rgba(0,0,0,0.12);
 }
-.brand { display: flex; align-items: center; gap: 10px; }
 .title { margin: 0; font-weight: 800; }
 .icon-btn { border: none; background: transparent; color: inherit; }
 .content { padding: 20px 24px 40px; max-width: 900px; margin: 0 auto; }

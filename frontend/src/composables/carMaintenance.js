@@ -93,6 +93,23 @@ export const useCarMaintenance = () => {
         return data.record
     }
 
+    const updateMaintenanceRecord = async(token, recordId, payload) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/maintenance-records/${recordId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to update maintenance record')
+        }
+        return data.record
+    }
+
     const getMaintenanceRecord = async(token, recordId) => {
         if (!token) throw new Error('Missing auth token')
         const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/maintenance-records/${recordId}`, {
@@ -257,6 +274,7 @@ export const useCarMaintenance = () => {
         getPreferences,
         savePreferences,
         createMaintenanceRecord,
+        updateMaintenanceRecord,
         getMaintenanceRecord,
         deleteMaintenanceRecord,
         listMaintenanceRecords,

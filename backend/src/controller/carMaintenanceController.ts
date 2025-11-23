@@ -75,6 +75,73 @@ export const addVehicle = async(req: Request, res: Response) => {
     }
 }
 
+export const updateMaintenanceRecord = async(req: Request, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const { id } = req.params
+    if (!id) return res.status(400).json({ status: 400, message: 'record id is required' })
+
+    const {
+        vehicleId,
+        maintenanceType,
+        title,
+        description,
+        serviceDate,
+        mileageAtService,
+        servicedBy,
+        location,
+        cost,
+        currency,
+        partsUsed,
+        laborHours,
+        receiptUrl,
+        tags,
+        nextServiceDue,
+        nextServiceMileage
+    } = req.body || {}
+
+    try {
+        const existing = await prisma.maintenanceRecord.findFirst({
+            where: { id, vehicle: { userId: user.id } }
+        })
+        if (!existing) {
+            return res.status(404).json({ status: 404, message: 'Maintenance record not found' })
+        }
+        const normalizeType = (raw: any) => {
+            if (raw === undefined || raw === null) return existing.maintenanceType
+            const str = String(raw).trim()
+            return str || existing.maintenanceType
+        }
+        const record = await prisma.maintenanceRecord.update({
+            where: { id },
+            data: {
+                vehicleId: vehicleId || existing.vehicleId,
+                maintenanceType: normalizeType(maintenanceType),
+                title: title || normalizeType(maintenanceType),
+                description: description ?? existing.description,
+                serviceDate: serviceDate ? new Date(serviceDate) : existing.serviceDate,
+                mileageAtService: mileageAtService !== undefined ? Number(mileageAtService) : existing.mileageAtService,
+                servicedBy: servicedBy ?? existing.servicedBy,
+                location: location ?? existing.location,
+                cost: cost !== undefined ? Number(cost) : existing.cost,
+                currency: currency || existing.currency,
+                partsUsed: partsUsed ?? existing.partsUsed,
+                laborHours: laborHours !== undefined ? Number(laborHours) : existing.laborHours,
+                receiptUrl: receiptUrl ?? existing.receiptUrl,
+                tags: Array.isArray(tags) ? tags : existing.tags,
+                nextServiceDue: nextServiceDue ? new Date(nextServiceDue) : existing.nextServiceDue,
+                nextServiceMileage: nextServiceMileage !== undefined ? Number(nextServiceMileage) : existing.nextServiceMileage
+            }
+        })
+        return res.status(200).json({ status: 200, record })
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 500,
+            message: error?.message || 'Unable to update maintenance record'
+        })
+    }
+}
+
 export const getVehicle = async(req: Request, res: Response) => {
     const user = ensureUser(req, res)
     if (!user) return
@@ -353,6 +420,9 @@ export const getMaintenanceRecord = async(req: Request, res: Response) => {
                 vehicle: {
                     userId: user.id
                 }
+            },
+            include: {
+                vehicle: true
             }
         })
         if (!record) {
@@ -558,7 +628,8 @@ export const getReminder = async(req: Request, res: Response) => {
     const { id } = req.params
     try {
         const reminder = await prisma.vehicleReminder.findFirst({
-            where: { id, vehicle: { userId: user.id } }
+            where: { id, vehicle: { userId: user.id } },
+            include: { vehicle: true }
         })
         if (!reminder) {
             return res.status(404).json({ status: 404, message: 'Reminder not found' })

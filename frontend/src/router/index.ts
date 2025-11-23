@@ -28,15 +28,27 @@ import WebMedicineReminderCalendar from '@/views/web/MedicalRecords/MedicineRemi
 import BloodPressureWeb from '@/views/web/MedicalRecords/BloodPressureDetail.vue'
 import BloodSugarWeb from '@/views/web/MedicalRecords/BloodSugarDetail.vue'
 import BodyWeightWeb from '@/views/web/MedicalRecords/BodyWeightDetail.vue'
+// Mobile Car Maintenance
 import CarMaintenance from '@/views/LandingPage/CarMaintenance.vue'
-import CarMaintenanceSchedules from '@/views/LandingPage/CarMaintenanceSchedules.vue'
-import CarMaintenanceVehicles from '@/views/LandingPage/CarMaintenanceVehicles.vue'
-import CarMaintenanceSettings from '@/views/LandingPage/CarMaintenanceSettings.vue'
-import CarMaintenanceAddVehicle from '@/views/LandingPage/CarMaintenanceAddVehicle.vue'
-import CarMaintenanceAddMaintenance from '@/views/LandingPage/CarMaintenanceAddMaintenance.vue'
-import CarMaintenanceReport from '@/views/LandingPage/CarMaintenanceReport.vue'
+import CarMaintenanceSchedules from '@/views/mobile/CarMaintenance/Schedules.vue'
+import CarMaintenanceVehicles from '@/views/mobile/CarMaintenance/Vehicles.vue'
+import CarMaintenanceSettings from '@/views/mobile/CarMaintenance/Settings.vue'
+import CarMaintenanceAddVehicle from '@/views/mobile/CarMaintenance/AddVehicle.vue'
+import CarMaintenanceAddMaintenance from '@/views/mobile/CarMaintenance/AddMaintenance.vue'
+import CarMaintenanceReport from '@/views/mobile/CarMaintenance/Report.vue'
 import CarMaintenanceMaintenanceDetail from '@/views/mobile/CarMaintenance/MaintenanceDetail.vue'
 import CarMaintenanceAddSchedule from '@/views/mobile/CarMaintenance/AddSchedule.vue'
+// Web Car Maintenance
+import CarMaintenanceWeb from '@/views/web/CarMaintenance/Index.vue'
+import CarMaintenanceSchedulesWeb from '@/views/web/CarMaintenance/Schedules.vue'
+import CarMaintenanceVehiclesWeb from '@/views/web/CarMaintenance/Vehicles.vue'
+import CarMaintenanceSettingsWeb from '@/views/web/CarMaintenance/Settings.vue'
+import CarMaintenanceAddVehicleWeb from '@/views/web/CarMaintenance/AddVehicle.vue'
+import CarMaintenanceAddMaintenanceWeb from '@/views/web/CarMaintenance/AddMaintenance.vue'
+import CarMaintenanceReportWeb from '@/views/web/CarMaintenance/Report.vue'
+import CarMaintenanceMaintenanceDetailWeb from '@/views/web/CarMaintenance/MaintenanceDetail.vue'
+import CarMaintenanceAddScheduleWeb from '@/views/web/CarMaintenance/AddSchedule.vue'
+import CarMaintenanceVehicleDetailWeb from '@/views/web/CarMaintenance/VehicleDetail.vue'
 import CarMaintenanceVehicleDetail from '@/views/mobile/CarMaintenance/VehicleDetail.vue'
 import ExpenseTracking from '@/views/LandingPage/ExpenseTracking.vue'
 
@@ -260,6 +272,79 @@ const routes: Array<RouteRecordRaw> = [
     path: '/car-maintenance/settings',
     name: 'car-maintenance-settings',
     component: CarMaintenanceSettings,
+    meta: { requiresAuth: true }
+  },
+  // Web car maintenance routes
+  {
+    path: '/web/car-maintenance',
+    name: 'car-maintenance-web',
+    component: CarMaintenanceWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/schedules',
+    name: 'car-maintenance-schedules-web',
+    component: CarMaintenanceSchedulesWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/schedules/add',
+    name: 'car-maintenance-schedules-add-web',
+    component: CarMaintenanceAddScheduleWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/schedules/:id',
+    name: 'car-maintenance-schedules-detail-web',
+    component: () => import('@/views/web/CarMaintenance/ScheduleDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/vehicles',
+    name: 'car-maintenance-vehicles-web',
+    component: CarMaintenanceVehiclesWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/vehicles/:id',
+    name: 'car-maintenance-vehicles-detail-web',
+    component: CarMaintenanceVehicleDetailWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/vehicles/add',
+    name: 'car-maintenance-vehicles-add-web',
+    component: CarMaintenanceAddVehicleWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/vehicles/:id/edit',
+    name: 'car-maintenance-vehicles-edit-web',
+    component: CarMaintenanceAddVehicleWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/maintenance/add',
+    name: 'car-maintenance-add-web',
+    component: CarMaintenanceAddMaintenanceWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/maintenance/:id',
+    name: 'car-maintenance-detail-web',
+    component: CarMaintenanceMaintenanceDetailWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/report',
+    name: 'car-maintenance-report-web',
+    component: CarMaintenanceReportWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/web/car-maintenance/settings',
+    name: 'car-maintenance-settings-web',
+    component: CarMaintenanceSettingsWeb,
     meta: { requiresAuth: true }
   },
   {
