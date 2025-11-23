@@ -33,6 +33,21 @@ export const useCarMaintenance = () => {
         return data.vehicle
     }
 
+    const deleteVehicle = async(token, vehicleId) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/vehicles/${vehicleId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to delete vehicle')
+        }
+        return true
+    }
+
     const getVehicle = async(token, vehicleId) => {
         if (!token) throw new Error('Missing auth token')
         const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/vehicles/${vehicleId}`, {
@@ -205,6 +220,7 @@ export const useCarMaintenance = () => {
     return {
         createVehicle,
         updateVehicle,
+        deleteVehicle,
         getVehicle,
         listVehicles,
         createMaintenanceRecord,

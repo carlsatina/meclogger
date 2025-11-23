@@ -19,6 +19,7 @@
             class="vehicle-card"
             v-for="vehicle in filteredVehicles"
             :key="vehicle.id"
+            @click="openDetail(vehicle.id)"
         >
             <div class="vehicle-thumb">
                 <img 
@@ -41,16 +42,6 @@
                 <div class="info-row">
                     <span class="label">Reg. Exp. Date</span>
                     <span class="value">: <em>{{ formatExpiry(vehicle.registrationExpiryDate) }}</em></span>
-                </div>
-            </div>
-            <div class="menu-wrapper">
-                <button class="card-menu" @click.stop="toggleMenu(vehicle.id)">
-                    <mdicon name="dots-vertical" :size="22"/>
-                </button>
-                <div v-if="openMenuId === vehicle.id" class="card-actions">
-                    <button class="action-btn" @click="openEdit(vehicle)">Edit</button>
-                    <button class="action-btn" @click="deleteVehicle(vehicle)">Delete</button>
-                    <button class="action-btn" @click="viewNotes(vehicle)">Notes</button>
                 </div>
             </div>
         </div>
@@ -108,23 +99,9 @@ export default {
         const goReport = () => router.push('/car-maintenance/report')
         const addVehicle = () => router.push('/car-maintenance/vehicles/add')
 
-        const toggleMenu = (vehicleId) => {
-            openMenuId.value = openMenuId.value === vehicleId ? '' : vehicleId
-        }
-
-        const openEdit = (vehicle) => {
-            router.push(`/car-maintenance/vehicles/${vehicle.id}/edit`)
-            openMenuId.value = ''
-        }
-
-        const deleteVehicle = (vehicle) => {
-            alert(`Delete vehicle: ${displayName(vehicle)}`)
-            openMenuId.value = ''
-        }
-
-        const viewNotes = (vehicle) => {
-            alert(vehicle.notes || 'No notes')
-            openMenuId.value = ''
+        const openDetail = (id) => {
+            if (!id) return
+            router.push(`/car-maintenance/vehicles/${id}`)
         }
 
         const loadVehicles = async() => {
@@ -173,11 +150,7 @@ export default {
             displayName,
             formatValue,
             formatExpiry,
-            openMenuId,
-            toggleMenu,
-            openEdit,
-            deleteVehicle,
-            viewNotes,
+            openDetail,
             addVehicle,
             API_BASE_URL
         }

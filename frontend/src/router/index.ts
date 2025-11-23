@@ -37,6 +37,7 @@ import CarMaintenanceAddMaintenance from '@/views/LandingPage/CarMaintenanceAddM
 import CarMaintenanceReport from '@/views/LandingPage/CarMaintenanceReport.vue'
 import CarMaintenanceMaintenanceDetail from '@/views/mobile/CarMaintenance/MaintenanceDetail.vue'
 import CarMaintenanceAddSchedule from '@/views/mobile/CarMaintenance/AddSchedule.vue'
+import CarMaintenanceVehicleDetail from '@/views/mobile/CarMaintenance/VehicleDetail.vue'
 import ExpenseTracking from '@/views/LandingPage/ExpenseTracking.vue'
 
 
@@ -217,6 +218,12 @@ const routes: Array<RouteRecordRaw> = [
     path: '/car-maintenance/vehicles',
     name: 'car-maintenance-vehicles',
     component: CarMaintenanceVehicles,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/car-maintenance/vehicles/:id',
+    name: 'car-maintenance-vehicles-detail',
+    component: CarMaintenanceVehicleDetail,
     meta: { requiresAuth: true }
   },
   {

@@ -361,9 +361,12 @@ input, textarea, select {
 
 .preview img {
     margin-top: 8px;
-    max-width: 100%;
+    width: 100%;
+    min-height: 160px;
+    max-height: 240px;
     border-radius: 12px;
     border: 1px solid #e5e7eb;
+    object-fit: cover;
 }
 
 .primary-btn {

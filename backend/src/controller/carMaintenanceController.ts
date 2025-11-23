@@ -169,6 +169,27 @@ export const updateVehicle = async(req: Request, res: Response) => {
     }
 }
 
+export const deleteVehicle = async(req: Request, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const { id } = req.params
+    try {
+        const existing = await prisma.vehicle.findFirst({
+            where: { id, userId: user.id }
+        })
+        if (!existing) {
+            return res.status(404).json({ status: 404, message: 'Vehicle not found' })
+        }
+        await prisma.vehicle.delete({ where: { id } })
+        return res.status(200).json({ status: 200, deleted: true })
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 500,
+            message: error?.message || 'Unable to delete vehicle'
+        })
+    }
+}
+
 export const listVehicles = async(req: Request, res: Response) => {
     const user = ensureUser(req, res)
     if (!user) return
