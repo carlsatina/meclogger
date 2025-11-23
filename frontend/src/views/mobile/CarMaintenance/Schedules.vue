@@ -13,8 +13,8 @@
             <mdicon name="car-sports" :size="26"/>
         </div>
         <div class="vehicle-meta">
-            <p class="vehicle-name">{{ vehicle.name }}</p>
-            <p class="vehicle-type">{{ vehicle.type }}</p>
+            <p class="vehicle-name">{{ vehicleName }}</p>
+            <p class="vehicle-type">{{ vehicleType }}</p>
         </div>
         <mdicon name="chevron-down" :size="22" class="dropdown"/>
     </div>
@@ -39,7 +39,7 @@
             <mdicon name="clipboard-list-outline" :size="22"/>
             <span>Schedules</span>
         </button>
-        <button class="nav-item">
+        <button class="nav-item" @click="goReport">
             <mdicon name="chart-pie" :size="22"/>
             <span>Report</span>
         </button>
@@ -56,33 +56,64 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useCarMaintenance } from '@/composables/carMaintenance'
 
 export default {
     name: 'CarMaintenanceSchedulesMobile',
     setup() {
         const router = useRouter()
-        const vehicle = ref({
-            name: 'Toyota Fortuner 2012',
-            type: 'SUV'
-        })
+        const { listVehicles } = useCarMaintenance()
+        const vehicles = ref([])
+        const selectedVehicleId = ref(localStorage.getItem('selectedVehicleId') || '')
 
         const goBack = () => router.back()
         const goHome = () => router.push('/car-maintenance')
         const addSchedule = () => {
-            alert('Add schedule')
+            router.push({ path: '/car-maintenance/schedules/add', query: selectedVehicleId.value ? { vehicleId: selectedVehicleId.value } : {} })
         }
         const goVehicles = () => router.push('/car-maintenance/vehicles')
         const goSettings = () => router.push('/car-maintenance/settings')
+        const goReport = () => router.push('/car-maintenance/report')
+
+        const loadVehicles = async() => {
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) return
+                vehicles.value = await listVehicles(token)
+                const preferred = vehicles.value.find(v => v.id === selectedVehicleId.value)
+                selectedVehicleId.value = preferred ? preferred.id : vehicles.value[0]?.id || ''
+            } catch (err) {
+                vehicles.value = []
+            }
+        }
+
+        const vehicleName = computed(() => {
+            const v = vehicles.value.find(v => v.id === selectedVehicleId.value)
+            if (!v) return 'Select a vehicle'
+            const parts = [v.make, v.model, v.year].filter(Boolean)
+            return parts.join(' ').trim() || 'Vehicle'
+        })
+
+        const vehicleType = computed(() => {
+            const v = vehicles.value.find(v => v.id === selectedVehicleId.value)
+            return v?.vehicleType || ''
+        })
+
+        onMounted(() => {
+            loadVehicles()
+        })
 
         return {
-            vehicle,
             goBack,
             goHome,
             addSchedule,
             goVehicles,
-            goSettings
+            goSettings,
+            goReport,
+            vehicleName,
+            vehicleType
         }
     }
 }

@@ -1,6 +1,66 @@
 import { API_BASE_URL } from '@/constants/config'
 
 export const useCarMaintenance = () => {
+    const createVehicle = async(token, formData) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/vehicles`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to create vehicle')
+        }
+        return data.vehicle
+    }
+
+    const updateVehicle = async(token, vehicleId, formData) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/vehicles/${vehicleId}`, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to update vehicle')
+        }
+        return data.vehicle
+    }
+
+    const getVehicle = async(token, vehicleId) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/vehicles/${vehicleId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to fetch vehicle')
+        }
+        return data.vehicle
+    }
+
+    const listVehicles = async(token) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/vehicles`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to load vehicles')
+        }
+        return data.vehicles || []
+    }
+
     const createMaintenanceRecord = async(token, payload) => {
         if (!token) throw new Error('Missing auth token')
         const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/maintenance-records`, {
@@ -18,7 +78,59 @@ export const useCarMaintenance = () => {
         return data.record
     }
 
+    const getMaintenanceRecord = async(token, recordId) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/maintenance-records/${recordId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to fetch maintenance record')
+        }
+        return data.record
+    }
+
+    const deleteMaintenanceRecord = async(token, recordId) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/maintenance-records/${recordId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to delete maintenance record')
+        }
+        return true
+    }
+
+    const listMaintenanceRecords = async(token, vehicleId) => {
+        if (!token) throw new Error('Missing auth token')
+        const params = new URLSearchParams()
+        if (vehicleId) params.append('vehicleId', vehicleId)
+        const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/maintenance-records?${params.toString()}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to load maintenance records')
+        }
+        return data.records || []
+    }
+
     return {
-        createMaintenanceRecord
+        createVehicle,
+        updateVehicle,
+        getVehicle,
+        listVehicles,
+        createMaintenanceRecord,
+        getMaintenanceRecord,
+        deleteMaintenanceRecord,
+        listMaintenanceRecords
     }
 }

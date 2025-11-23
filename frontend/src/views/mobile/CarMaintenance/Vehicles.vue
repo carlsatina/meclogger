@@ -14,40 +14,51 @@
     </div>
 
     <div class="vehicle-list">
+        <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div
             class="vehicle-card"
             v-for="vehicle in filteredVehicles"
             :key="vehicle.id"
         >
             <div class="vehicle-thumb">
-                <mdicon name="clipboard-list-outline" :size="24"/>
+                <img 
+                    v-if="vehicle.imageUrl" 
+                    :src="vehicle.imageUrl.startsWith('http') ? vehicle.imageUrl : `${API_BASE_URL}${vehicle.imageUrl}`" 
+                    alt="Vehicle" 
+                />
+                <mdicon v-else name="clipboard-list-outline" :size="24"/>
             </div>
             <div class="vehicle-info">
-                <p class="vehicle-name">{{ vehicle.name }}</p>
+                <p class="vehicle-name">{{ displayName(vehicle) }}</p>
                 <div class="info-row">
-                    <span class="label">Fuel Type</span>
-                    <span class="value">: {{ vehicle.fuelType || 'No data' }}</span>
+                    <span class="label">License Plate</span>
+                    <span class="value">: {{ formatValue(vehicle.licensePlate) }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Registration</span>
-                    <span class="value">: {{ vehicle.registration || 'No data' }}</span>
+                    <span class="label">VIN</span>
+                    <span class="value">: {{ formatValue(vehicle.vin) }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Plate No.</span>
-                    <span class="value">: {{ vehicle.plateNumber || 'No data' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Registration</span>
-                    <span class="value">: {{ vehicle.registration2 || 'No data' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Expiry Date</span>
-                    <span class="value">: <em>{{ vehicle.expiryDate || '(No date set)' }}</em></span>
+                    <span class="label">Reg. Exp. Date</span>
+                    <span class="value">: <em>{{ formatExpiry(vehicle.registrationExpiryDate) }}</em></span>
                 </div>
             </div>
-            <mdicon name="dots-vertical" :size="22" class="card-menu"/>
+            <div class="menu-wrapper">
+                <button class="card-menu" @click.stop="toggleMenu(vehicle.id)">
+                    <mdicon name="dots-vertical" :size="22"/>
+                </button>
+                <div v-if="openMenuId === vehicle.id" class="card-actions">
+                    <button class="action-btn" @click="openEdit(vehicle)">Edit</button>
+                    <button class="action-btn" @click="deleteVehicle(vehicle)">Delete</button>
+                    <button class="action-btn" @click="viewNotes(vehicle)">Notes</button>
+                </div>
+            </div>
         </div>
     </div>
+
+    <button class="fab" @click="addVehicle">
+        <mdicon name="plus" :size="24"/>
+    </button>
 
     <nav class="bottom-nav">
         <button class="nav-item" @click="goHome">
@@ -58,7 +69,7 @@
             <mdicon name="clipboard-list-outline" :size="22"/>
             <span>Schedules</span>
         </button>
-        <button class="nav-item">
+        <button class="nav-item" @click="goReport">
             <mdicon name="chart-pie" :size="22"/>
             <span>Report</span>
         </button>
@@ -75,52 +86,78 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useCarMaintenance } from '@/composables/carMaintenance'
+import { API_BASE_URL } from '@/constants/config'
 
 export default {
     name: 'CarMaintenanceVehiclesMobile',
     setup() {
         const router = useRouter()
+        const { listVehicles } = useCarMaintenance()
         const search = ref('')
-        const vehicles = ref([
-            {
-                id: '1',
-                name: 'Suzuki Alto 2020',
-                fuelType: 'Petrol',
-                registration: 'No data',
-                plateNumber: '',
-                registration2: 'No data',
-                expiryDate: '(No date set)'
-            },
-            {
-                id: '2',
-                name: 'Nissan Navarra 2018',
-                fuelType: 'Diesel',
-                registration: 'No data',
-                plateNumber: '',
-                registration2: 'No data',
-                expiryDate: '(No date set)'
-            },
-            {
-                id: '3',
-                name: 'Toyota Fortuner 2012',
-                fuelType: 'Diesel',
-                registration: 'No data',
-                plateNumber: 'YKZ905',
-                registration2: 'No data',
-                expiryDate: '(No date set)'
-            }
-        ])
+        const vehicles = ref([])
+        const errorMessage = ref('')
+        const openMenuId = ref('')
 
         const goBack = () => router.back()
         const goHome = () => router.push('/car-maintenance')
         const goSchedules = () => router.push('/car-maintenance/schedules')
         const goSettings = () => router.push('/car-maintenance/settings')
+        const goReport = () => router.push('/car-maintenance/report')
+        const addVehicle = () => router.push('/car-maintenance/vehicles/add')
+
+        const toggleMenu = (vehicleId) => {
+            openMenuId.value = openMenuId.value === vehicleId ? '' : vehicleId
+        }
+
+        const openEdit = (vehicle) => {
+            router.push(`/car-maintenance/vehicles/${vehicle.id}/edit`)
+            openMenuId.value = ''
+        }
+
+        const deleteVehicle = (vehicle) => {
+            alert(`Delete vehicle: ${displayName(vehicle)}`)
+            openMenuId.value = ''
+        }
+
+        const viewNotes = (vehicle) => {
+            alert(vehicle.notes || 'No notes')
+            openMenuId.value = ''
+        }
+
+        const loadVehicles = async() => {
+            errorMessage.value = ''
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) throw new Error('You must be logged in.')
+                vehicles.value = await listVehicles(token)
+            } catch (err) {
+                errorMessage.value = err?.message || 'Unable to load vehicles'
+                vehicles.value = []
+            }
+        }
 
         const filteredVehicles = computed(() => {
             const term = search.value.toLowerCase()
-            return vehicles.value.filter(v => v.name.toLowerCase().includes(term))
+            return vehicles.value.filter(v => {
+                const name = `${v.make || ''} ${v.model || ''} ${v.year || ''}`.trim()
+                return name.toLowerCase().includes(term)
+            })
+        })
+
+        const displayName = (vehicle) => {
+            const parts = [vehicle.make, vehicle.model, vehicle.year].filter(Boolean)
+            return parts.join(' ').trim() || 'Vehicle'
+        }
+
+        const formatValue = (value, fallback = 'No data') => value || fallback
+
+        const formatExpiry = (value) => value || '(No date set)'
+
+        onMounted(() => {
+            loadVehicles()
         })
 
         return {
@@ -130,7 +167,19 @@ export default {
             goBack,
             goHome,
             goSchedules,
-            goSettings
+            goSettings,
+            goReport,
+            errorMessage,
+            displayName,
+            formatValue,
+            formatExpiry,
+            openMenuId,
+            toggleMenu,
+            openEdit,
+            deleteVehicle,
+            viewNotes,
+            addVehicle,
+            API_BASE_URL
         }
     }
 }
@@ -198,7 +247,7 @@ export default {
 
 .vehicle-card {
     display: grid;
-    grid-template-columns: 90px 1fr 32px;
+    grid-template-columns: 90px 1fr auto;
     gap: 12px;
     background: white;
     border-radius: 14px;
@@ -215,6 +264,26 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.vehicle-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.fab {
+    position: fixed;
+    bottom: 84px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    border: none;
+    background: #f7931e;
+    color: white;
+    box-shadow: 0 10px 20px rgba(247, 147, 30, 0.35);
 }
 
 .vehicle-info {
@@ -247,9 +316,42 @@ export default {
     color: #6b7280;
 }
 
-.card-menu {
+.menu-wrapper {
+    position: relative;
     justify-self: end;
+}
+
+.card-menu {
+    border: none;
+    background: transparent;
     color: #6b7280;
+}
+
+.card-actions {
+    position: absolute;
+    top: 28px;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+    z-index: 5;
+}
+
+.action-btn {
+    border: none;
+    background: transparent;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 13px;
+    color: #1f2937;
+}
+
+.action-btn + .action-btn {
+    border-top: 1px solid #f1f5f9;
 }
 
 .bottom-nav {

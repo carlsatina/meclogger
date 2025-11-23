@@ -9,12 +9,16 @@
     </div>
 
     <form class="form" @submit.prevent="submitRecord">
-        <div class="field">
+        <div v-if="isEditing" class="field readonly-field">
+            <label>Vehicle</label>
+            <div class="readonly-value">{{ selectedVehicleName }}</div>
+        </div>
+        <div v-else class="field">
             <label>Vehicle</label>
             <select v-model="form.vehicleId" required>
                 <option value="" disabled>Select vehicle</option>
                 <option v-for="vehicle in vehicles" :key="vehicle.id" :value="vehicle.id">
-                    {{ vehicle.name }}
+                    {{ displayName(vehicle) }}
                 </option>
             </select>
         </div>
@@ -88,15 +92,9 @@
             <textarea v-model="form.partsUsed" rows="2" placeholder="List parts used"></textarea>
         </div>
 
-        <div class="two-col">
-            <div class="field">
-                <label>Labor Hours</label>
-                <input v-model="form.laborHours" type="number" min="0" step="0.1" placeholder="2.5" />
-            </div>
-            <div class="field">
-                <label>Receipt URL</label>
-                <input v-model="form.receiptUrl" type="url" placeholder="https://..." />
-            </div>
+        <div class="field">
+            <label>Labor Hours</label>
+            <input v-model="form.laborHours" type="number" min="0" step="0.1" placeholder="2.5" />
         </div>
 
         <div class="field">
@@ -114,21 +112,22 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useCarMaintenance } from '@/composables/carMaintenance'
 
 export default {
     name: 'CarMaintenanceAddMaintenanceMobile',
     setup() {
         const router = useRouter()
-        const { createMaintenanceRecord } = useCarMaintenance()
+        const route = useRoute()
+        const { createMaintenanceRecord, listVehicles, getMaintenanceRecord } = useCarMaintenance()
 
-        const vehicles = ref([
-            { id: '1', name: 'Toyota Fortuner 2012' },
-            { id: '2', name: 'Nissan Navarra 2018' },
-            { id: '3', name: 'Suzuki Alto 2020' }
-        ])
+        const vehicles = ref([])
+        const isEditing = ref(false)
+        const editingId = ref('')
+        const selectedVehicleName = ref('')
+        const initialVehicleId = ref('')
 
         const form = ref({
             vehicleId: '',
@@ -142,7 +141,6 @@ export default {
             location: '',
             partsUsed: '',
             laborHours: '',
-            receiptUrl: '',
             description: ''
         })
 
@@ -159,6 +157,55 @@ export default {
 
         const goBack = () => router.back()
 
+        const loadVehicles = async() => {
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) throw new Error('You must be logged in.')
+                vehicles.value = await listVehicles(token)
+                if (!isEditing.value) {
+                    if (initialVehicleId.value) {
+                        const match = vehicles.value.find(v => v.id === initialVehicleId.value)
+                        if (match) {
+                            form.value.vehicleId = match.id
+                        }
+                    }
+                    if (!form.value.vehicleId && vehicles.value.length) {
+                        form.value.vehicleId = vehicles.value[0].id
+                    }
+                }
+            } catch (err) {
+                errorMessage.value = err?.message || 'Unable to load vehicles'
+                vehicles.value = []
+            }
+        }
+
+        const loadRecord = async(id) => {
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) throw new Error('You must be logged in.')
+                const rec = await getMaintenanceRecord(token, id)
+                editingId.value = rec.id
+                isEditing.value = true
+                form.value = {
+                    vehicleId: rec.vehicleId,
+                    title: rec.title || '',
+                    serviceDate: rec.serviceDate ? rec.serviceDate.split('T')[0] : '',
+                    maintenanceType: rec.maintenanceType || '',
+                    mileageAtService: rec.mileageAtService || '',
+                    cost: rec.cost || '',
+                    currency: rec.currency || 'USD',
+                    servicedBy: rec.servicedBy || '',
+                    location: rec.location || '',
+                    partsUsed: rec.partsUsed || '',
+                    laborHours: rec.laborHours || '',
+                    description: rec.description || ''
+                }
+                selectedVehicleName.value = rec.vehicleId
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
         const submitRecord = async() => {
             errorMessage.value = ''
             successMessage.value = ''
@@ -166,8 +213,13 @@ export default {
             try {
                 const token = localStorage.getItem('token')
                 if (!token) throw new Error('You must be logged in.')
-                const record = await createMaintenanceRecord(token, payload.value)
-                successMessage.value = 'Maintenance saved'
+                if (isEditing.value && editingId.value) {
+                    await createMaintenanceRecord(token, { ...payload.value, id: editingId.value })
+                    successMessage.value = 'Maintenance updated'
+                } else {
+                    await createMaintenanceRecord(token, payload.value)
+                    successMessage.value = 'Maintenance saved'
+                }
                 setTimeout(() => {
                     router.push('/car-maintenance')
                 }, 600)
@@ -178,6 +230,30 @@ export default {
             }
         }
 
+        const displayName = (vehicle) => {
+            if (!vehicle) return 'Vehicle'
+            const parts = [vehicle.make, vehicle.model, vehicle.year].filter(Boolean)
+            const assembled = parts.join(' ').trim()
+            return assembled || vehicle.licensePlate || vehicle.vin || 'Vehicle'
+        }
+
+        onMounted(async() => {
+            const editId = route.query.id
+            const vehicleIdQuery = Array.isArray(route.query.vehicleId) ? route.query.vehicleId[0] : route.query.vehicleId
+            if (vehicleIdQuery) {
+                initialVehicleId.value = vehicleIdQuery
+                form.value.vehicleId = vehicleIdQuery
+            }
+            if (editId) {
+                await loadRecord(editId)
+            }
+            await loadVehicles()
+            if (isEditing.value) {
+                const veh = vehicles.value.find(v => v.id === form.value.vehicleId)
+                selectedVehicleName.value = veh ? displayName(veh) : ''
+            }
+        })
+
         return {
             vehicles,
             form,
@@ -185,7 +261,10 @@ export default {
             errorMessage,
             successMessage,
             goBack,
-            submitRecord
+            submitRecord,
+            displayName,
+            isEditing,
+            selectedVehicleName
         }
     }
 }

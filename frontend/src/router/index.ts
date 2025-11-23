@@ -34,6 +34,9 @@ import CarMaintenanceVehicles from '@/views/LandingPage/CarMaintenanceVehicles.v
 import CarMaintenanceSettings from '@/views/LandingPage/CarMaintenanceSettings.vue'
 import CarMaintenanceAddVehicle from '@/views/LandingPage/CarMaintenanceAddVehicle.vue'
 import CarMaintenanceAddMaintenance from '@/views/LandingPage/CarMaintenanceAddMaintenance.vue'
+import CarMaintenanceReport from '@/views/LandingPage/CarMaintenanceReport.vue'
+import CarMaintenanceMaintenanceDetail from '@/views/mobile/CarMaintenance/MaintenanceDetail.vue'
+import CarMaintenanceAddSchedule from '@/views/mobile/CarMaintenance/AddSchedule.vue'
 import ExpenseTracking from '@/views/LandingPage/ExpenseTracking.vue'
 
 
@@ -205,6 +208,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/car-maintenance/schedules/add',
+    name: 'car-maintenance-schedules-add',
+    component: CarMaintenanceAddSchedule,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/car-maintenance/vehicles',
     name: 'car-maintenance-vehicles',
     component: CarMaintenanceVehicles,
@@ -217,9 +226,27 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/car-maintenance/vehicles/:id/edit',
+    name: 'car-maintenance-vehicles-edit',
+    component: CarMaintenanceAddVehicle,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/car-maintenance/maintenance/add',
     name: 'car-maintenance-add',
     component: CarMaintenanceAddMaintenance,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/car-maintenance/maintenance/:id',
+    name: 'car-maintenance-detail',
+    component: CarMaintenanceMaintenanceDetail,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/car-maintenance/report',
+    name: 'car-maintenance-report',
+    component: CarMaintenanceReport,
     meta: { requiresAuth: true }
   },
   {

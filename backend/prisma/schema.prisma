@@ -198,25 +198,26 @@ model Notification {
 }
 
 model Vehicle {
-  id                 String              @id @default(cuid())
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  userId             String
-  vehicleType        VehicleType         @default(CAR)
-  make               String
-  model              String
-  year               Int?
-  color              String?
-  licensePlate       String?
-  vin                String?             @unique
-  purchaseDate       DateTime?
-  currentMileage     Int?
-  imageUrl           String?
-  notes              String?
-  maintenanceRecords MaintenanceRecord[]
-  maintenanceHistory CarMaintenanceHistory[]
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reminders          VehicleReminder[]
+  id                     String                  @id @default(cuid())
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  userId                 String
+  vehicleType            VehicleType             @default(CAR)
+  make                   String
+  model                  String
+  year                   Int?
+  color                  String?
+  licensePlate           String?
+  registrationExpiryDate DateTime?
+  vin                    String?                 @unique
+  purchaseDate           DateTime?
+  currentMileage         Int?
+  imageUrl               String?
+  notes                  String?
+  maintenanceHistory     CarMaintenanceHistory[]
+  maintenanceRecords     MaintenanceRecord[]
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminders              VehicleReminder[]
 
   @@index([userId])
 }
@@ -247,13 +248,12 @@ model MaintenanceRecord {
   @@index([maintenanceType])
 }
 
-// Detailed maintenance history entries to track actual work performed
 model CarMaintenanceHistory {
-  id               String          @id @default(cuid())
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  id               String                     @id @default(cuid())
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
   vehicleId        String
-  maintenanceType  MaintenanceType @default(OTHER)
+  maintenanceType  MaintenanceType            @default(OTHER)
   title            String
   description      String?
   serviceDate      DateTime
@@ -261,38 +261,38 @@ model CarMaintenanceHistory {
   serviceProvider  String?
   location         String?
   cost             Float?
-  currency         String?         @default("USD")
+  currency         String?                    @default("USD")
   notes            String?
   attachments      CarMaintenanceAttachment[]
+  vehicle          Vehicle                    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   parts            CarMaintenancePart[]
-  vehicle          Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId, serviceDate])
   @@index([maintenanceType])
 }
 
 model CarMaintenancePart {
-  id            String                 @id @default(cuid())
-  name          String
-  quantity      Float?                 @default(1)
-  unit          String?
-  cost          Float?
-  currency      String?                @default("USD")
-  historyId     String
-  history       CarMaintenanceHistory  @relation(fields: [historyId], references: [id], onDelete: Cascade)
+  id        String                @id @default(cuid())
+  name      String
+  quantity  Float?                @default(1)
+  unit      String?
+  cost      Float?
+  currency  String?               @default("USD")
+  historyId String
+  history   CarMaintenanceHistory @relation(fields: [historyId], references: [id], onDelete: Cascade)
 
   @@index([historyId])
 }
 
 model CarMaintenanceAttachment {
-  id         String                 @id @default(cuid())
-  createdAt  DateTime               @default(now())
-  url        String
-  mimeType   String?
-  sizeBytes  Int?
-  label      String?
-  historyId  String
-  history    CarMaintenanceHistory  @relation(fields: [historyId], references: [id], onDelete: Cascade)
+  id        String                @id @default(cuid())
+  createdAt DateTime              @default(now())
+  url       String
+  mimeType  String?
+  sizeBytes Int?
+  label     String?
+  historyId String
+  history   CarMaintenanceHistory @relation(fields: [historyId], references: [id], onDelete: Cascade)
 
   @@index([historyId])
 }

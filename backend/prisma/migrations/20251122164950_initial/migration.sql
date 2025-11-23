@@ -216,6 +216,7 @@ CREATE TABLE "Vehicle" (
     "year" INTEGER,
     "color" TEXT,
     "licensePlate" TEXT,
+    "registrationExpiryDate" TIMESTAMP(3),
     "vin" TEXT,
     "purchaseDate" TIMESTAMP(3),
     "currentMileage" INTEGER,
@@ -248,6 +249,52 @@ CREATE TABLE "MaintenanceRecord" (
     "nextServiceMileage" INTEGER,
 
     CONSTRAINT "MaintenanceRecord_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CarMaintenanceHistory" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "vehicleId" TEXT NOT NULL,
+    "maintenanceType" "MaintenanceType" NOT NULL DEFAULT 'OTHER',
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "serviceDate" TIMESTAMP(3) NOT NULL,
+    "mileageAtService" INTEGER,
+    "serviceProvider" TEXT,
+    "location" TEXT,
+    "cost" DOUBLE PRECISION,
+    "currency" TEXT DEFAULT 'USD',
+    "notes" TEXT,
+
+    CONSTRAINT "CarMaintenanceHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CarMaintenancePart" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "quantity" DOUBLE PRECISION DEFAULT 1,
+    "unit" TEXT,
+    "cost" DOUBLE PRECISION,
+    "currency" TEXT DEFAULT 'USD',
+    "historyId" TEXT NOT NULL,
+
+    CONSTRAINT "CarMaintenancePart_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CarMaintenanceAttachment" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "url" TEXT NOT NULL,
+    "mimeType" TEXT,
+    "sizeBytes" INTEGER,
+    "label" TEXT,
+    "historyId" TEXT NOT NULL,
+
+    CONSTRAINT "CarMaintenanceAttachment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -395,6 +442,18 @@ CREATE INDEX "MaintenanceRecord_vehicleId_serviceDate_idx" ON "MaintenanceRecord
 CREATE INDEX "MaintenanceRecord_maintenanceType_idx" ON "MaintenanceRecord"("maintenanceType");
 
 -- CreateIndex
+CREATE INDEX "CarMaintenanceHistory_vehicleId_serviceDate_idx" ON "CarMaintenanceHistory"("vehicleId", "serviceDate");
+
+-- CreateIndex
+CREATE INDEX "CarMaintenanceHistory_maintenanceType_idx" ON "CarMaintenanceHistory"("maintenanceType");
+
+-- CreateIndex
+CREATE INDEX "CarMaintenancePart_historyId_idx" ON "CarMaintenancePart"("historyId");
+
+-- CreateIndex
+CREATE INDEX "CarMaintenanceAttachment_historyId_idx" ON "CarMaintenanceAttachment"("historyId");
+
+-- CreateIndex
 CREATE INDEX "VehicleReminder_vehicleId_dueDate_idx" ON "VehicleReminder"("vehicleId", "dueDate");
 
 -- CreateIndex
@@ -468,6 +527,15 @@ ALTER TABLE "Vehicle" ADD CONSTRAINT "Vehicle_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "MaintenanceRecord" ADD CONSTRAINT "MaintenanceRecord_vehicleId_fkey" FOREIGN KEY ("vehicleId") REFERENCES "Vehicle"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CarMaintenanceHistory" ADD CONSTRAINT "CarMaintenanceHistory_vehicleId_fkey" FOREIGN KEY ("vehicleId") REFERENCES "Vehicle"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CarMaintenancePart" ADD CONSTRAINT "CarMaintenancePart_historyId_fkey" FOREIGN KEY ("historyId") REFERENCES "CarMaintenanceHistory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CarMaintenanceAttachment" ADD CONSTRAINT "CarMaintenanceAttachment_historyId_fkey" FOREIGN KEY ("historyId") REFERENCES "CarMaintenanceHistory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "VehicleReminder" ADD CONSTRAINT "VehicleReminder_vehicleId_fkey" FOREIGN KEY ("vehicleId") REFERENCES "Vehicle"("id") ON DELETE CASCADE ON UPDATE CASCADE;

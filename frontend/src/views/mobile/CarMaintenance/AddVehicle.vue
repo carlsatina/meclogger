@@ -61,6 +61,10 @@
             </div>
         </div>
         <div class="field">
+            <label>Reg. Exp. Date</label>
+            <input v-model="form.registrationExpiryDate" type="date" />
+        </div>
+        <div class="field">
             <label>VIN</label>
             <input v-model="form.vin" type="text" placeholder="Optional" />
         </div>
@@ -80,7 +84,7 @@
         </div>
 
         <button class="primary-btn" type="submit" :disabled="submitting">
-            {{ submitting ? 'Saving...' : 'Save Vehicle' }}
+            {{ submitting ? 'Saving...' : (isEditing ? 'Update Vehicle' : 'Save Vehicle') }}
         </button>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <p v-if="successMessage" class="success">{{ successMessage }}</p>
@@ -89,20 +93,24 @@
 </template>
 
 <script>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { API_BASE_URL } from '@/constants/config'
+import { useCarMaintenance } from '@/composables/carMaintenance'
 
 export default {
     name: 'CarMaintenanceAddVehicleMobile',
     setup() {
         const router = useRouter()
+        const route = useRoute()
+        const { createVehicle, getVehicle, updateVehicle } = useCarMaintenance()
         const form = ref({
             make: '',
             model: '',
             year: '',
             color: '',
             licensePlate: '',
+            registrationExpiryDate: '',
             vin: '',
             vehicleType: 'CAR',
             purchaseDate: '',
@@ -115,6 +123,9 @@ export default {
         const submitting = ref(false)
         const errorMessage = ref('')
         const successMessage = ref('')
+        const isEditing = ref(false)
+        const editingId = ref('')
+        const existingImageUrl = ref('')
 
         const goBack = () => router.back()
 
@@ -129,6 +140,79 @@ export default {
             if (file) {
                 imageFile.value = file
                 imagePreview.value = URL.createObjectURL(file)
+            }
+        }
+
+        const compressImage = (file, maxSize = 1024 * 1024) => {
+            return new Promise((resolve) => {
+                const img = new Image()
+                const reader = new FileReader()
+                reader.onload = (e) => {
+                    img.src = e.target.result
+                }
+                img.onload = () => {
+                    const canvas = document.createElement('canvas')
+                    const ctx = canvas.getContext('2d')
+                    const maxDimension = 1200
+                    let { width, height } = img
+                    if (width > maxDimension || height > maxDimension) {
+                        const scale = Math.min(maxDimension / width, maxDimension / height)
+                        width = Math.round(width * scale)
+                        height = Math.round(height * scale)
+                    }
+                    canvas.width = width
+                    canvas.height = height
+                    ctx.drawImage(img, 0, 0, width, height)
+                    let quality = 0.9
+                    const attempt = () => {
+                        canvas.toBlob(
+                            (blob) => {
+                                if (blob && blob.size <= maxSize) {
+                                    resolve(new File([blob], file.name, { type: blob.type }))
+                                } else if (quality > 0.1) {
+                                    quality -= 0.1
+                                    attempt()
+                                } else {
+                                    resolve(file)
+                                }
+                            },
+                            'image/jpeg',
+                            quality
+                        )
+                    }
+                    attempt()
+                }
+                reader.readAsDataURL(file)
+            })
+        }
+
+        const loadVehicle = async() => {
+            try {
+                const token = localStorage.getItem('token')
+                const id = route.params.id || route.query.vehicleId
+                if (!token || !id) return
+                const vehicle = await getVehicle(token, id)
+                editingId.value = vehicle.id
+                isEditing.value = true
+                form.value = {
+                    make: vehicle.make || '',
+                    model: vehicle.model || '',
+                    year: vehicle.year || '',
+                    color: vehicle.color || '',
+                    licensePlate: vehicle.licensePlate || '',
+                    registrationExpiryDate: vehicle.registrationExpiryDate ? vehicle.registrationExpiryDate.split('T')[0] : '',
+                    vin: vehicle.vin || '',
+                    vehicleType: vehicle.vehicleType || 'CAR',
+                    purchaseDate: vehicle.purchaseDate ? vehicle.purchaseDate.split('T')[0] : '',
+                    currentMileage: vehicle.currentMileage || '',
+                    notes: vehicle.notes || ''
+                }
+                if (vehicle.imageUrl) {
+                    existingImageUrl.value = vehicle.imageUrl
+                    imagePreview.value = vehicle.imageUrl.startsWith('http') ? vehicle.imageUrl : `${API_BASE_URL}${vehicle.imageUrl}`
+                }
+            } catch (err) {
+                console.error(err)
             }
         }
 
@@ -147,21 +231,20 @@ export default {
                         payload.append(key, value)
                     }
                 })
+                if (!imageFile.value && existingImageUrl.value) {
+                    payload.append('imageUrl', existingImageUrl.value)
+                }
                 if (imageFile.value) {
-                    payload.append('image', imageFile.value)
+                    const compressed = await compressImage(imageFile.value)
+                    payload.append('image', compressed)
                 }
-                const res = await fetch(`${API_BASE_URL}/api/v1/car-maintenance/vehicles`, {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: payload
-                })
-                const data = await res.json()
-                if (!res.ok) {
-                    throw new Error(data.message || 'Unable to add vehicle')
+                if (isEditing.value && editingId.value) {
+                    await updateVehicle(token, editingId.value, payload)
+                    successMessage.value = 'Vehicle updated successfully'
+                } else {
+                    await createVehicle(token, payload)
+                    successMessage.value = 'Vehicle added successfully'
                 }
-                successMessage.value = 'Vehicle added successfully'
                 setTimeout(() => {
                     router.push('/car-maintenance/vehicles')
                 }, 600)
@@ -171,6 +254,10 @@ export default {
                 submitting.value = false
             }
         }
+
+        onMounted(() => {
+            loadVehicle()
+        })
 
         return {
             form,
@@ -182,7 +269,8 @@ export default {
             goBack,
             triggerFileInput,
             handleFileChange,
-            submitVehicle
+            submitVehicle,
+            isEditing
         }
     }
 }
