@@ -60,7 +60,7 @@
             @click="openRecordDetail(item.id)"
         >
             <div class="history-top">
-                <p class="history-title">{{ item.title }}</p>
+                <p class="history-title">{{ item.maintenanceType || item.title }}</p>
                 <p class="history-date">{{ formatDate(item.serviceDate) }}</p>
             </div>
             <div class="history-bottom">

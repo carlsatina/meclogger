@@ -227,7 +227,7 @@ model MaintenanceRecord {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   vehicleId          String
-  maintenanceType    MaintenanceType @default(OTHER)
+  maintenanceType    String          @default("OTHER")
   title              String
   description        String?
   serviceDate        DateTime
@@ -253,7 +253,7 @@ model CarMaintenanceHistory {
   createdAt        DateTime                   @default(now())
   updatedAt        DateTime                   @updatedAt
   vehicleId        String
-  maintenanceType  MaintenanceType            @default(OTHER)
+  maintenanceType  String                     @default("OTHER")
   title            String
   description      String?
   serviceDate      DateTime

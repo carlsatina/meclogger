@@ -1,6 +1,5 @@
 import prisma from '../../lib/prisma'
 import { Request, Response } from 'express'
-import { MaintenanceType } from '@prisma/client'
 
 const ensureUser = (req: any, res: Response) => {
     if (!req.user) {
@@ -251,10 +250,11 @@ export const addMaintenanceRecord = async(req: Request, res: Response) => {
         tags
     } = req.body || {}
 
-    if (!vehicleId || !title || !serviceDate) {
+    const normalizedTitle = title || maintenanceType || 'Maintenance'
+    if (!vehicleId || !normalizedTitle || !serviceDate) {
         return res.status(400).json({
             status: 400,
-            message: 'vehicleId, title, and serviceDate are required'
+            message: 'vehicleId, maintenanceType/title, and serviceDate are required'
         })
     }
 
@@ -273,11 +273,9 @@ export const addMaintenanceRecord = async(req: Request, res: Response) => {
     }
 
     const normalizeType = (raw: any) => {
-        if (!raw) return MaintenanceType.OTHER
-        const candidate = String(raw).trim().toUpperCase().replace(/[\s-]+/g, '_')
-        return Object.values(MaintenanceType).includes(candidate as MaintenanceType)
-            ? (candidate as MaintenanceType)
-            : MaintenanceType.OTHER
+        if (!raw) return 'OTHER'
+        const str = String(raw).trim()
+        return str || 'OTHER'
     }
 
     try {
@@ -285,7 +283,7 @@ export const addMaintenanceRecord = async(req: Request, res: Response) => {
             data: {
                 vehicleId,
                 maintenanceType: normalizeType(maintenanceType),
-                title,
+                title: normalizedTitle,
                 description: description || null,
                 serviceDate: new Date(serviceDate),
                 mileageAtService: mileageAtService ? Number(mileageAtService) : null,

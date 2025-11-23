@@ -24,39 +24,29 @@
         </div>
 
         <div class="field">
-            <label>Title</label>
-            <input v-model="form.title" type="text" required placeholder="Oil Change" />
+            <label>Maintenance Type</label>
+            <div class="type-input">
+                <input
+                    v-model="form.maintenanceType"
+                    type="text"
+                    placeholder="Select or type"
+                    @focus="showTypeList = true"
+                />
+                <button type="button" class="type-icon" @click="showTypeList = !showTypeList">
+                    <mdicon name="menu-down" :size="20"/>
+                </button>
+            </div>
+            <div v-if="showTypeList" class="type-list">
+                <button type="button" class="type-option" v-for="option in typeOptions" :key="option" @click="selectType(option)">
+                    {{ option }}
+                </button>
+            </div>
         </div>
 
         <div class="two-col">
             <div class="field">
                 <label>Service Date</label>
                 <input v-model="form.serviceDate" type="date" required />
-            </div>
-            <div class="field">
-                <label>Maintenance Type</label>
-                <input
-                    v-model="form.maintenanceType"
-                    list="maintenance-options"
-                    type="text"
-                    placeholder="Select or type"
-                />
-                <datalist id="maintenance-options">
-                    <option value="Oil Change"></option>
-                    <option value="Brake Pad Replacement"></option>
-                    <option value="Tire Rotation"></option>
-                    <option value="Tire Replacement"></option>
-                    <option value="Battery Replacement"></option>
-                    <option value="Air Filter Replacement"></option>
-                    <option value="Transmission Service"></option>
-                    <option value="Coolant Flush"></option>
-                    <option value="Spark Plug Replacement"></option>
-                    <option value="Brake Fluid Change"></option>
-                    <option value="Alignment"></option>
-                    <option value="Inspection"></option>
-                    <option value="Repair"></option>
-                    <option value="Other"></option>
-                </datalist>
             </div>
         </div>
 
@@ -128,10 +118,25 @@ export default {
         const editingId = ref('')
         const selectedVehicleName = ref('')
         const initialVehicleId = ref('')
+        const showTypeList = ref(false)
+        const typeOptions = [
+            'Engine Oil Change',
+            'Brake Pad Replacement',
+            'Tire Rotation',
+            'Tire Replacement',
+            'Battery Replacement',
+            'Air Filter Replacement',
+            'Transmission Service',
+            'Coolant Flush',
+            'Spark Plug Replacement',
+            'Brake Fluid Change',
+            'Alignment',
+            'Inspection',
+            'Repair'
+        ]
 
         const form = ref({
             vehicleId: '',
-            title: '',
             serviceDate: '',
             maintenanceType: '',
             mileageAtService: '',
@@ -150,6 +155,7 @@ export default {
 
         const payload = computed(() => ({
             ...form.value,
+            title: form.value.maintenanceType || 'Maintenance',
             mileageAtService: form.value.mileageAtService || undefined,
             cost: form.value.cost || undefined,
             laborHours: form.value.laborHours || undefined
@@ -188,7 +194,6 @@ export default {
                 isEditing.value = true
                 form.value = {
                     vehicleId: rec.vehicleId,
-                    title: rec.title || '',
                     serviceDate: rec.serviceDate ? rec.serviceDate.split('T')[0] : '',
                     maintenanceType: rec.maintenanceType || '',
                     mileageAtService: rec.mileageAtService || '',
@@ -230,6 +235,11 @@ export default {
             }
         }
 
+        const selectType = (option) => {
+            form.value.maintenanceType = option
+            showTypeList.value = false
+        }
+
         const displayName = (vehicle) => {
             if (!vehicle) return 'Vehicle'
             const parts = [vehicle.make, vehicle.model, vehicle.year].filter(Boolean)
@@ -264,7 +274,10 @@ export default {
             submitRecord,
             displayName,
             isEditing,
-            selectedVehicleName
+            selectedVehicleName,
+            showTypeList,
+            typeOptions,
+            selectType
         }
     }
 }
@@ -336,6 +349,53 @@ input, textarea, select {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+}
+
+.type-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+}
+
+.type-input input {
+    border: none;
+    padding: 10px;
+    flex: 1;
+}
+
+.type-icon {
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.type-list {
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px;
+}
+
+.type-option {
+    border: 1px solid #e5e7eb;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 8px;
+    text-align: left;
+    font-size: 13px;
+    color: #111827;
 }
 
 .primary-btn {

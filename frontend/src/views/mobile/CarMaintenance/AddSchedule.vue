@@ -10,10 +10,6 @@
 
     <form class="form" @submit.prevent="submitSchedule">
         <div class="field">
-            <label>Title</label>
-            <input v-model="form.title" type="text" required placeholder="Oil Change" />
-        </div>
-        <div class="field">
             <label>Vehicle</label>
             <select v-model="form.vehicleId" required>
                 <option value="" disabled>Select vehicle</option>
@@ -84,7 +80,6 @@ export default {
 
         const vehicles = ref([])
         const form = ref({
-            title: '',
             vehicleId: '',
             maintenanceType: '',
             dueDate: '',
