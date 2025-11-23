@@ -30,7 +30,7 @@
                         </select>
                     </div>
                 </div>
-                <button class="primary-btn" @click="openSchedule">
+                <button class="primary-btn" @click="goAddMaintenance">
                     <mdicon name="plus" :size="18"/><span>Add Maintenance</span>
                 </button>
             </div>
@@ -483,9 +483,6 @@ export default {
                 return name.includes(term) || plate.includes(term)
             })
         })
-
-        const openSchedule = (id) => router.push(`/web/car-maintenance/schedules/add/${id}`)
-        const addSchedule = () => router.push('/web/car-maintenance/schedules/add');
 
         const openVehicle = (id) => router.push(`/web/car-maintenance/vehicles/${id}`)
         const addVehicle = () => router.push('/web/car-maintenance/vehicles/add')
@@ -942,7 +939,20 @@ export default {
 .pref-card select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; }
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { background: #eef2ff; color: #4338ca; padding: 6px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
-.chip-remove { border: none; background: transparent; color: #6b7280; display: inline-flex; align-items: center; cursor: pointer; }
+.chip-remove {
+    border: none;
+    background: #e5e7eb;
+    color: #374151;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.chip-remove:hover { background: #fecdd3; color: #b91c1c; }
 .type-row { display: flex; gap: 8px; margin-bottom: 8px; }
 .type-row input { flex: 1; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 10px; }
 .add-btn { border: none; background: linear-gradient(135deg, #f093fb, #6f6cf7); color: white; padding: 8px 12px; border-radius: 10px; font-weight: 700; cursor: pointer; }

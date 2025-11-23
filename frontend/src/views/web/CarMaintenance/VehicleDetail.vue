@@ -13,11 +13,18 @@
         <div v-else-if="errorMessage" class="empty">{{ errorMessage }}</div>
         <div v-else-if="!vehicle" class="empty">Vehicle not found.</div>
         <div v-else class="panel">
-            <div class="top">
-                <div class="thumb">
-                    <img v-if="vehicle.imageUrl" :src="vehicle.imageUrl.startsWith('http') ? vehicle.imageUrl : `${API_BASE_URL}${vehicle.imageUrl}`" alt="vehicle" />
-                    <mdicon v-else name="car-sports" :size="48"/>
+            <div class="hero-image">
+                <img
+                    v-if="vehicle.imageUrl"
+                    :src="vehicle.imageUrl.startsWith('http') ? vehicle.imageUrl : `${API_BASE_URL}${vehicle.imageUrl}`"
+                    alt="vehicle"
+                />
+                <div v-else class="placeholder">
+                    <mdicon name="car-sports" :size="48"/>
                 </div>
+            </div>
+
+            <div class="top">
                 <div class="meta">
                     <p class="name">{{ displayName(vehicle) }}</p>
                     <p class="sub">{{ vehicle.vehicleType || 'Vehicle' }}</p>
@@ -162,13 +169,19 @@ export default {
     flex-direction: column;
     gap: 12px;
 }
-.top { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: center; }
-.thumb {
-    width: 100px; height: 90px; border-radius: 12px;
+.hero-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
     background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.hero-image img { width: 100%; height: 100%; object-fit: cover; }
+.placeholder { color: #6b7280; }
+.top { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: center; }
 .meta { display: flex; flex-direction: column; gap: 4px; }
 .name { margin: 0; font-weight: 800; font-size: 18px; color: #111827; }
 .sub { margin: 0; color: #6b7280; font-size: 13px; }
