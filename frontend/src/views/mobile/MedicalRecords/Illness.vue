@@ -75,6 +75,7 @@
             class="record-item" 
             v-for="record in illnessList" 
             :key="record.id"
+            @click="openRecord(record.id)"
         >
             <div class="record-main">
                 <div>
@@ -149,6 +150,17 @@ export default {
                 return
             }
             await fetchRecords(token, activeProfileId.value)
+        }
+
+        const openRecord = (recordId) => {
+            if (!recordId) return
+            router.push({
+                path: `/medical-records/illness/${recordId}`,
+                query: {
+                    profileId: activeProfileId.value,
+                    profileName: activeProfileName.value
+                }
+            })
         }
 
         const illnessList = computed(() => {
@@ -251,7 +263,8 @@ export default {
             latestTemp,
             yAxis,
             activeProfileName,
-            loading
+            loading,
+            openRecord
         }
     }
 }

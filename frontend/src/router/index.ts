@@ -223,6 +223,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/medical-records/illness/:id',
+    name: 'illness-entry',
+    component: AddIllnessRecord,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/car-maintenance',
     name: 'car-maintenance',
     component: CarMaintenance,

@@ -4,7 +4,7 @@
         <button class="back-btn" @click="goBack">
             <mdicon name="arrow-left" :size="22"/>
         </button>
-        <h2>Add Illness Record</h2>
+        <h2>{{ isEdit ? 'Edit Illness Record' : 'Add Illness Record' }}</h2>
         <span class="spacer"></span>
     </div>
 
@@ -67,14 +67,14 @@
         </label>
 
         <button class="submit-btn" type="submit" :disabled="submitting">
-            {{ submitting ? 'Saving...' : 'Save Record' }}
+            {{ submitting ? (isEdit ? 'Updating...' : 'Saving...') : (isEdit ? 'Update Record' : 'Save Record') }}
         </button>
     </form>
 </div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useIllness } from '@/composables/vitals/illness'
 
@@ -83,8 +83,11 @@ export default {
     setup() {
         const router = useRouter()
         const route = useRoute()
-        const { addRecord } = useIllness()
+        const { addRecord, fetchRecordById, updateRecord } = useIllness()
         const submitting = ref(false)
+        const loading = ref(false)
+        const recordId = ref(route.params.id)
+        const isEdit = ref(Boolean(recordId.value))
 
         const profileIdFromQuery = Array.isArray(route.query.profileId) ? route.query.profileId[0] : route.query.profileId
         const form = ref({
@@ -106,6 +109,36 @@ export default {
 
         const parseList = (input) => input.split(',').map(item => item.trim()).filter(Boolean)
 
+        const loadExisting = async () => {
+            if (!recordId.value) return
+            const token = localStorage.getItem('token')
+            if (!token) return
+            loading.value = true
+            try {
+                const existing = await fetchRecordById(token, recordId.value)
+                if (existing) {
+                    form.value = {
+                        diagnosis: existing.diagnosis || '',
+                        bodyTemperature: typeof existing.bodyTemperature === 'number' ? existing.bodyTemperature : '',
+                        temperatureUnit: existing.temperatureUnit || 'C',
+                        severity: existing.severity || 'MILD',
+                        status: existing.status || 'ONGOING',
+                        notes: existing.notes || '',
+                        recordedAt: existing.recordedAt
+                            ? formatDateTimeLocal(existing.recordedAt)
+                            : '',
+                        profileId: existing.profileId || form.value.profileId
+                    }
+                    symptomsInput.value = (existing.symptoms || []).join(', ')
+                    medicationsInput.value = (existing.medications || []).join(', ')
+                }
+            } catch (err) {
+                alert(err.message || 'Failed to load illness record')
+            } finally {
+                loading.value = false
+            }
+        }
+
         const submit = async() => {
             if (!form.value.diagnosis) {
                 alert('Diagnosis is required.')
@@ -126,7 +159,11 @@ export default {
                 if (!token) {
                     throw new Error('No auth token found.')
                 }
-                await addRecord(token, payload)
+                if (isEdit.value) {
+                    await updateRecord(token, recordId.value, payload)
+                } else {
+                    await addRecord(token, payload)
+                }
                 router.push({
                     path: '/medical-records/illness',
                     query: {
@@ -141,13 +178,26 @@ export default {
             }
         }
 
+        const formatDateTimeLocal = (value) => {
+            const date = new Date(value)
+            if (Number.isNaN(date.getTime())) return ''
+            const iso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString()
+            return iso.slice(0, 16)
+        }
+
+        onMounted(() => {
+            loadExisting()
+        })
+
         return {
             form,
             symptomsInput,
             medicationsInput,
             submitting,
             goBack,
-            submit
+            submit,
+            isEdit,
+            loading
         }
     }
 }
