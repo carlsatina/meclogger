@@ -90,6 +90,12 @@ export default {
         const isEdit = ref(Boolean(recordId.value))
 
         const profileIdFromQuery = Array.isArray(route.query.profileId) ? route.query.profileId[0] : route.query.profileId
+        const formatDateTimeLocal = (value) => {
+            const date = new Date(value)
+            if (Number.isNaN(date.getTime())) return ''
+            const iso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString()
+            return iso.slice(0, 16)
+        }
         const form = ref({
             diagnosis: '',
             bodyTemperature: '',
@@ -97,7 +103,7 @@ export default {
             severity: 'MILD',
             status: 'ONGOING',
             notes: '',
-            recordedAt: '',
+            recordedAt: formatDateTimeLocal(new Date()),
             profileId: profileIdFromQuery || localStorage.getItem('selectedProfileId') || ''
         })
         const symptomsInput = ref('')
@@ -176,13 +182,6 @@ export default {
             } finally {
                 submitting.value = false
             }
-        }
-
-        const formatDateTimeLocal = (value) => {
-            const date = new Date(value)
-            if (Number.isNaN(date.getTime())) return ''
-            const iso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString()
-            return iso.slice(0, 16)
         }
 
         onMounted(() => {

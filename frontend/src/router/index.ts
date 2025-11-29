@@ -30,6 +30,8 @@ import WebMedicineReminderCalendar from '@/views/web/MedicalRecords/MedicineRemi
 import BloodPressureWeb from '@/views/web/MedicalRecords/BloodPressureDetail.vue'
 import BloodSugarWeb from '@/views/web/MedicalRecords/BloodSugarDetail.vue'
 import BodyWeightWeb from '@/views/web/MedicalRecords/BodyWeightDetail.vue'
+import IllnessWeb from '@/views/web/MedicalRecords/IllnessDetail.vue'
+import IllnessFormWeb from '@/views/web/MedicalRecords/IllnessForm.vue'
 // Mobile Car Maintenance
 import CarMaintenance from '@/views/LandingPage/CarMaintenance.vue'
 import CarMaintenanceSchedules from '@/views/mobile/CarMaintenance/Schedules.vue'
@@ -124,6 +126,24 @@ const routes: Array<RouteRecordRaw> = [
     path: '/medical-records/web/body-weight',
     name: 'body-weight-web',
     component: BodyWeightWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/web/illness',
+    name: 'illness-web',
+    component: IllnessWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/web/illness/add',
+    name: 'illness-web-add',
+    component: IllnessFormWeb,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical-records/web/illness/:id',
+    name: 'illness-web-entry',
+    component: IllnessFormWeb,
     meta: { requiresAuth: true }
   },
   {

@@ -334,6 +334,38 @@
                         </div>
                         <p v-else class="health-empty">No body weight records yet.</p>
                     </div>
+                    <div class="health-card">
+                        <div class="health-card-header">
+                            <div>
+                                <h4>Illness</h4>
+                                <p>Latest summary</p>
+                            </div>
+                            <button class="health-link" @click="router.push('/medical-records/web/illness')">
+                                View details
+                            </button>
+                        </div>
+                        <div v-if="latestIllness" class="illness-summary-web">
+                            <div class="illness-row">
+                                <div class="illness-title">{{ latestIllness.diagnosis }}</div>
+                                <span class="pill-badge" :class="latestIllness.status?.toLowerCase()">
+                                    {{ latestIllness.status }}
+                                </span>
+                            </div>
+                            <div class="illness-row meta">
+                                <span class="pill-badge subtle">{{ latestIllness.severity || 'MILD' }}</span>
+                                <span v-if="latestIllness.bodyTemperature" class="pill-badge subtle">
+                                    {{ latestIllness.bodyTemperature }}°{{ latestIllness.temperatureUnit || 'C' }}
+                                </span>
+                                <span class="illness-date">{{ formatRecordDate(latestIllness.recordedAt || latestIllness.createdAt) }}</span>
+                            </div>
+                            <div v-if="latestIllness.symptoms?.length" class="illness-symptoms">
+                                <span class="symptom-chip" v-for="symptom in latestIllness.symptoms" :key="symptom">
+                                    {{ symptom }}
+                                </span>
+                            </div>
+                        </div>
+                        <p v-else class="health-empty">No illness entries yet.</p>
+                    </div>
                 </div>
             </div>
 
@@ -355,6 +387,7 @@ import ProfileOverview from '@/views/web/Profile/ProfileOverview.vue'
 import { useBloodPressure } from '@/composables/vitals/bloodPressure'
 import { useBloodSugar } from '@/composables/vitals/bloodSugar'
 import { useBodyWeight } from '@/composables/vitals/bodyWeight'
+import { useIllness } from '@/composables/vitals/illness'
 import { useMedicalRecords } from '@/composables/medicalRecords'
 import { useMedicineReminders } from '@/composables/medicineReminders'
 
@@ -479,6 +512,10 @@ export default {
             records: bodyWeightRecords,
             fetchRecords: fetchBodyWeightRecords
         } = useBodyWeight()
+        const {
+            records: illnessRecords,
+            fetchRecords: fetchIllnessRecords
+        } = useIllness()
 
         const healthLoading = ref(false)
 
@@ -566,6 +603,11 @@ export default {
             const weight = Number(latest.valueNumber) || 0
             const change = previous ? +(weight - previous.valueNumber).toFixed(1) : 0
             return { weight, change }
+        })
+
+        const latestIllness = computed(() => {
+            if (!illnessRecords.value.length) return null
+            return illnessRecords.value[0]
         })
 
         const bsChartPoints = computed(() => {
@@ -679,13 +721,15 @@ export default {
                 bpRecords.value = []
                 bsRecords.value = []
                 bodyWeightRecords.value = []
+                illnessRecords.value = []
                 return
             }
             healthLoading.value = true
             await Promise.all([
                 fetchBpRecords(token, activeProfileId.value),
                 fetchBsRecords(token, activeProfileId.value),
-                fetchBodyWeightRecords(token, activeProfileId.value)
+                fetchBodyWeightRecords(token, activeProfileId.value),
+                fetchIllnessRecords(token, activeProfileId.value)
             ])
             healthLoading.value = false
         }
@@ -795,7 +839,9 @@ export default {
             bsChartPoints,
             bsChartPath,
             profileChipName,
-            activeProfileId
+            activeProfileId,
+            latestIllness,
+            formatRecordDate
         }
     }
 }
@@ -1465,6 +1511,87 @@ export default {
     border-radius: 12px;
     font-size: 13px;
     font-weight: 500;
+}
+
+.illness-summary-web {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.illness-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.illness-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+.pill-badge.subtle {
+    background: #f3f4f6;
+    color: #4b5563;
+    font-weight: 600;
+}
+
+.pill-badge.recovered,
+.pill-badge.resolved {
+    background: #ecfdf3;
+    color: #16a34a;
+}
+
+.pill-badge.ongoing,
+.pill-badge.chronic {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.pill-badge.severe,
+.pill-badge.critical {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.illness-row.meta {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.illness-date {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.illness-symptoms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.symptom-chip {
+    background: #f3f4f6;
+    color: #374151;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 /* Empty State */
