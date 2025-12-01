@@ -624,6 +624,7 @@ export const createSubscription = async(req: ExtendedRequest, res: Response) => 
         paymentMethod,
         paymentAccount,
         active,
+        autoPay,
         cancelAt,
         notes
     } = req.body || {}
@@ -653,6 +654,7 @@ export const createSubscription = async(req: ExtendedRequest, res: Response) => 
             paymentMethod: normalizePaymentMethod(paymentMethod),
             paymentAccount: paymentAccount || null,
             active: typeof active === 'undefined' ? true : Boolean(active),
+            autoPay: typeof autoPay === 'undefined' ? false : Boolean(autoPay),
             cancelAt: cancelAt ? new Date(cancelAt) : null,
             notes: notes || null
         }
@@ -683,6 +685,7 @@ export const updateSubscription = async(req: ExtendedRequest, res: Response) => 
         paymentMethod,
         paymentAccount,
         active,
+        autoPay,
         cancelAt,
         notes
     } = req.body || {}
@@ -707,6 +710,7 @@ export const updateSubscription = async(req: ExtendedRequest, res: Response) => 
             paymentMethod: paymentMethod ? normalizePaymentMethod(paymentMethod) : existing.paymentMethod,
             paymentAccount: paymentAccount ?? existing.paymentAccount,
             active: typeof active === 'undefined' ? existing.active : Boolean(active),
+            autoPay: typeof autoPay === 'undefined' ? existing.autoPay : Boolean(autoPay),
             cancelAt: cancelAt ? new Date(cancelAt) : existing.cancelAt,
             notes: notes ?? existing.notes
         }

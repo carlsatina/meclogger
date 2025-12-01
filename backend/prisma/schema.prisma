@@ -486,6 +486,7 @@ model Subscription {
   paymentMethod  PaymentMethod    @default(CASH)
   paymentAccount String?
   active         Boolean          @default(true)
+  autoPay        Boolean          @default(false)
   cancelAt       DateTime?
   notes          String?
   category       ExpenseCategory? @relation(fields: [categoryId], references: [id])
