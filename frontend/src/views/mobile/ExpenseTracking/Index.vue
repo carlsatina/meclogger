@@ -13,7 +13,7 @@
         </button>
     </header>
 
-    <main class="content">
+    <main class="content" v-if="activeTab === 'home'">
         <section class="summary-grid">
             <div class="card primary">
                 <p class="label">This month</p>
@@ -91,20 +91,274 @@
         </section>
     </main>
 
+    <main class="content" v-else-if="activeTab === 'insights'">
+        <section class="hero-insights">
+            <div class="glow"></div>
+            <div>
+                <p class="eyebrow">Spending pulse</p>
+                <h2>$1,240</h2>
+                <p class="sub">Avg daily spend $62 • Down 12% vs last month</p>
+            </div>
+            <div class="sparkline">
+                <span v-for="(height, i) in [30, 44, 22, 56, 62, 40, 48]" :key="i" :style="{ height: height + 'px' }"></span>
+            </div>
+        </section>
+
+        <section class="section insights-grid">
+            <div class="card">
+                <div class="row">
+                    <p class="label">Top categories</p>
+                    <button class="chip">Aug</button>
+                </div>
+                <div class="category-row">
+                    <div class="category">
+                        <div class="circle purple"></div>
+                        <div>
+                            <p class="item-title">Dining</p>
+                            <p class="item-sub">35% • $420</p>
+                        </div>
+                    </div>
+                    <div class="pill ghost">-8% vs last month</div>
+                </div>
+                <div class="category-row">
+                    <div class="category">
+                        <div class="circle teal"></div>
+                        <div>
+                            <p class="item-title">Transport</p>
+                            <p class="item-sub">22% • $260</p>
+                        </div>
+                    </div>
+                    <div class="pill ghost">+4% vs last month</div>
+                </div>
+                <div class="category-row">
+                    <div class="category">
+                        <div class="circle amber"></div>
+                        <div>
+                            <p class="item-title">Groceries</p>
+                            <p class="item-sub">18% • $210</p>
+                        </div>
+                    </div>
+                    <div class="pill ghost">-2% vs last month</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="row">
+                    <p class="label">Weekly rhythm</p>
+                    <button class="text-btn">See trend</button>
+                </div>
+                <div class="bars">
+                    <div class="bar-col" v-for="(h, i) in [34, 62, 40, 76, 52, 44, 28]" :key="i">
+                        <div class="bar-pill" :style="{ height: h + 'px' }"></div>
+                        <span class="bar-label">{{ barLabels[i] }}</span>
+                    </div>
+                </div>
+                <p class="sub">Thu is your spend spike. Shift groceries to Tue/Wed to smooth cash flow.</p>
+            </div>
+
+            <div class="card gradient-card">
+                <div class="row">
+                    <div>
+                        <p class="label">Smart tip</p>
+                        <h4>Lock subscriptions</h4>
+                        <p class="sub">Set alerts when subs exceed $250/mo and review quarterly.</p>
+                    </div>
+                    <mdicon name="lightbulb-on-outline" size="26" />
+                </div>
+                <button class="primary-btn">Create alert</button>
+            </div>
+        </section>
+    </main>
+
+    <main class="content" v-else-if="activeTab === 'schedules'">
+        <section class="hero-schedules">
+            <div>
+                <p class="eyebrow">Upcoming</p>
+                <h2>$312</h2>
+                <p class="sub">Due this week across 4 bills</p>
+            </div>
+            <button class="primary-chip">
+                <mdicon name="plus-circle-outline" size="18" />
+                <span>New schedule</span>
+            </button>
+        </section>
+
+        <section class="section schedule-toggle">
+            <button class="toggle-pill active">Subscriptions</button>
+            <button class="toggle-pill">Expenses</button>
+        </section>
+
+        <section class="section schedule-list">
+            <div class="schedule-card">
+                <div class="row">
+                    <div class="badge pink">Today</div>
+                    <span class="pill ghost">Auto-pay</span>
+                </div>
+                <div class="schedule-main">
+                    <div class="icon-circle pink">
+                        <mdicon name="netflix" size="20" />
+                    </div>
+                    <div>
+                        <p class="item-title">Netflix Premium</p>
+                        <p class="item-sub">Renews Aug 21 • Monthly</p>
+                    </div>
+                    <div class="item-amount">- $18</div>
+                </div>
+            </div>
+
+            <div class="schedule-card">
+                <div class="row">
+                    <div class="badge blue">Tomorrow</div>
+                    <span class="pill ghost">Reminder</span>
+                </div>
+                <div class="schedule-main">
+                    <div class="icon-circle blue">
+                        <mdicon name="cloud-outline" size="20" />
+                    </div>
+                    <div>
+                        <p class="item-title">iCloud 2TB</p>
+                        <p class="item-sub">Renews Aug 22 • Monthly</p>
+                    </div>
+                    <div class="item-amount">- $10</div>
+                </div>
+            </div>
+
+            <div class="schedule-card">
+                <div class="row">
+                    <div class="badge purple">Fri</div>
+                    <span class="pill ghost">Manual</span>
+                </div>
+                <div class="schedule-main">
+                    <div class="icon-circle purple">
+                        <mdicon name="lightning-bolt-outline" size="20" />
+                    </div>
+                    <div>
+                        <p class="item-title">Electricity</p>
+                        <p class="item-sub">Due Aug 23 • Bi-monthly</p>
+                    </div>
+                    <div class="item-amount">- $140</div>
+                </div>
+            </div>
+
+            <div class="schedule-card">
+                <div class="row">
+                    <div class="badge teal">Sat</div>
+                    <span class="pill ghost">Auto-pay</span>
+                </div>
+                <div class="schedule-main">
+                    <div class="icon-circle teal">
+                        <mdicon name="cellphone-nfc" size="20" />
+                    </div>
+                    <div>
+                        <p class="item-title">Phone plan</p>
+                        <p class="item-sub">Due Aug 24 • Monthly</p>
+                    </div>
+                    <div class="item-amount">- $44</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <main class="content" v-else-if="activeTab === 'profile'">
+        <section class="profile-hero">
+            <div class="avatar">
+                <span>AR</span>
+            </div>
+            <div class="profile-meta">
+                <h3>Alex Rivera</h3>
+                <p class="sub">Premium • Since 2023</p>
+            </div>
+            <button class="icon-btn ghost">
+                <mdicon name="pencil-outline" size="20" />
+            </button>
+        </section>
+
+        <section class="section profile-cards">
+            <div class="card profile-card">
+                <div class="row">
+                    <div>
+                        <p class="label">Expense categories</p>
+                        <h4>12 categories</h4>
+                        <p class="sub">Dining, Transport, Groceries, Utilities...</p>
+                    </div>
+                    <button class="primary-chip ghost-chip">
+                        <mdicon name="plus-circle-outline" size="18" />
+                        <span>Add</span>
+                    </button>
+                </div>
+                <div class="chips">
+                    <span class="pill ghost">Dining</span>
+                    <span class="pill ghost">Transport</span>
+                    <span class="pill ghost">Subscriptions</span>
+                    <span class="pill ghost">Health</span>
+                </div>
+            </div>
+
+            <div class="card profile-card">
+                <div class="row">
+                    <div>
+                        <p class="label">Currency & accounts</p>
+                        <h4>USD • 3 cards</h4>
+                        <p class="sub">Default card: Sapphire Visa</p>
+                    </div>
+                    <button class="text-btn">Manage</button>
+                </div>
+            </div>
+
+            <div class="card profile-card">
+                <div class="row">
+                    <div>
+                        <p class="label">Alerts & reminders</p>
+                        <h4>Smart alerts</h4>
+                        <p class="sub">Threshold: $1,000/mo • Subscriptions: $250/mo</p>
+                    </div>
+                    <button class="text-btn">Edit</button>
+                </div>
+                <div class="toggles">
+                    <div class="toggle-row">
+                        <div>
+                            <p class="item-title">Push notifications</p>
+                            <p class="item-sub">Spikes, due bills, budgets</p>
+                        </div>
+                        <span class="switch on"></span>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <p class="item-title">Email summaries</p>
+                            <p class="item-sub">Weekly digest every Monday</p>
+                        </div>
+                        <span class="switch"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card profile-card danger">
+                <div class="row">
+                    <div>
+                        <p class="label">Data & backup</p>
+                        <h4>Export & restore</h4>
+                        <p class="sub">Export CSV/JSON • Restore from backup</p>
+                    </div>
+                    <button class="text-btn danger-text">Export</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
     <nav class="bottom-nav">
-        <button class="nav-btn active">
+        <button class="nav-btn" :class="{ active: activeTab === 'home' }" @click="setTab('home')">
             <mdicon name="home-outline" size="22" />
             <span>Home</span>
         </button>
-        <button class="nav-btn">
+        <button class="nav-btn" :class="{ active: activeTab === 'insights' }" @click="setTab('insights')">
             <mdicon name="chart-donut" size="22" />
             <span>Insights</span>
         </button>
-        <button class="nav-btn">
+        <button class="nav-btn" :class="{ active: activeTab === 'schedules' }" @click="setTab('schedules')">
             <mdicon name="calendar-refresh" size="22" />
             <span>Schedules</span>
         </button>
-        <button class="nav-btn">
+        <button class="nav-btn" :class="{ active: activeTab === 'profile' }" @click="setTab('profile')">
             <mdicon name="account-circle-outline" size="22" />
             <span>Profile</span>
         </button>
@@ -113,13 +367,17 @@
 </template>
 
 <script>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 export default {
     name: "ExpenseTrackingMobile",
     setup() {
         const router = useRouter()
-        return { router }
+        const activeTab = ref('home')
+        const setTab = (tab) => { activeTab.value = tab }
+        const barLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+        return { router, activeTab, setTab, barLabels }
     }
 }
 </script>
@@ -242,6 +500,11 @@ export default {
     color: #15803d;
 }
 
+.pill.ghost {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
 .progress {
     width: 100%;
     height: 8px;
@@ -347,6 +610,320 @@ export default {
 .item-amount {
     font-weight: 800;
     color: #ef4444;
+}
+
+.hero-insights {
+    position: relative;
+    background: radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.22), transparent 50%),
+        radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.18), transparent 50%),
+        #0f172a;
+    color: #e2e8f0;
+    border-radius: 18px;
+    padding: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.35);
+}
+
+.hero-insights .glow {
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.08), transparent 50%);
+    pointer-events: none;
+}
+
+.hero-insights h2 {
+    margin: 6px 0 2px;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.sparkline {
+    display: grid;
+    grid-auto-flow: column;
+    align-items: end;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.sparkline span {
+    width: 6px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #38bdf8, #6366f1);
+}
+
+.insights-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.category-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.category-row:last-child {
+    border-bottom: none;
+}
+
+.category {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+}
+
+.circle.purple { background: #7c3aed; }
+.circle.teal { background: #14b8a6; }
+.circle.amber { background: #f59e0b; }
+
+.chip {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.bars {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    align-items: end;
+    padding: 6px 0 0;
+}
+
+.bar-col {
+    display: grid;
+    gap: 6px;
+    justify-items: center;
+}
+
+.bar-pill {
+    width: 14px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+}
+
+.bar-label {
+    font-size: 10px;
+    color: #94a3b8;
+    letter-spacing: 0.2px;
+}
+
+.gradient-card {
+    background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+}
+
+.primary-btn {
+    margin-top: 12px;
+    width: 100%;
+    border: none;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #fff;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.35);
+}
+
+.hero-schedules {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 18px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.3);
+}
+
+.hero-schedules h2 {
+    margin: 6px 0 2px;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.primary-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35);
+}
+
+.schedule-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.toggle-pill {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.toggle-pill.active {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    border: none;
+}
+
+.schedule-list {
+    display: grid;
+    gap: 12px;
+}
+
+.schedule-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.schedule-main {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-weight: 800;
+    color: #0f172a;
+    background: #e2e8f0;
+}
+
+.badge.pink { background: #fce7f3; color: #be185d; }
+.badge.blue { background: #e0f2fe; color: #0369a1; }
+.badge.purple { background: #ede9fe; color: #5b21b6; }
+.badge.teal { background: #ccfbf1; color: #0f766e; }
+
+.profile-hero {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #fff;
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(79, 70, 229, 0.35);
+}
+
+.avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.18);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.profile-meta h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.profile-cards {
+    display: grid;
+    gap: 12px;
+}
+
+.profile-card {
+    border: 1px solid #e2e8f0;
+}
+
+.profile-card.danger {
+    background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+    border: none;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.ghost-chip {
+    background: #f8fafc;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    box-shadow: none;
+}
+
+.toggles {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.toggle-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.switch {
+    width: 42px;
+    height: 24px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    position: relative;
+}
+
+.switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease;
+}
+
+.switch.on {
+    background: linear-gradient(135deg, #4f46e5, #22c55e);
+}
+
+.switch.on::after {
+    transform: translateX(18px);
+}
+
+.text-btn.danger-text {
+    color: #e11d48;
 }
 
 .bottom-nav {
