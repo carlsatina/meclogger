@@ -278,8 +278,9 @@
                 <div class="row">
                     <div>
                         <p class="label">Expense categories</p>
-                        <h4>12 categories</h4>
-                        <p class="sub">Dining, Transport, Groceries, Utilities...</p>
+                        <h4>{{ categories.length }} categories</h4>
+                        <p class="sub" v-if="categories.length">Tap to add or edit categories</p>
+                        <p class="sub" v-else>No categories yet</p>
                     </div>
                     <button class="primary-chip ghost-chip" @click="openAddCategory">
                         <mdicon name="plus-circle-outline" size="18" />
@@ -287,10 +288,19 @@
                     </button>
                 </div>
                 <div class="chips">
-                    <span class="pill ghost">Dining</span>
-                    <span class="pill ghost">Transport</span>
-                    <span class="pill ghost">Subscriptions</span>
-                    <span class="pill ghost">Health</span>
+                    <span
+                        v-for="cat in categories"
+                        :key="cat.id || cat.name"
+                        class="pill ghost chip-with-icon"
+                        :style="{ borderColor: cat.color || '#e2e8f0' }"
+                    >
+                        <mdicon
+                            :name="cat.icon || 'label-outline'"
+                            size="16"
+                            :style="{ color: cat.color || '#475569' }"
+                        />
+                        {{ cat.name }}
+                    </span>
                 </div>
             </div>
 
@@ -358,7 +368,7 @@
             <form class="form" @submit.prevent>
                 <label class="field">
                     <span>Name</span>
-                    <input type="text" placeholder="e.g. Dining" />
+                    <input type="text" placeholder="e.g. Dining" v-model="categoryName" />
                 </label>
                 <label class="field inline">
                     <span>Color</span>
@@ -394,12 +404,16 @@
                     </div>
                 </label>
                 <label class="checkbox">
-                    <input type="checkbox" />
+                    <input type="checkbox" v-model="makeDefault" />
                     <span>Make this the default category</span>
                 </label>
+                <p v-if="saveError" class="error-text">{{ saveError }}</p>
+                <p v-if="saveMessage" class="success-text">{{ saveMessage }}</p>
                 <div class="actions">
                     <button type="button" class="text-btn" @click="closeAddCategory">Cancel</button>
-                    <button type="button" class="primary-btn solid">Save category</button>
+                    <button type="button" class="primary-btn solid" :disabled="saving" @click="handleSaveCategory">
+                        {{ saving ? 'Saving...' : 'Save category' }}
+                    </button>
                 </div>
             </form>
         </div>
@@ -427,19 +441,26 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useExpenses } from '@/composables/expenses'
 
 export default {
     name: "ExpenseTrackingMobile",
     setup() {
         const router = useRouter()
+        const { createCategory, listCategories } = useExpenses()
         const activeTab = ref('home')
         const setTab = (tab) => { activeTab.value = tab }
         const barLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
         const showAddCategory = ref(false)
         const openAddCategory = () => { showAddCategory.value = true }
-        const closeAddCategory = () => { showAddCategory.value = false }
+        const closeAddCategory = () => {
+            showAddCategory.value = false
+            resetCategoryForm()
+        }
+        const categories = ref([])
+        const categoriesLoaded = ref(false)
         const colorPalette = ref([
             '#ef4444', '#f97316', '#f59e0b', '#84cc16',
             '#22c55e', '#14b8a6', '#06b6d4', '#0ea5e9',
@@ -490,6 +511,77 @@ export default {
         const selectedIcon = ref(iconOptions.value[0])
         const selectColor = (color) => { selectedColor.value = color }
         const selectIcon = (icon) => { selectedIcon.value = icon }
+        const categoryName = ref('')
+        const makeDefault = ref(false)
+        const saving = ref(false)
+        const saveError = ref('')
+        const saveMessage = ref('')
+
+        const resetCategoryForm = () => {
+            categoryName.value = ''
+            makeDefault.value = false
+            saving.value = false
+            saveError.value = ''
+            saveMessage.value = ''
+            selectedColor.value = colorPalette.value[9]
+            selectedIcon.value = iconOptions.value[0]
+        }
+
+        const loadCategories = async() => {
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) return
+                const list = await listCategories(token)
+                categories.value = Array.isArray(list) ? list : []
+                categoriesLoaded.value = true
+            } catch (err) {
+                // keep silent to avoid blocking UI; could surface a message if needed
+            }
+        }
+
+        const handleSaveCategory = async() => {
+            saveError.value = ''
+            saveMessage.value = ''
+            if (!categoryName.value.trim()) {
+                saveError.value = 'Category name is required.'
+                return
+            }
+            const token = localStorage.getItem('token')
+            if (!token) {
+                saveError.value = 'You are not logged in.'
+                return
+            }
+            saving.value = true
+            try {
+                const category = await createCategory(token, {
+                    name: categoryName.value.trim(),
+                    color: selectedColor.value,
+                    icon: selectedIcon.value,
+                    isDefault: makeDefault.value
+                })
+                categories.value = [category, ...categories.value]
+                saveMessage.value = 'Category saved.'
+                setTimeout(() => {
+                    closeAddCategory()
+                }, 700)
+            } catch (err) {
+                saveError.value = err?.message || 'Unable to save category.'
+            } finally {
+                saving.value = false
+            }
+        }
+
+        watch(activeTab, (tab) => {
+            if (tab === 'profile' && !categoriesLoaded.value) {
+                loadCategories()
+            }
+        })
+
+        onMounted(() => {
+            if (activeTab.value === 'profile') {
+                loadCategories()
+            }
+        })
 
         return {
             router,
@@ -499,12 +591,19 @@ export default {
             showAddCategory,
             openAddCategory,
             closeAddCategory,
+            categories,
             colorPalette,
             selectedColor,
             selectColor,
             iconOptions,
             selectedIcon,
-            selectIcon
+            selectIcon,
+            categoryName,
+            makeDefault,
+            saving,
+            saveError,
+            saveMessage,
+            handleSaveCategory
         }
     }
 }
@@ -1205,6 +1304,24 @@ export default {
     width: auto;
     padding: 12px 16px;
     border-radius: 12px;
+}
+
+.error-text {
+    color: #e11d48;
+    font-size: 13px;
+    margin: 0;
+}
+
+.success-text {
+    color: #16a34a;
+    font-size: 13px;
+    margin: 0;
+}
+
+.chip-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 @keyframes slideUp {
