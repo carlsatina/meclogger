@@ -1,6 +1,12 @@
 import prisma from '../../lib/prisma'
 import { ExtendedRequest } from '../../extendedRequest'
 
+const normalizeUserId = (value: unknown) => {
+    if (typeof value === 'string') return value
+    if (typeof value === 'number' && !Number.isNaN(value)) return String(value)
+    return null
+}
+
 const ensureUser = (req: ExtendedRequest, res: any) => {
     if (!req.user) {
         res.status(401).json({
@@ -9,7 +15,15 @@ const ensureUser = (req: ExtendedRequest, res: any) => {
         })
         return null
     }
-    return req.user
+    const userId = normalizeUserId(req.user.id)
+    if (!userId) {
+        res.status(400).json({
+            status: 400,
+            message: 'Invalid user identifier.'
+        })
+        return null
+    }
+    return { ...req.user, id: userId }
 }
 
 const resolveProfileForUser = async(userId: string, profileId?: string) => {
