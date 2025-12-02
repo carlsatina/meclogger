@@ -52,5 +52,18 @@ export const useSubscriptions = () => {
         return true
     }
 
-    return { listSubscriptions, createSubscription, updateSubscription, deleteSubscription }
+    const markSubscriptionPaid = async(token, id) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/expenses/subscriptions/${id}/pay`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message || 'Unable to mark paid')
+        return data
+    }
+
+    return { listSubscriptions, createSubscription, updateSubscription, deleteSubscription, markSubscriptionPaid }
 }

@@ -8,6 +8,12 @@ CREATE TYPE "RecordType" AS ENUM ('PRESCRIPTION', 'DIAGNOSIS', 'LAB_RESULT', 'IM
 CREATE TYPE "VitalType" AS ENUM ('HEART_RATE', 'BLOOD_PRESSURE_SYSTOLIC', 'BLOOD_PRESSURE_DIASTOLIC', 'BLOOD_GLUCOSE', 'SPO2', 'TEMPERATURE', 'WEIGHT', 'HEIGHT', 'BMI', 'RESPIRATORY_RATE', 'OTHER');
 
 -- CreateEnum
+CREATE TYPE "IllnessSeverity" AS ENUM ('MILD', 'MODERATE', 'SEVERE', 'CRITICAL');
+
+-- CreateEnum
+CREATE TYPE "IllnessStatus" AS ENUM ('ONGOING', 'RECOVERED', 'RESOLVED', 'CHRONIC');
+
+-- CreateEnum
 CREATE TYPE "ReminderFrequency" AS ENUM ('ONCE', 'HOURLY', 'DAILY', 'WEEKLY', 'CUSTOM');
 
 -- CreateEnum
@@ -36,6 +42,19 @@ CREATE TABLE "User" (
     "imageUrl" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserPreference" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "distanceUnit" TEXT NOT NULL DEFAULT 'km',
+    "currency" TEXT NOT NULL DEFAULT 'PHP',
+    "maintenanceTypes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+
+    CONSTRAINT "UserPreference_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -170,6 +189,25 @@ CREATE TABLE "VitalEntry" (
 );
 
 -- CreateTable
+CREATE TABLE "IllnessEntry" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "profileId" TEXT NOT NULL,
+    "diagnosis" TEXT NOT NULL,
+    "symptoms" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "bodyTemperature" DOUBLE PRECISION,
+    "temperatureUnit" TEXT DEFAULT 'C',
+    "severity" "IllnessSeverity" NOT NULL DEFAULT 'MILD',
+    "status" "IllnessStatus" NOT NULL DEFAULT 'ONGOING',
+    "notes" TEXT,
+    "medications" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "recordedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "IllnessEntry_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "MedicineReminder" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -232,7 +270,7 @@ CREATE TABLE "MaintenanceRecord" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "vehicleId" TEXT NOT NULL,
-    "maintenanceType" "MaintenanceType" NOT NULL DEFAULT 'OTHER',
+    "maintenanceType" TEXT NOT NULL DEFAULT 'OTHER',
     "title" TEXT NOT NULL,
     "description" TEXT,
     "serviceDate" TIMESTAMP(3) NOT NULL,
@@ -257,7 +295,7 @@ CREATE TABLE "CarMaintenanceHistory" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "vehicleId" TEXT NOT NULL,
-    "maintenanceType" "MaintenanceType" NOT NULL DEFAULT 'OTHER',
+    "maintenanceType" TEXT NOT NULL DEFAULT 'OTHER',
     "title" TEXT NOT NULL,
     "description" TEXT,
     "serviceDate" TIMESTAMP(3) NOT NULL,
@@ -305,7 +343,7 @@ CREATE TABLE "VehicleReminder" (
     "vehicleId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "maintenanceType" "MaintenanceType" NOT NULL DEFAULT 'OTHER',
+    "maintenanceType" TEXT NOT NULL DEFAULT 'OTHER',
     "dueDate" TIMESTAMP(3),
     "dueMileage" INTEGER,
     "notifyInAdvance" INTEGER,
@@ -365,6 +403,7 @@ CREATE TABLE "Budget" (
     "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
+    "spent" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "currency" TEXT NOT NULL DEFAULT 'USD',
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
@@ -396,11 +435,91 @@ CREATE TABLE "FinancialGoal" (
     CONSTRAINT "FinancialGoal_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "ExpenseSchedule" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expenseId" TEXT,
+    "title" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3),
+    "frequency" "ExpenseFrequency" NOT NULL DEFAULT 'MONTHLY',
+    "nextRunAt" TIMESTAMP(3),
+    "lastRunAt" TIMESTAMP(3),
+    "active" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "ExpenseSchedule_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Subscription" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "billingCycle" "ExpenseFrequency" NOT NULL DEFAULT 'MONTHLY',
+    "nextBillingDate" TIMESTAMP(3),
+    "lastBilledAt" TIMESTAMP(3),
+    "categoryId" TEXT,
+    "vendor" TEXT,
+    "paymentMethod" "PaymentMethod" NOT NULL DEFAULT 'CASH',
+    "paymentAccount" TEXT,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "autoPay" BOOLEAN NOT NULL DEFAULT false,
+    "cancelAt" TIMESTAMP(3),
+    "notes" TEXT,
+
+    CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "institution" TEXT,
+    "type" TEXT,
+    "currency" TEXT NOT NULL DEFAULT 'PHP',
+    "balance" DOUBLE PRECISION DEFAULT 0,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "notes" TEXT,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserCurrency" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "name" TEXT,
+    "symbol" TEXT,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "UserCurrency_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserPreference_userId_key" ON "UserPreference"("userId");
 
 -- CreateIndex
 CREATE INDEX "OtpCode_userId_expiresAt_idx" ON "OtpCode"("userId", "expiresAt");
@@ -425,6 +544,15 @@ CREATE INDEX "VitalEntry_profileId_recordedAt_idx" ON "VitalEntry"("profileId", 
 
 -- CreateIndex
 CREATE INDEX "VitalEntry_vitalType_idx" ON "VitalEntry"("vitalType");
+
+-- CreateIndex
+CREATE INDEX "IllnessEntry_profileId_recordedAt_idx" ON "IllnessEntry"("profileId", "recordedAt");
+
+-- CreateIndex
+CREATE INDEX "IllnessEntry_severity_idx" ON "IllnessEntry"("severity");
+
+-- CreateIndex
+CREATE INDEX "IllnessEntry_status_idx" ON "IllnessEntry"("status");
 
 -- CreateIndex
 CREATE INDEX "MedicineReminder_profileId_idx" ON "MedicineReminder"("profileId");
@@ -486,6 +614,42 @@ CREATE INDEX "FinancialGoal_userId_idx" ON "FinancialGoal"("userId");
 -- CreateIndex
 CREATE INDEX "FinancialGoal_completed_idx" ON "FinancialGoal"("completed");
 
+-- CreateIndex
+CREATE INDEX "ExpenseSchedule_userId_active_idx" ON "ExpenseSchedule"("userId", "active");
+
+-- CreateIndex
+CREATE INDEX "ExpenseSchedule_expenseId_idx" ON "ExpenseSchedule"("expenseId");
+
+-- CreateIndex
+CREATE INDEX "ExpenseSchedule_frequency_idx" ON "ExpenseSchedule"("frequency");
+
+-- CreateIndex
+CREATE INDEX "Subscription_userId_active_idx" ON "Subscription"("userId", "active");
+
+-- CreateIndex
+CREATE INDEX "Subscription_categoryId_idx" ON "Subscription"("categoryId");
+
+-- CreateIndex
+CREATE INDEX "Subscription_billingCycle_idx" ON "Subscription"("billingCycle");
+
+-- CreateIndex
+CREATE INDEX "Account_userId_idx" ON "Account"("userId");
+
+-- CreateIndex
+CREATE INDEX "Account_userId_isDefault_idx" ON "Account"("userId", "isDefault");
+
+-- CreateIndex
+CREATE INDEX "UserCurrency_userId_idx" ON "UserCurrency"("userId");
+
+-- CreateIndex
+CREATE INDEX "UserCurrency_userId_isDefault_idx" ON "UserCurrency"("userId", "isDefault");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserCurrency_userId_code_key" ON "UserCurrency"("userId", "code");
+
+-- AddForeignKey
+ALTER TABLE "UserPreference" ADD CONSTRAINT "UserPreference_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE "OtpCode" ADD CONSTRAINT "OtpCode_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -512,6 +676,9 @@ ALTER TABLE "MedicationLog" ADD CONSTRAINT "MedicationLog_medicationId_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "VitalEntry" ADD CONSTRAINT "VitalEntry_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "IllnessEntry" ADD CONSTRAINT "IllnessEntry_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "MedicineReminder" ADD CONSTRAINT "MedicineReminder_medicationId_fkey" FOREIGN KEY ("medicationId") REFERENCES "Medication"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -557,3 +724,21 @@ ALTER TABLE "Budget" ADD CONSTRAINT "Budget_userId_fkey" FOREIGN KEY ("userId") 
 
 -- AddForeignKey
 ALTER TABLE "FinancialGoal" ADD CONSTRAINT "FinancialGoal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ExpenseSchedule" ADD CONSTRAINT "ExpenseSchedule_expenseId_fkey" FOREIGN KEY ("expenseId") REFERENCES "Expense"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ExpenseSchedule" ADD CONSTRAINT "ExpenseSchedule_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "ExpenseCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserCurrency" ADD CONSTRAINT "UserCurrency_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

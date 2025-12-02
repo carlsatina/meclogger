@@ -1,6 +1,20 @@
 import { API_BASE_URL } from '@/constants/config'
 
 export const useBudgets = () => {
+    const listBudgetSummary = async(token) => {
+        if (!token) throw new Error('Missing auth token')
+        const res = await fetch(`${API_BASE_URL}/api/v1/expenses/budgets/summary`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            throw new Error(data.message || 'Unable to load budget summary')
+        }
+        return data.budgets || data.data || []
+    }
+
     const listBudgets = async(token) => {
         if (!token) throw new Error('Missing auth token')
         const res = await fetch(`${API_BASE_URL}/api/v1/expenses/budgets`, {
@@ -65,6 +79,7 @@ export const useBudgets = () => {
     }
 
     return {
+        listBudgetSummary,
         listBudgets,
         createBudget,
         updateBudget,

@@ -124,27 +124,41 @@ export const createExpense = async(req: ExtendedRequest, res: Response) => {
         return res.status(404).json({ status: 404, message: 'Category not found for current user' })
     }
 
-    const expense = await prisma.expense.create({
-        data: {
-            userId: user.id,
-            title,
-            description: description || null,
-            amount: parsedAmount,
-            currency: currency || 'USD',
-            expenseDate: expenseDate ? new Date(expenseDate) : new Date(),
-            categoryId: category?.id || null,
-            subcategory: subcategory || null,
-            tags: parseStringArray(tags) ?? [],
-            paymentMethod: normalizePaymentMethod(paymentMethod),
-            paymentAccount: paymentAccount || null,
-            vendor: vendor || null,
-            location: location || null,
-            receiptUrl: receiptUrl || null,
-            notes: notes || null,
-            isRecurring: Boolean(isRecurring),
-            frequency: normalizeExpenseFrequency(frequency),
-            recurringUntil: recurringUntil ? new Date(recurringUntil) : null
+    const expenseDateObj = expenseDate ? new Date(expenseDate) : new Date()
+
+    const expense = await prisma.$transaction(async(tx) => {
+        const created = await tx.expense.create({
+            data: {
+                userId: user.id,
+                title,
+                description: description || null,
+                amount: parsedAmount,
+                currency: currency || 'USD',
+                expenseDate: expenseDateObj,
+                categoryId: category?.id || null,
+                subcategory: subcategory || null,
+                tags: parseStringArray(tags) ?? [],
+                paymentMethod: normalizePaymentMethod(paymentMethod),
+                paymentAccount: paymentAccount || null,
+                vendor: vendor || null,
+                location: location || null,
+                receiptUrl: receiptUrl || null,
+                notes: notes || null,
+                isRecurring: Boolean(isRecurring),
+                frequency: normalizeExpenseFrequency(frequency),
+                recurringUntil: recurringUntil ? new Date(recurringUntil) : null
+            }
+        })
+
+        const budgets = await resolveBudgetsForExpense(user.id, expenseDateObj, created.categoryId)
+        if (budgets.length) {
+            const updates = budgets.map(b => tx.budget.update({
+                where: { id: b.id },
+                data: { spent: (b.spent || 0) + parsedAmount }
+            }))
+            await Promise.all(updates)
         }
+        return created
     })
 
     res.status(201).json({ status: 201, expense })
@@ -220,6 +234,35 @@ export const deleteExpense = async(req: ExtendedRequest, res: Response) => {
 
     await prisma.expense.delete({ where: { id } })
     res.status(200).json({ status: 200, message: 'Expense deleted' })
+}
+
+export const listBudgetSummary = async(req: ExtendedRequest, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const budgets = await prisma.budget.findMany({
+        where: { userId: user.id },
+        orderBy: { startDate: 'desc' }
+    })
+    const summaries = await Promise.all(budgets.map(async budget => {
+        const spentAgg = await prisma.expense.aggregate({
+            where: {
+                userId: user.id,
+                expenseDate: {
+                    gte: budget.startDate,
+                    lte: budget.endDate
+                },
+                ...(budget.categoryId ? { categoryId: budget.categoryId } : {})
+            },
+            _sum: { amount: true }
+        })
+        const computedSpent = spentAgg._sum.amount || 0
+        return {
+            ...budget,
+            spent: budget.spent ?? computedSpent,
+            remaining: budget.amount - (budget.spent ?? computedSpent)
+        }
+    }))
+    res.status(200).json({ status: 200, budgets: summaries })
 }
 
 // Category CRUD
@@ -732,6 +775,89 @@ export const deleteSubscription = async(req: ExtendedRequest, res: Response) => 
     res.status(200).json({ status: 200, message: 'Subscription deleted' })
 }
 
+// Mark subscription paid -> create expense for current period
+const addInterval = (date: Date, freq: ExpenseFrequency) => {
+    const d = new Date(date)
+    switch (freq) {
+        case ExpenseFrequency.WEEKLY:
+            d.setDate(d.getDate() + 7)
+            return d
+        case ExpenseFrequency.YEARLY:
+            d.setFullYear(d.getFullYear() + 1)
+            return d
+        case ExpenseFrequency.MONTHLY:
+        default:
+            d.setMonth(d.getMonth() + 1)
+            return d
+    }
+}
+
+export const markSubscriptionPaid = async(req: ExtendedRequest, res: Response) => {
+    const user = ensureUser(req, res)
+    if (!user) return
+    const { id } = req.params
+    if (!id) return res.status(400).json({ status: 400, message: 'subscription id is required' })
+
+    const subscription = await prisma.subscription.findFirst({ where: { id, userId: user.id } })
+    if (!subscription) return res.status(404).json({ status: 404, message: 'Subscription not found' })
+
+    const expenseDate = subscription.nextBillingDate || new Date()
+    const freq = subscription.billingCycle || ExpenseFrequency.MONTHLY
+    const nextBilling = addInterval(expenseDate, freq)
+
+    const result = await prisma.$transaction(async(tx) => {
+        const expense = await tx.expense.create({
+            data: {
+                userId: user.id,
+                title: subscription.title,
+                amount: subscription.amount,
+                currency: subscription.currency,
+                expenseDate,
+                categoryId: subscription.categoryId || null,
+                paymentMethod: subscription.paymentMethod || PaymentMethod.CASH,
+                isRecurring: true,
+                frequency: freq,
+                notes: `Subscription paid`
+            }
+        })
+
+        const budgets = await resolveBudgetsForExpense(user.id, expenseDate, subscription.categoryId)
+        if (budgets.length) {
+            const updates = budgets.map(b => tx.budget.update({
+                where: { id: b.id },
+                data: { spent: (b.spent || 0) + subscription.amount }
+            }))
+            await Promise.all(updates)
+        }
+
+        await tx.subscription.delete({ where: { id: subscription.id } })
+        const newSub = await tx.subscription.create({
+            data: {
+                userId: user.id,
+                title: subscription.title,
+                description: subscription.description || null,
+                amount: subscription.amount,
+                currency: subscription.currency,
+                billingCycle: freq,
+                nextBillingDate: nextBilling,
+                lastBilledAt: expenseDate,
+                categoryId: subscription.categoryId || null,
+                vendor: subscription.vendor || null,
+                paymentMethod: subscription.paymentMethod,
+                paymentAccount: subscription.paymentAccount || null,
+                active: subscription.active,
+                autoPay: subscription.autoPay,
+                cancelAt: subscription.cancelAt || null,
+                notes: subscription.notes || null
+            }
+        })
+
+        return { expense, subscription: newSub }
+    })
+
+    res.status(201).json({ status: 201, expense: result.expense, subscription: result.subscription })
+}
+
 // Accounts
 export const listAccounts = async(req: ExtendedRequest, res: Response) => {
     const user = ensureUser(req, res)
@@ -905,4 +1031,28 @@ export const deleteCurrency = async(req: ExtendedRequest, res: Response) => {
 
     await prisma.userCurrency.delete({ where: { id } })
     res.status(200).json({ status: 200, message: 'Currency deleted' })
+}
+const resolveBudgetsForExpense = async(userId: string, expenseDate: Date, categoryId?: string | null) => {
+    return prisma.budget.findMany({
+        where: {
+            userId,
+            active: true,
+            startDate: { lte: expenseDate },
+            endDate: { gte: expenseDate },
+            OR: [
+                { categoryId: categoryId || undefined },
+                { categoryId: null }
+            ]
+        }
+    })
+}
+
+const incrementBudgetSpent = async(userId: string, amount: number, expenseDate: Date, categoryId?: string | null) => {
+    const budgets = await resolveBudgetsForExpense(userId, expenseDate, categoryId)
+    if (!budgets.length) return
+    const updates = budgets.map(budget => prisma.budget.update({
+        where: { id: budget.id },
+        data: { spent: (budget.spent || 0) + amount }
+    }))
+    await prisma.$transaction(updates)
 }

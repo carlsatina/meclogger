@@ -410,6 +410,7 @@ model Budget {
   userId         String
   name           String
   amount         Float
+  spent          Float            @default(0)
   currency       String           @default("USD")
   startDate      DateTime
   endDate        DateTime

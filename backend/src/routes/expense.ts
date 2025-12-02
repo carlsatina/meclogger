@@ -14,6 +14,7 @@ import {
     createBudget,
     updateBudget,
     deleteBudget,
+    listBudgetSummary,
     listFinancialGoals,
     createFinancialGoal,
     updateFinancialGoal,
@@ -26,6 +27,7 @@ import {
     createSubscription,
     updateSubscription,
     deleteSubscription,
+    markSubscriptionPaid,
     listAccounts,
     createAccount,
     updateAccount,
@@ -55,6 +57,7 @@ const makeExpenseRouter = (
 
     // Budgets
     router.get('/budgets', authenticateUser, listBudgets)
+    router.get('/budgets/summary', authenticateUser, listBudgetSummary)
     router.post('/budgets', authenticateUser, createBudget)
     router.put('/budgets/:id', authenticateUser, updateBudget)
     router.delete('/budgets/:id', authenticateUser, deleteBudget)
@@ -76,6 +79,7 @@ const makeExpenseRouter = (
     router.post('/subscriptions', authenticateUser, createSubscription)
     router.put('/subscriptions/:id', authenticateUser, updateSubscription)
     router.delete('/subscriptions/:id', authenticateUser, deleteSubscription)
+    router.post('/subscriptions/:id/pay', authenticateUser, markSubscriptionPaid)
 
     // Accounts
     router.get('/accounts/list', authenticateUser, listAccounts)

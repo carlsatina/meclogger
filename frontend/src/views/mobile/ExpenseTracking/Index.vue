@@ -8,11 +8,13 @@
             <p class="eyebrow">My wallet</p>
             <h3>Expense Tracking</h3>
         </div>
-        <button class="icon-btn ghost">
-            <mdicon name="plus-circle-outline" size="24" />
+        <button class="quick-pill" @click="openExpenseSheet">
+            <mdicon name="magic-staff" size="18" />
+            <span>Quick add</span>
         </button>
     </header>
 
+    <!-- HOME TAB -->
     <main class="content" v-if="activeTab === 'home'">
         <section class="summary-grid">
             <div class="card primary">
@@ -81,148 +83,72 @@
                 </div>
                 <p v-else class="sub">No budgets yet. Create one to stay on track.</p>
             </div>
-            <div class="card">
+            <div class="card" @click="setTab('schedules')">
                 <div class="row">
-                    <div>
+                    <div class="d-flex flex-row justify-content-between">
                         <p class="label">Subscriptions</p>
-                        <h4>$220</h4>
+                        <h4>{{ formatMoney(defaultCurrency, subscriptionTotal) }}</h4>
+                        <!-- <span class="sub">{{ schedules.length }} active</span> -->
                     </div>
-                    <button class="icon-btn ghost">
-                        <mdicon name="calendar-check" size="20" />
-                    </button>
                 </div>
-                <ul class="mini-list">
-                    <li><span class="dot blue"></span>Spotify • $12</li>
-                    <li><span class="dot amber"></span>iCloud • $10</li>
-                    <li><span class="dot teal"></span>Netflix • $18</li>
+                <ul class="mini-list" v-if="schedules.length">
+                    <li v-for="(item, idx) in schedules.slice(0,3)" :key="item.id" class="mini-pill">
+                        <span class="dot" :class="subscriptionDot(idx)"></span>
+                        <span class="mini-title">{{ item.title }} - </span>
+                        <span class="mini-amount">{{ item.amount }}</span>
+                    </li>
                 </ul>
+                <p v-else class="sub">No subscriptions yet.</p>
             </div>
         </section>
 
         <section class="section">
             <div class="section-head">
                 <h4>Recent activity</h4>
-                <button class="text-btn">See all</button>
+                <button class="text-btn" @click="setTab('home'); loadExpenses()">Refresh</button>
             </div>
-            <div class="list">
-                <div class="item">
-                    <div class="icon-circle purple">
-                        <mdicon name="food-fork-drink" size="20" />
+            <div class="list" v-if="expenses.length">
+                <div class="item" v-for="exp in expenses.slice(0,5)" :key="exp.id">
+                    <div class="icon-circle"
+                        :style="{
+                            background: exp.categoryColor || '#e2e8f0',
+                            color: exp.categoryColor ? '#fff' : '#0f172a'
+                        }"
+                    >
+                        <mdicon :name="exp.categoryIcon || 'cash-multiple'" size="20" />
                     </div>
                     <div class="item-main">
-                        <p class="item-title">Dinner out</p>
-                        <p class="item-sub">Dining • Aug 18</p>
+                        <p class="item-title">{{ exp.title }}</p>
+                        <p class="item-sub">
+                            {{ formatDate(exp.expenseDate) }}
+                        </p>
                     </div>
-                    <div class="item-amount">- $42</div>
+                    <div class="item-amount"> {{ formatMoney(defaultCurrency,exp.amount) }}</div>
                 </div>
-                <div class="item">
-                    <div class="icon-circle teal">
-                        <mdicon name="bus" size="20" />
-                    </div>
-                    <div class="item-main">
-                        <p class="item-title">Commute pass</p>
-                        <p class="item-sub">Transport • Aug 17</p>
-                    </div>
-                    <div class="item-amount">- $120</div>
+            </div>
+            <p v-else class="sub">No expenses yet.</p>
+
+            <div class="insights-cta">
+                <div>
+                    <p class="label">Insights</p>
+                    <h4>See trends & tips</h4>
+                    <p class="sub">Spending pulse, categories, and smart alerts.</p>
                 </div>
-                <div class="item">
-                    <div class="icon-circle orange">
-                        <mdicon name="cart-outline" size="20" />
-                    </div>
-                    <div class="item-main">
-                        <p class="item-title">Groceries</p>
-                        <p class="item-sub">Household • Aug 16</p>
-                    </div>
-                    <div class="item-amount">- $86</div>
-                </div>
+                <button class="inline-pill" @click="setTab('insights')">
+                    <mdicon name="chart-line" size="18" />
+                    <span>View insights</span>
+                </button>
             </div>
         </section>
     </main>
 
-    <main class="content" v-else-if="activeTab === 'insights'">
-        <section class="hero-insights">
-            <div class="glow"></div>
-            <div>
-                <p class="eyebrow">Spending pulse</p>
-                <h2>$1,240</h2>
-                <p class="sub">Avg daily spend $62 • Down 12% vs last month</p>
-            </div>
-            <div class="sparkline">
-                <span v-for="(height, i) in [30, 44, 22, 56, 62, 40, 48]" :key="i" :style="{ height: height + 'px' }"></span>
-            </div>
-        </section>
 
-        <section class="section insights-grid">
-            <div class="card">
-                <div class="row">
-                    <p class="label">Top categories</p>
-                    <button class="chip">Aug</button>
-                </div>
-                <div class="category-row">
-                    <div class="category">
-                        <div class="circle purple"></div>
-                        <div>
-                            <p class="item-title">Dining</p>
-                            <p class="item-sub">35% • $420</p>
-                        </div>
-                    </div>
-                    <div class="pill ghost">-8% vs last month</div>
-                </div>
-                <div class="category-row">
-                    <div class="category">
-                        <div class="circle teal"></div>
-                        <div>
-                            <p class="item-title">Transport</p>
-                            <p class="item-sub">22% • $260</p>
-                        </div>
-                    </div>
-                    <div class="pill ghost">+4% vs last month</div>
-                </div>
-                <div class="category-row">
-                    <div class="category">
-                        <div class="circle amber"></div>
-                        <div>
-                            <p class="item-title">Groceries</p>
-                            <p class="item-sub">18% • $210</p>
-                        </div>
-                    </div>
-                    <div class="pill ghost">-2% vs last month</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="row">
-                    <p class="label">Weekly rhythm</p>
-                    <button class="text-btn">See trend</button>
-                </div>
-                <div class="bars">
-                    <div class="bar-col" v-for="(h, i) in [34, 62, 40, 76, 52, 44, 28]" :key="i">
-                        <div class="bar-pill" :style="{ height: h + 'px' }"></div>
-                        <span class="bar-label">{{ barLabels[i] }}</span>
-                    </div>
-                </div>
-                <p class="sub">Thu is your spend spike. Shift groceries to Tue/Wed to smooth cash flow.</p>
-            </div>
-
-            <div class="card gradient-card">
-                <div class="row">
-                    <div>
-                        <p class="label">Smart tip</p>
-                        <h4>Lock subscriptions</h4>
-                        <p class="sub">Set alerts when subs exceed $250/mo and review quarterly.</p>
-                    </div>
-                    <mdicon name="lightbulb-on-outline" size="26" />
-                </div>
-                <button class="primary-btn">Create alert</button>
-            </div>
-        </section>
-    </main>
-
+    <!-- SCHEDULES TAB -->
     <main class="content" v-else-if="activeTab === 'schedules'">
         <section class="hero-schedules">
             <div>
                 <p class="eyebrow">Upcoming</p>
-                <h2>{{ defaultCurrency }} {{ scheduleTotal }}</h2>
+                <h2>{{ formatMoney(defaultCurrency, scheduleTotal) }}</h2>
                 <p class="sub">Across {{ filteredSchedules.length }} items</p>
             </div>
             <button class="primary-chip" @click="openScheduleSheet">
@@ -257,15 +183,24 @@
                             <mdicon :name="item.autoPay ? 'toggle-switch' : 'toggle-switch-off'" size="18" />
                             <span>{{ item.autoPay ? 'Auto-pay' : 'Reminder' }}</span>
                         </button>
-                        <div class="schedule-actions">
-                            <button class="icon-btn ghost small" @click="startEditSchedule(item)">
-                                <mdicon name="pencil-outline" size="18" />
-                            </button>
-                            <button class="icon-btn ghost small danger" @click="removeSchedule(item)">
-                                <mdicon name="trash-can-outline" size="18" />
-                            </button>
-                        </div>
+                    <div class="schedule-actions">
+                        <button class="icon-btn ghost small" @click="startEditSchedule(item)">
+                            <mdicon name="pencil-outline" size="18" />
+                        </button>
+                        <button class="icon-btn ghost small danger" @click="removeSchedule(item)">
+                            <mdicon name="trash-can-outline" size="18" />
+                        </button>
+                        <button
+                            v-if="scheduleFilter === 'subscriptions'"
+                            class="pill tiny-pill"
+                            :class="{ success: item.paid }"
+                            @click="paySubscription(item)"
+                        >
+                            <mdicon :name="item.paid ? 'check-circle' : 'check-circle-outline'" size="16" />
+                            <span>{{ item.paid ? 'Paid' : 'Pay' }}</span>
+                        </button>
                     </div>
+                </div>
                 </div>
                 <div class="schedule-main">
                     <div class="icon-circle" :class="item.badgeClass">
@@ -279,6 +214,61 @@
                 </div>
             </div>
         </section>
+    </main>
+
+    <!-- TRANSACTIONS TAB -->
+    <main class="content" v-else-if="activeTab === 'transactions'">
+        <section class="transactions-header">
+            <div class="months" @touchstart="onMonthTouchStart" @touchend="onMonthTouchEnd">
+                <span class="month muted" @click="changeMonth(-1)">{{ monthLabel(-1) }}</span>
+                <span class="month current">{{ monthLabel(0) }}</span>
+                <span class="month muted" @click="changeMonth(1)">{{ monthLabel(1) }}</span>
+            </div>
+        </section>
+        <transition name="month-slide" mode="out-in">
+            <div class="transactions-pane" :key="viewMonthKey">
+                <div class="summary-bar">
+                    <div class="flow out">- {{ formatMoney(defaultCurrency, transactionOut) }}</div>
+                    <div class="flow in">+ {{ formatMoney(defaultCurrency, transactionIn) }}</div>
+                    <div class="flow net">= {{ formatMoney(defaultCurrency, transactionNet) }}</div>
+                </div>
+
+                <section class="transactions-list section" v-if="displayedExpenses.length > 0">
+                    <p class="transactions-date">{{ todayLabel }}</p>
+                    <transition-group name="month-slide" tag="div">
+                        <div class="item compact-item mt-1 swipeable" v-for="exp in displayedExpenses" :key="exp.id">
+                            <div class="icon-circle"
+                                :style="{
+                                    background: exp.categoryColor || '#e2e8f0',
+                                    color: exp.categoryColor ? '#fff' : '#0f172a'
+                                }"
+                            >
+                                <mdicon :name="exp.categoryIcon || 'cash-multiple'" size="20" />
+                            </div>
+                            <div class="item-main">
+                                <p class="item-title">{{ exp.title }}</p>
+                                <p class="item-sub light">{{ formatDate(exp.expenseDate) }}</p>
+                            </div>
+                            <div class="item-amount">- {{ formatMoney(exp.currency || defaultCurrency, exp.amount) }}</div>
+                            <div class="swipe-actions">
+                                <button class="pill tiny-pill danger" @click="handleDeleteExpense(exp)">
+                                    <mdicon name="trash-can-outline" size="16" />
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </transition-group>
+                    <div class="transaction-footer">
+                        <p class="sub">Total cash flow: {{ defaultCurrency }} {{ transactionNet }}</p>
+                        <p class="sub">{{ displayedExpenses.length }} transactions</p>
+                    </div>
+                </section>
+                <p v-else class="sub">No transactions yet.</p>
+           </div>
+        </transition>
+        <button class="fab" @click="openExpenseSheet">
+            <mdicon name="plus" size="24" />
+        </button>
     </main>
 
     <main class="content" v-else-if="activeTab === 'profile'">
@@ -382,9 +372,10 @@
                             <p class="item-sub">Weekly digest every Monday</p>
                         </div>
                         <span class="switch"></span>
-                    </div>
-                </div>
             </div>
+        </div>
+    </div>
+
 
             <div class="card profile-card danger">
                 <div class="row">
@@ -399,8 +390,109 @@
         </section>
     </main>
 
-    <div v-if="showAddCategory" class="overlay">
+    <div v-if="showExpenseSheet" class="overlay">
         <div class="sheet">
+            <div class="sheet-head">
+                <div class="pill ghost">Add expense</div>
+                <button class="icon-btn ghost" @click="closeExpenseSheet">
+                    <mdicon name="close" size="22" />
+                </button>
+            </div>
+            <h3 class="sheet-title">New expense</h3>
+            <form class="form" @submit.prevent>
+                <label class="field">
+                    <span>Type</span>
+                    <div class="pill-row">
+                        <button
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: expenseForm.type === 'DEFAULT' }"
+                            @click="selectExpenseType('DEFAULT')"
+                        >
+                            <mdicon name="checkbox-blank-circle-outline" size="18" />
+                            <span>Default</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: expenseForm.type === 'SUBSCRIPTION' }"
+                            @click="selectExpenseType('SUBSCRIPTION')"
+                        >
+                            <mdicon name="reload" size="18" />
+                            <span>Subscription</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: expenseForm.type === 'UPCOMING' }"
+                            @click="selectExpenseType('UPCOMING')"
+                        >
+                            <mdicon name="calendar-clock" size="18" />
+                            <span>Upcoming</span>
+                        </button>
+                    </div>
+                </label>
+                <label class="field">
+                    <span>Title</span>
+                    <input type="text" v-model="expenseForm.title" placeholder="e.g. Groceries" />
+                </label>
+                <label class="field inline">
+                    <span>Amount</span>
+                    <input type="number" step="0.01" v-model.number="expenseForm.amount" placeholder="0.00" />
+                </label>
+                <label class="field inline">
+                    <span>Currency</span>
+                    <input type="text" v-model="expenseForm.currency" />
+                </label>
+                <label class="field">
+                    <span>Category</span>
+                    <div class="pill-row" ref="expenseCategoryRow">
+                        <button
+                            v-for="cat in categories"
+                            :key="cat.id"
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: expenseForm.categoryId === cat.id }"
+                            @click="expenseForm.categoryId = cat.id"
+                            :style="{ borderColor: cat.color || '#e2e8f0', color: '#0f172a' }"
+                        >
+                            <mdicon :name="cat.icon || 'label-outline'" size="18" :style="{ color: cat.color || '#4f46e5' }" />
+                            <span>{{ cat.name }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: !expenseForm.categoryId }"
+                            @click="expenseForm.categoryId = ''"
+                        >
+                            <mdicon name="shape-outline" size="18" />
+                            <span>Uncategorized</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="pill-option add-pill"
+                            @click="goToAddCategory"
+                        >
+                            <mdicon name="plus" size="20" />
+                        </button>
+                    </div>
+                </label>
+                <label class="field inline">
+                    <span>Date</span>
+                    <input type="date" v-model="expenseForm.expenseDate" />
+                </label>
+                <p v-if="expenseError" class="error-text">{{ expenseError }}</p>
+                <div class="actions">
+                    <button type="button" class="text-btn" @click="closeExpenseSheet">Cancel</button>
+                    <button type="button" class="primary-btn solid" :disabled="expenseSaving" @click="handleSaveExpense">
+                        {{ expenseSaving ? 'Saving...' : 'Save expense' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+        <div v-if="showAddCategory" class="overlay">
+            <div class="sheet">
             <div class="sheet-head">
                 <div class="pill ghost">New category</div>
                 <button class="icon-btn ghost" @click="closeAddCategory">
@@ -461,8 +553,30 @@
                 </div>
             </form>
         </div>
-    </div>
 
+            </div>
+
+    <div v-if="showQuickActions" class="overlay quick-overlay">
+        <div class="sheet">
+            <div class="sheet-head">
+                <div class="pill ghost">Quick actions</div>
+                <button class="icon-btn ghost" @click="closeQuickActions">
+                    <mdicon name="close" size="22" />
+                </button>
+            </div>
+            <div class="action-list">
+                <button class="action-row" @click="openExpenseSheet">
+                    <div class="icon-circle teal">
+                        <mdicon name="cash-plus" size="20" />
+                    </div>
+                    <div>
+                        <p class="item-title">Add expense</p>
+                        <p class="item-sub">Log a one-time or recurring expense</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
     <div v-if="showBudgetSheet" class="overlay">
         <div class="sheet">
             <div class="sheet-head">
@@ -480,17 +594,6 @@
                 <label class="field inline">
                     <span>Amount</span>
                     <input type="number" step="0.01" v-model.number="budgetForm.amount" placeholder="0.00" />
-                </label>
-                <label class="field inline">
-                    <span>Currency</span>
-                    <input type="text" v-model="budgetForm.currency" placeholder="PHP" />
-                </label>
-                <label class="field inline">
-                    <span>Category</span>
-                    <select v-model="budgetForm.categoryId">
-                        <option value="">General</option>
-                        <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                    </select>
                 </label>
                 <label class="field inline">
                     <span>Start date</span>
@@ -540,10 +643,26 @@
                 </label>
                 <label class="field inline">
                     <span>Type</span>
-                    <select v-model="scheduleForm.type">
-                        <option value="subscription">Subscription</option>
-                        <option value="expense">Expense</option>
-                    </select>
+                    <div class="pill-row">
+                        <button
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: scheduleForm.type === 'subscription' }"
+                            @click="scheduleForm.type = 'subscription'"
+                        >
+                            <mdicon name="reload" size="18" />
+                            <span>Subscription</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: scheduleForm.type === 'expense' }"
+                            @click="scheduleForm.type = 'expense'"
+                        >
+                            <mdicon name="calendar-clock" size="18" />
+                            <span>Expense</span>
+                        </button>
+                    </div>
                 </label>
                 <label class="field inline">
                     <span>Frequency</span>
@@ -554,11 +673,44 @@
                         <option value="ONE_TIME">One time</option>
                     </select>
                 </label>
+                <label class="field">
+                    <span>Category</span>
+                    <div class="pill-row" ref="scheduleCategoryRow">
+                        <button
+                            v-for="cat in categories"
+                            :key="cat.id"
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: scheduleForm.categoryId === cat.id }"
+                            @click="scheduleForm.categoryId = cat.id"
+                            :style="{ borderColor: cat.color || '#e2e8f0', color: '#0f172a' }"
+                        >
+                            <mdicon :name="cat.icon || 'label-outline'" size="18" :style="{ color: cat.color || '#4f46e5' }" />
+                            <span>{{ cat.name }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="pill-option"
+                            :class="{ active: !scheduleForm.categoryId }"
+                            @click="scheduleForm.categoryId = ''"
+                        >
+                            <mdicon name="shape-outline" size="18" />
+                            <span>Uncategorized</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="pill-option add-pill"
+                            @click="goToAddCategory"
+                        >
+                            <mdicon name="plus" size="18" />
+                        </button>
+                    </div>
+                </label>
                 <label class="field inline">
                     <span>Next charge date</span>
                     <input type="date" v-model="scheduleForm.nextDate" />
                 </label>
-                <label class="checkbox">
+                <label class="checkbox" v-if="scheduleForm.type === 'subscription'">
                     <input type="checkbox" v-model="scheduleForm.autoPay" />
                     <span>Auto-pay enabled</span>
                 </label>
@@ -578,9 +730,9 @@
             <mdicon name="home-outline" size="22" />
             <span>Home</span>
         </button>
-        <button class="nav-btn" :class="{ active: activeTab === 'insights' }" @click="setTab('insights')">
-            <mdicon name="chart-donut" size="22" />
-            <span>Insights</span>
+        <button class="nav-btn" :class="{ active: activeTab === 'transactions' }" @click="setTab('transactions')">
+            <mdicon name="swap-horizontal" size="22" />
+            <span>Transactions</span>
         </button>
         <button class="nav-btn" :class="{ active: activeTab === 'schedules' }" @click="setTab('schedules')">
             <mdicon name="calendar-refresh" size="22" />
@@ -608,11 +760,11 @@ export default {
     name: "ExpenseTrackingMobile",
     setup() {
         const router = useRouter()
-        const { createCategory, listCategories } = useExpenses()
+        const { listExpenses, createExpense, deleteExpense, createCategory, listCategories } = useExpenses()
         const { listAccounts } = useAccounts()
         const { listCurrencies } = useCurrencies()
-        const { listBudgets, createBudget } = useBudgets()
-        const { listSubscriptions, createSubscription, updateSubscription, deleteSubscription } = useSubscriptions()
+        const { listBudgetSummary, listBudgets, createBudget } = useBudgets()
+        const { listSubscriptions, createSubscription, updateSubscription, deleteSubscription, markSubscriptionPaid } = useSubscriptions()
         const {
             listExpenseSchedules,
             createExpenseSchedule,
@@ -628,6 +780,14 @@ export default {
             showAddCategory.value = false
             resetCategoryForm()
         }
+
+        const goToAddCategory = () => {
+            showQuickActions.value = false
+            showExpenseSheet.value = false
+            showScheduleSheet.value = false
+            showBudgetSheet.value = false
+            showAddCategory.value = true
+        }
         const categories = ref([])
         const categoriesLoaded = ref(false)
         const accounts = ref([])
@@ -639,13 +799,13 @@ export default {
         const budgets = ref([])
         const budgetsLoaded = ref(false)
         const showBudgetSheet = ref(false)
+        const todayStr = () => new Date().toISOString().slice(0, 10)
+        const expenses = ref([])
         const budgetForm = ref({
             name: '',
             amount: '',
-            currency: 'PHP',
-            startDate: '',
-            endDate: '',
-            categoryId: '',
+            startDate: todayStr(),
+            endDate: todayStr(),
             alertEnabled: true,
             alertThreshold: ''
         })
@@ -654,14 +814,27 @@ export default {
         const showScheduleSheet = ref(false)
         const scheduleSaving = ref(false)
         const scheduleError = ref('')
+        const showQuickActions = ref(false)
+        const showExpenseSheet = ref(false)
+        const expenseSaving = ref(false)
+        const expenseError = ref('')
+        const expenseForm = ref({
+            title: '',
+            amount: '',
+            currency: 'PHP',
+            categoryId: '',
+            expenseDate: todayStr(),
+            type: 'DEFAULT'
+        })
         const schedules = ref([])
         const scheduleForm = ref({
             title: '',
             amount: '',
             type: 'subscription',
             frequency: 'MONTHLY',
-            nextDate: '',
-            autoPay: true
+            nextDate: todayStr(),
+            autoPay: true,
+            categoryId: ''
         })
         const expenseSchedules = ref([])
         const scheduleFilter = ref('subscriptions')
@@ -671,14 +844,134 @@ export default {
         const scheduleTotal = computed(() => {
             return filteredSchedules.value.reduce((sum, s) => sum + Number(s.rawAmount || 0), 0)
         })
+        const subscriptionTotal = computed(() => {
+            return schedules.value.reduce((sum, s) => sum + Number(s.rawAmount || 0), 0)
+        })
+        const monthOffset = ref(0)
+        const viewMonthStart = computed(() => {
+            const base = new Date()
+            return new Date(base.getFullYear(), base.getMonth() + monthOffset.value, 1)
+        })
+        const viewMonthKey = computed(() => `${viewMonthStart.value.getFullYear()}-${viewMonthStart.value.getMonth()}`)
+        const monthLabel = (offset = 0) => {
+            const d = new Date(viewMonthStart.value.getFullYear(), viewMonthStart.value.getMonth() + offset, 1)
+            return d.toLocaleString('default', { month: 'long' })
+        }
+        const displayedExpenses = computed(() => {
+            const target = viewMonthStart.value
+            return expenses.value.filter(exp => {
+                if (!exp.expenseDate) return false
+                const d = new Date(exp.expenseDate)
+                return d.getFullYear() === target.getFullYear() && d.getMonth() === target.getMonth()
+            })
+        })
+        const currencySymbol = (cur) => {
+            const map = { PHP: '₱', USD: '$', EUR: '€', GBP: '£', JPY: '¥' }
+            return map[cur] || map[defaultCurrency.value] || ''
+        }
+        const formatMoney = (cur, amt) => `${currencySymbol(cur)} ${Number(amt || 0)}`
+        const transactionOut = computed(() => {
+            return displayedExpenses.value.reduce((sum, e) => sum + Number(e.amount || 0), 0)
+        })
+        const transactionIn = computed(() => 0)
+        const transactionNet = computed(() => transactionIn.value - transactionOut.value)
+        const todayLabel = computed(() => new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }))
+        const changeMonth = (step) => {
+            monthOffset.value += step
+        }
+        const touchStartX = ref(0)
+        const onMonthTouchStart = (e) => {
+            touchStartX.value = e.changedTouches?.[0]?.clientX || 0
+        }
+        const onMonthTouchEnd = (e) => {
+            const endX = e.changedTouches?.[0]?.clientX || 0
+            const diff = endX - touchStartX.value
+            if (Math.abs(diff) > 30) {
+                changeMonth(diff < 0 ? 1 : -1)
+            }
+        }
+        const openQuickActions = () => {
+            showQuickActions.value = true
+        }
+        const closeQuickActions = () => {
+            showQuickActions.value = false
+        }
+        const resetExpenseForm = () => {
+            expenseForm.value = {
+                title: '',
+                amount: '',
+                currency: defaultCurrency.value || 'PHP',
+                categoryId: '',
+                expenseDate: todayStr(),
+                type: 'DEFAULT'
+            }
+            expenseError.value = ''
+        }
+
+        const openExpenseSheet = () => {
+            if (!categoriesLoaded.value) loadCategories()
+            resetExpenseForm()
+            showQuickActions.value = false
+            showExpenseSheet.value = true
+        }
+
+        const closeExpenseSheet = () => {
+            showExpenseSheet.value = false
+        }
+
+        const selectExpenseType = (type) => {
+            expenseForm.value.type = type
+            console.log('Selected expense type:', type)
+            if (type === 'SUBSCRIPTION' || type === 'UPCOMING') {
+                const scheduleType = type === 'SUBSCRIPTION' ? 'subscription' : 'expense'
+                closeExpenseSheet()
+                showQuickActions.value = false
+                setTab('schedules')
+                scheduleFilter.value = type === 'SUBSCRIPTION' ? 'subscriptions' : 'expenses'
+                openScheduleSheet(scheduleType)
+            }
+        }
+
+        const handleSaveExpense = async() => {
+            expenseError.value = ''
+            if (!expenseForm.value.title.trim() || !expenseForm.value.amount) {
+                expenseError.value = 'Title and amount are required.'
+                return
+            }
+            const token = localStorage.getItem('token')
+            if (!token) {
+                expenseError.value = 'You are not logged in.'
+                return
+            }
+            expenseSaving.value = true
+            try {
+                await createExpense(token, {
+                    title: expenseForm.value.title.trim(),
+                    amount: Number(expenseForm.value.amount),
+                    currency: expenseForm.value.currency || defaultCurrency.value || 'PHP',
+                    categoryId: expenseForm.value.categoryId || null,
+                    expenseDate: expenseForm.value.expenseDate || new Date().toISOString(),
+                    paymentMethod: 'CASH',
+                    isRecurring: expenseForm.value.type === 'SUBSCRIPTION',
+                    frequency: expenseForm.value.type === 'SUBSCRIPTION' ? 'MONTHLY' : 'ONE_TIME'
+                })
+                await loadExpenses()
+                await loadBudgets()
+                closeExpenseSheet()
+            } catch (err) {
+                expenseError.value = err?.message || 'Unable to save expense.'
+            } finally {
+                expenseSaving.value = false
+            }
+        }
         const editingSubscriptionId = ref(null)
         const budgetCarousel = ref(null)
         const budgetActiveIndex = ref(0)
         const activeBudgetAmount = computed(() => {
-            if (!budgets.value.length) return `${defaultCurrency.value} 0`
+            if (!budgets.value.length) return `${currencySymbol(defaultCurrency.value)} 0`
             const active = budgets.value[budgetActiveIndex.value] || budgets.value[0]
             const currency = active?.currency || defaultCurrency.value || 'PHP'
-            return `${currency} ${active?.amount ?? 0}`
+            return `${currencySymbol(currency)} ${active?.amount ?? 0}`
         })
         const colorPalette = ref([
             '#ef4444', '#f97316', '#f59e0b', '#84cc16',
@@ -790,9 +1083,34 @@ export default {
             try {
                 const token = localStorage.getItem('token')
                 if (!token) return
-                const list = await listBudgets(token)
+                let list = []
+                try {
+                    list = await listBudgetSummary(token)
+                } catch {
+                    list = await listBudgets(token)
+                }
                 budgets.value = Array.isArray(list) ? list : []
                 budgetsLoaded.value = true
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
+        const decorateExpense = (exp) => {
+            const cat = categories.value.find(c => c.id === exp.categoryId)
+            return {
+                ...exp,
+                categoryIcon: cat?.icon || exp.categoryIcon || null,
+                categoryColor: cat?.color || exp.categoryColor || null
+            }
+        }
+
+        const loadExpenses = async() => {
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) return
+                const list = await listExpenses(token)
+                expenses.value = Array.isArray(list) ? list.map(decorateExpense) : []
             } catch (err) {
                 console.error(err)
             }
@@ -848,8 +1166,8 @@ export default {
                 name: '',
                 amount: '',
                 currency: defaultCurrency.value || 'PHP',
-                startDate: '',
-                endDate: '',
+                startDate: todayStr(),
+                endDate: todayStr(),
                 categoryId: '',
                 alertEnabled: true,
                 alertThreshold: ''
@@ -877,10 +1195,10 @@ export default {
                 const budget = await createBudget(token, {
                     name: budgetForm.value.name.trim(),
                     amount: Number(budgetForm.value.amount),
-                    currency: budgetForm.value.currency || defaultCurrency.value || 'PHP',
+                    currency: defaultCurrency.value || 'PHP',
                     startDate: budgetForm.value.startDate,
                     endDate: budgetForm.value.endDate,
-                    categoryId: budgetForm.value.categoryId || null,
+                    categoryId: null,
                     alertThreshold: budgetForm.value.alertThreshold ? Number(budgetForm.value.alertThreshold) : null,
                     alertEnabled: budgetForm.value.alertEnabled
                 })
@@ -893,23 +1211,26 @@ export default {
             }
         }
 
-        const openScheduleSheet = () => {
-            resetScheduleForm()
+        const openScheduleSheet = (typeOverride) => {
+            if (!categoriesLoaded.value) loadCategories()
+            resetScheduleForm(typeOverride)
             showScheduleSheet.value = true
+            showQuickActions.value = false
         }
 
         const closeScheduleSheet = () => {
             showScheduleSheet.value = false
         }
 
-        const resetScheduleForm = () => {
+        const resetScheduleForm = (typeOverride) => {
             scheduleForm.value = {
                 title: '',
                 amount: '',
-                type: 'subscription',
+                type: typeOverride || 'subscription',
                 frequency: 'MONTHLY',
-                nextDate: '',
-                autoPay: true
+                nextDate: todayStr(),
+                autoPay: true,
+                categoryId: ''
             }
             scheduleError.value = ''
             editingSubscriptionId.value = null
@@ -918,6 +1239,8 @@ export default {
         const mapSubscriptionToCard = (sub) => {
             const next = sub.nextBillingDate || sub.nextBilling || sub.nextDate
             const autoPay = Boolean(sub.autoPay)
+            const palette = ['blue', 'amber', 'teal', 'purple', 'pink', 'green']
+            const colorIdx = Math.abs((sub.title || '').length) % palette.length
             return {
                 id: sub.id,
                 when: next ? formatDate(next) : 'Upcoming',
@@ -930,7 +1253,9 @@ export default {
                 rawAmount: sub.amount,
                 rawNextDate: sub.nextBillingDate || null,
                 frequency: sub.billingCycle || 'MONTHLY',
-                autoPay
+                autoPay,
+                categoryId: sub.categoryId || '',
+                dotClass: palette[colorIdx]
             }
         }
 
@@ -959,7 +1284,8 @@ export default {
                 rawAmount: sch.amount,
                 rawNextDate: sch.nextRunAt || sch.startDate,
                 frequency: sch.frequency || 'ONE_TIME',
-                autoPay: false
+                autoPay: false,
+                categoryId: sch.categoryId || ''
             }
         }
 
@@ -997,6 +1323,7 @@ export default {
                         nextBillingDate: scheduleForm.value.nextDate,
                         active: true,
                         autoPay: scheduleForm.value.autoPay,
+                        categoryId: scheduleForm.value.categoryId || null,
                         notes: null
                     }
                     if (editingSubscriptionId.value) {
@@ -1014,7 +1341,8 @@ export default {
                         startDate: scheduleForm.value.nextDate,
                         frequency: scheduleForm.value.frequency || 'ONE_TIME',
                         nextRunAt: scheduleForm.value.nextDate,
-                        active: true
+                        active: true,
+                        categoryId: scheduleForm.value.categoryId || null
                     }
                     if (editingSubscriptionId.value) {
                         const updated = await updateExpenseSchedule(token, editingSubscriptionId.value, payload)
@@ -1040,7 +1368,8 @@ export default {
                 type: scheduleFilter.value === 'subscriptions' ? 'subscription' : 'expense',
                 frequency: item.frequency || (scheduleFilter.value === 'subscriptions' ? 'MONTHLY' : 'ONE_TIME'),
                 nextDate: item.rawNextDate || '',
-                autoPay: item.autoPay
+                autoPay: item.autoPay,
+                categoryId: item.categoryId || ''
             }
             showScheduleSheet.value = true
         }
@@ -1059,6 +1388,40 @@ export default {
             } catch (err) {
                 console.error(err)
             }
+        }
+
+        const paySubscription = async(item) => {
+            const token = localStorage.getItem('token')
+            if (!token || !item.id) return
+            try {
+                const { expense, subscription } = await markSubscriptionPaid(token, item.id)
+                if (expense) expenses.value = [expense, ...expenses.value]
+                schedules.value = schedules.value.filter(s => s.id !== item.id)
+                if (subscription) schedules.value = [mapSubscriptionToCard(subscription), ...schedules.value]
+                await loadBudgets()
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
+        const handleDeleteExpense = async(exp) => {
+            const token = localStorage.getItem('token')
+            if (!token || !exp.id) return
+            try {
+                await deleteExpense(token, exp.id)
+                expenses.value = expenses.value.filter(e => e.id !== exp.id)
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
+        const openAddExpense = () => {
+            // For now, route to schedules tab with expense filter and sheet
+            setTab('schedules')
+            scheduleFilter.value = 'expenses'
+            resetScheduleForm()
+            showScheduleSheet.value = true
+            showQuickActions.value = false
         }
 
         const toggleAutoPay = async(item) => {
@@ -1095,6 +1458,9 @@ export default {
 
         const formatDate = (value) => value ? new Date(value).toLocaleDateString() : ''
 
+        const subscriptionPalette = ['blue', 'amber', 'teal', 'purple', 'pink', 'green']
+        const subscriptionDot = (idx) => subscriptionPalette[idx % subscriptionPalette.length]
+
         watch(activeTab, (tab) => {
             if (tab === 'profile' && !categoriesLoaded.value) {
                 loadCategories()
@@ -1109,10 +1475,25 @@ export default {
                 loadBudgets()
                 if (!categoriesLoaded.value) loadCategories()
             }
+            if (tab === 'home' && schedules.value.length === 0) {
+                loadSubscriptions()
+            }
             if (tab === 'schedules' && schedules.value.length === 0) {
                 loadSubscriptions()
                 loadExpenseSchedules()
             }
+        })
+
+        watch(categories, (newCats) => {
+            if (!Array.isArray(expenses.value)) return
+            expenses.value = expenses.value.map(exp => {
+                const cat = newCats.find(c => c.id === exp.categoryId)
+                return {
+                    ...exp,
+                    categoryIcon: cat?.icon || exp.categoryIcon || null,
+                    categoryColor: cat?.color || exp.categoryColor || null
+                }
+            })
         })
 
         onMounted(() => {
@@ -1124,6 +1505,7 @@ export default {
             if (activeTab.value === 'home') {
                 loadBudgets()
                 loadCategories()
+                loadExpenses()
             }
             if (activeTab.value === 'schedules') {
                 loadSubscriptions()
@@ -1184,8 +1566,39 @@ export default {
             handleSaveSchedule,
             toggleAutoPay,
             scheduleTotal,
+            subscriptionTotal,
+            transactionOut,
+            transactionIn,
+            transactionNet,
+            monthLabel,
+            todayLabel,
             startEditSchedule,
-            removeSchedule
+            removeSchedule,
+            subscriptionDot,
+            showQuickActions,
+            openQuickActions,
+            closeQuickActions,
+            expenses,
+            loadExpenses,
+            showExpenseSheet,
+            expenseForm,
+            expenseSaving,
+            expenseError,
+            openExpenseSheet,
+            closeExpenseSheet,
+            selectExpenseType,
+            handleSaveExpense,
+            goToAddCategory,
+            changeMonth,
+            onMonthTouchStart,
+            onMonthTouchEnd,
+            displayedExpenses,
+            monthOffset,
+            viewMonthKey,
+            paySubscription,
+            handleDeleteExpense,
+            formatMoney,
+            currencySymbol
         }
     }
 }
@@ -1221,6 +1634,19 @@ export default {
 
 .icon-btn.ghost {
     background: transparent;
+}
+
+.quick-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.35);
 }
 
 .title-group h3 {
@@ -1373,6 +1799,11 @@ export default {
     margin-top: -4px;
 }
 
+.action-row .icon-circle {
+    width: 38px;
+    height: 38px;
+}
+
 .icon-btn.top-right {
     align-self: flex-start;
 }
@@ -1441,6 +1872,33 @@ export default {
     color: #0f172a;
 }
 
+.pill.tiny-pill {
+    padding: 6px 8px;
+    gap: 4px;
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    box-shadow: none;
+}
+
+.pill.tiny-pill.danger {
+    background: linear-gradient(135deg, #fee2e2, #fecdd3);
+    color: #b91c1c;
+    border: none;
+    box-shadow: 0 8px 18px rgba(185, 28, 28, 0.25);
+}
+
+.pill.tiny-pill.success {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #166534;
+    border: none;
+    box-shadow: 0 8px 18px rgba(22, 101, 52, 0.25);
+}
+
+.pill.tiny-pill.success mdicon {
+    color: #16a34a;
+}
+
 .progress {
     width: 100%;
     height: 8px;
@@ -1476,6 +1934,9 @@ export default {
 .dot.blue { background: #3b82f6; }
 .dot.amber { background: #f59e0b; }
 .dot.teal { background: #14b8a6; }
+.dot.purple { background: #8b5cf6; }
+.dot.pink { background: #ec4899; }
+.dot.green { background: #22c55e; }
 
 .section {
     margin-top: 16px;
@@ -1530,7 +1991,127 @@ export default {
 .icon-circle.purple { background: #7c3aed; }
 .icon-circle.teal { background: #14b8a6; }
 .icon-circle.orange { background: #f97316; }
+.icon-circle.purple-bg { background: #a855f7; color: #fff; }
+.icon-circle.blue-bg { background: #3b82f6; color: #fff; }
+.icon-circle.green-bg { background: #22c55e; color: #fff; }
 
+.transactions-list .compact-item {
+    padding: 10px;
+}
+
+.compact-item .item-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.insights-cta {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 8px 22px rgba(79, 70, 229, 0.1);
+}
+
+.transactions-header .months {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #475569;
+}
+
+.transactions-header .month {
+    padding-bottom: 4px;
+}
+
+.transactions-header .month.current {
+    font-weight: 800;
+    color: #0f172a;
+    border-bottom: 3px solid #4f46e5;
+}
+
+.transactions-header .month.muted {
+    opacity: 0.6;
+}
+
+.summary-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+    gap: 8px;
+}
+
+.summary-bar .flow {
+    font-weight: 800;
+    text-align: center;
+}
+
+.summary-bar .flow.out { color: #e11d48; }
+.summary-bar .flow.in { color: #16a34a; }
+.summary-bar .flow.net { color: #0f172a; }
+
+.month-slide-enter-active,
+.month-slide-leave-active {
+    transition: all 0.25s ease;
+}
+
+.month-slide-enter-from {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.month-slide-leave-to {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.transactions-date {
+    font-weight: 800;
+    color: #0f172a;
+    margin: 10px 0 6px;
+}
+
+.swipeable {
+    position: relative;
+    overflow: hidden;
+}
+
+.swipe-actions {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.transaction-footer {
+    text-align: center;
+    color: #475569;
+    margin-top: 12px;
+}
+
+.fab {
+    position: fixed;
+    right: 16px;
+    bottom: 70px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    border: none;
+    background: #fcd34d;
+    color: #0f172a;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+}
 .schedule-actions {
     display: flex;
     gap: 6px;
@@ -1926,6 +2507,23 @@ export default {
     justify-content: space-between;
 }
 
+.action-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.action-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 14px;
+}
+
 .sheet-title {
     margin: 6px 0 4px;
     font-size: 20px;
@@ -1966,6 +2564,43 @@ export default {
     font-size: 15px;
     background: #f8fafc;
     appearance: none;
+}
+
+.pill-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+}
+
+.pill-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-weight: 700;
+    color: #0f172a;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.pill-option.active {
+    border-color: #4f46e5;
+    background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+    color: #1e1b4b;
+}
+
+.pill-option.add-pill {
+    background: #fff;
+    border-style: dashed;
+    color: #0f172a;
+}
+
+.pill-option mdicon {
+    color: inherit;
 }
 
 .inline {
