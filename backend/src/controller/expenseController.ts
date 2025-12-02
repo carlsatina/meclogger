@@ -117,6 +117,7 @@ export const createExpense = async(req: ExtendedRequest, res: Response) => {
         currency,
         expenseDate,
         categoryId,
+        budgetId,
         subcategory,
         tags,
         paymentMethod,
@@ -125,7 +126,6 @@ export const createExpense = async(req: ExtendedRequest, res: Response) => {
         location,
         receiptUrl,
         notes,
-        budgetId,
         isRecurring,
         frequency,
         recurringUntil
@@ -136,19 +136,21 @@ export const createExpense = async(req: ExtendedRequest, res: Response) => {
         return res.status(400).json({ status: 400, message: 'title and amount are required' })
     }
 
+    if (budgetId) {
+        const budget = await prisma.budget.findFirst({ where: { id: budgetId, userId: user.id } })
+        if (!budget) return res.status(404).json({ status: 404, message: 'Budget not found' })
+        const expenseDateObj = expenseDate ? new Date(expenseDate) : new Date()
+        if (budget.startDate > expenseDateObj || budget.endDate < expenseDateObj) {
+            return res.status(400).json({ status: 400, message: 'Expense date is outside the selected budget window' })
+        }
+    }
+
     const category = categoryId ? await resolveCategory(user.id, categoryId) : null
     if (categoryId && !category) {
         return res.status(404).json({ status: 404, message: 'Category not found for current user' })
     }
 
     const expenseDateObj = expenseDate ? new Date(expenseDate) : new Date()
-    if (budgetId) {
-        const budget = await prisma.budget.findFirst({ where: { id: budgetId, userId: user.id } })
-        if (!budget) return res.status(404).json({ status: 404, message: 'Budget not found' })
-        if (budget.startDate > expenseDateObj || budget.endDate < expenseDateObj) {
-            return res.status(400).json({ status: 400, message: 'Expense date is outside the selected budget window' })
-        }
-    }
 
     const expense = await prisma.$transaction(async(tx) => {
         const created = await tx.expense.create({
@@ -168,6 +170,7 @@ export const createExpense = async(req: ExtendedRequest, res: Response) => {
                 location: location || null,
                 receiptUrl: receiptUrl || null,
                 notes: notes || null,
+                budgetId: budgetId || null,
                 isRecurring: Boolean(isRecurring),
                 frequency: normalizeExpenseFrequency(frequency),
                 recurringUntil: recurringUntil ? new Date(recurringUntil) : null
@@ -212,6 +215,7 @@ export const updateExpense = async(req: ExtendedRequest, res: Response) => {
         location,
         receiptUrl,
         notes,
+        budgetId,
         isRecurring,
         frequency,
         recurringUntil
@@ -222,6 +226,11 @@ export const updateExpense = async(req: ExtendedRequest, res: Response) => {
         if (!category) return res.status(404).json({ status: 404, message: 'Category not found for current user' })
     }
 
+    if (budgetId) {
+        const budget = await prisma.budget.findFirst({ where: { id: budgetId, userId: user.id } })
+        if (!budget) return res.status(404).json({ status: 404, message: 'Budget not found' })
+    }
+
     const data: any = {
         title: title ?? existing.title,
         description: description ?? existing.description,
@@ -229,6 +238,7 @@ export const updateExpense = async(req: ExtendedRequest, res: Response) => {
         currency: currency || existing.currency,
         expenseDate: expenseDate ? new Date(expenseDate) : existing.expenseDate,
         categoryId: categoryId !== undefined ? categoryId || null : existing.categoryId,
+        budgetId: budgetId !== undefined ? budgetId || null : existing.budgetId,
         subcategory: subcategory ?? existing.subcategory,
         paymentMethod: paymentMethod ? normalizePaymentMethod(paymentMethod) : existing.paymentMethod,
         paymentAccount: paymentAccount ?? existing.paymentAccount,

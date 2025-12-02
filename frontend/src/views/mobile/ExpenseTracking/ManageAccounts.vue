@@ -1,16 +1,13 @@
 <template>
 <div class="page">
     <header class="top-nav">
-        <button class="icon-btn" @click="router.back()">
+        <button class="icon-btn" @click="goProfile">
             <mdicon name="chevron-left" size="24" />
         </button>
         <div class="title-group">
             <p class="eyebrow">Wallet</p>
             <h3>Accounts & Currency</h3>
         </div>
-        <button class="icon-btn ghost" @click="openAddAccount">
-            <mdicon name="plus-circle-outline" size="24" />
-        </button>
     </header>
 
     <main class="content">
@@ -159,6 +156,7 @@
             </form>
         </div>
     </div>
+
 </div>
 </template>
 
@@ -200,6 +198,14 @@ export default {
             symbol: '₱',
             isDefault: true
         })
+
+        const goProfile = () => {
+            router.push({ path: '/expense-tracking', query: { tab: 'profile' } })
+        }
+
+        const goTab = (tab) => {
+            router.push({ path: '/expense-tracking', query: { tab } })
+        }
 
         const loadData = async() => {
             const token = localStorage.getItem('token')
@@ -376,6 +382,8 @@ export default {
             accounts,
             currencies,
             defaultCurrency,
+            goProfile,
+            goTab,
             showAccountSheet,
             showCurrencySheet,
             accountForm,
@@ -677,4 +685,5 @@ export default {
     from { transform: translateY(30px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
 </style>

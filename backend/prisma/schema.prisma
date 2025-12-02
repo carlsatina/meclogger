@@ -383,6 +383,7 @@ model Expense {
   currency       String           @default("USD")
   expenseDate    DateTime         @default(now())
   categoryId     String?
+  budgetId       String?
   subcategory    String?
   tags           String[]         @default([])
   paymentMethod  PaymentMethod    @default(CASH)
@@ -395,11 +396,13 @@ model Expense {
   frequency      ExpenseFrequency @default(ONE_TIME)
   recurringUntil DateTime?
   category       ExpenseCategory? @relation(fields: [categoryId], references: [id])
+  budget         Budget?          @relation(fields: [budgetId], references: [id])
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   schedules      ExpenseSchedule[]
 
   @@index([userId, expenseDate])
   @@index([categoryId])
+  @@index([budgetId])
   @@index([isRecurring])
 }
 
@@ -419,6 +422,7 @@ model Budget {
   alertEnabled   Boolean          @default(true)
   active         Boolean          @default(true)
   category       ExpenseCategory? @relation(fields: [categoryId], references: [id])
+  expenses       Expense[]
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, startDate, endDate])

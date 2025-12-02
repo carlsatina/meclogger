@@ -2,7 +2,7 @@
 <div class="page">
     <header class="top-nav">
         <button class="icon-btn" @click="router.push('/')">
-            <mdicon name="chevron-left" size="24" />
+            <mdicon name="home-outline" size="24" />
         </button>
         <div class="title-group">
             <p class="eyebrow">My wallet</p>
@@ -19,8 +19,8 @@
         <section class="summary-grid">
             <div class="card primary">
                 <p class="label">This month</p>
-                <h2>$1,240</h2>
-                <p class="sub">-12% vs last month</p>
+                <h2>{{ formatMoney(defaultCurrency, currentMonthTotal) }}</h2>
+                <p class="sub">{{ monthChangeLabel }}</p>
             </div>
             <div class="card budget-card">
                 <div class="budget-head">
@@ -229,6 +229,28 @@
                 <span class="month current">{{ monthLabel(0) }}</span>
                 <span class="month muted" @click="changeMonth(1)">{{ monthLabel(1) }}</span>
             </div>
+            <div class="filter-row pill-row">
+                <button
+                    type="button"
+                    class="pill-option compact"
+                    :class="{ active: !budgetFilterId }"
+                    @click="budgetFilterId = ''"
+                >
+                    <mdicon name="filter-outline" size="16" />
+                    <span>All budgets</span>
+                </button>
+                <button
+                    v-for="b in budgets"
+                    :key="b.id"
+                    type="button"
+                    class="pill-option compact"
+                    :class="{ active: budgetFilterId === b.id }"
+                    @click="budgetFilterId = b.id"
+                >
+                    <mdicon name="wallet-outline" size="16" />
+                    <span>{{ b.name }}</span>
+                </button>
+            </div>
         </section>
         <transition name="month-slide" mode="out-in">
             <div class="transactions-pane" :key="viewMonthKey">
@@ -296,7 +318,13 @@
                         <p class="sub">{{ transactionsForMonth.length }} items</p>
                     </div>
                 </section>
-                <p v-else class="sub">No transactions yet.</p>
+                <div v-else class="empty-state">
+                    <div class="icon-circle purple">
+                        <mdicon name="file-document-outline" size="20" />
+                    </div>
+                    <p class="item-title">No transactions yet</p>
+                    <p class="sub">Log an expense to see it here.</p>
+                </div>
            </div>
         </transition>
         <button class="fab" @click="openExpenseSheet">
@@ -304,18 +332,7 @@
         </button>
     </main>
 
-    <main class="content" v-else-if="activeTab === 'insights'">
-        <section class="section insights-hero">
-            <div>
-                <p class="eyebrow">This month</p>
-                <h2>Spending insights</h2>
-                <p class="sub">{{ insightsRangeLabel }}</p>
-            </div>
-            <button class="inline-pill ghost" @click="setTab('transactions')">
-                <mdicon name="swap-horizontal" size="18" />
-                <span>View transactions</span>
-            </button>
-        </section>
+    <main class="content insights-page mt-3" v-else-if="activeTab === 'insights'">
 
         <section class="insights-grid">
             <div class="insight-card glow">
@@ -328,13 +345,25 @@
                 <h3>{{ formatMoney(defaultCurrency, insightsAvgPerDay) }}</h3>
                 <p class="sub">So far this month</p>
             </div>
-            <div class="insight-card glow green">
-                <p class="label">Top category</p>
-                <div v-if="topCategory" class="chip-with-icon">
-                    <mdicon :name="topCategory.icon || 'star'" size="18" :style="{ color: topCategory.color || '#0f172a' }" />
-                    <span>{{ topCategory.name }}</span>
+        </section>
+
+        <section class="section insight-block top-category-block" v-if="topCategory">
+            <div class="section-head">
+                <h4>Top category</h4>
+                <span class="micro muted">Highest spend</span>
+            </div>
+            <div class="cat-row">
+                <div class="icon-circle" :style="{ background: topCategory.color || '#e2e8f0', color: topCategory.color ? '#fff' : '#0f172a' }">
+                    <mdicon :name="topCategory.icon || 'star'" size="20" />
                 </div>
-                <p v-else class="sub">No data yet</p>
+                <div class="cat-main">
+                    <p class="item-title">{{ topCategory.name }}</p>
+                    <p class="item-sub">{{ formatMoney(defaultCurrency, topCategory.total) }}</p>
+                    <div class="progress slim">
+                        <div class="bar" :style="{ width: topCategory.percentLabel, background: topCategory.color || '#4f46e5' }"></div>
+                    </div>
+                </div>
+                <div class="cat-percent">{{ topCategory.percentLabel }}</div>
             </div>
         </section>
 
@@ -362,34 +391,33 @@
 
         <section class="section insight-block">
             <div class="section-head">
-                <h4>Budget health</h4>
-                <span class="micro muted">{{ budgets.length ? budgets.length + ' budgets' : 'No budgets yet' }}</span>
+                <h4>Weekly spend</h4>
+                <span class="micro muted">Last 7 days</span>
             </div>
-            <div v-if="budgets.length" class="budget-health">
-                <div v-for="b in budgets.slice(0,3)" :key="b.id" class="budget-health-card">
-                    <div class="row">
-                        <p class="item-title">{{ b.name }}</p>
-                        <span class="pill ghost">{{ b.categoryId ? 'Category' : 'General' }}</span>
+            <div class="week-bars">
+                <div
+                    v-for="(day, idx) in weeklySeries"
+                    :key="idx"
+                    class="week-bar"
+                >
+                    <div class="bar-track">
+                        <div class="bar-fill" :style="{ height: day.percent, background: '#4f46e5' }"></div>
                     </div>
-                    <p class="item-sub">{{ formatDate(b.startDate) }} - {{ formatDate(b.endDate) }}</p>
-                    <p class="item-title">{{ formatMoney(b.currency || defaultCurrency, b.spent || 0) }} / {{ formatMoney(b.currency || defaultCurrency, b.amount || 0) }}</p>
-                    <div class="progress slim">
-                        <div class="bar gradient" :style="{ width: budgetProgress(b) }"></div>
-                    </div>
+                    <p class="micro muted">{{ day.label }}</p>
+                    <p class="micro">{{ formatMoney(defaultCurrency, day.total) }}</p>
                 </div>
             </div>
-            <p v-else class="sub">Create a budget to see health here.</p>
         </section>
     </main>
 
     <main class="content" v-else-if="activeTab === 'profile'">
         <section class="profile-hero">
             <div class="avatar">
-                <span>AR</span>
+                <span>{{ userInitials }}</span>
             </div>
             <div class="profile-meta">
-                <h3>Alex Rivera</h3>
-                <p class="sub">Premium • Since 2023</p>
+                <h3>{{ userName || 'User' }}</h3>
+                <p class="sub">{{ userEmail || 'Welcome back' }}</p>
             </div>
             <button class="icon-btn ghost">
                 <mdicon name="pencil-outline" size="20" />
@@ -911,6 +939,36 @@
         </div>
     </div>
 
+    <div v-if="showBudgetDeleteConfirm" class="overlay">
+        <div class="sheet confirm-sheet">
+            <div class="sheet-head">
+                <div class="pill ghost">Confirm delete</div>
+                <button class="icon-btn ghost" @click="closeBudgetDeleteConfirm">
+                    <mdicon name="close" size="22" />
+                </button>
+            </div>
+            <h3 class="sheet-title">Delete this budget?</h3>
+            <div class="confirm-card">
+                <div class="icon-circle red-bg">
+                    <mdicon name="trash-can-outline" size="20" />
+                </div>
+                <div>
+                    <p class="item-title">{{ deleteTarget?.name || 'Budget' }}</p>
+                    <p class="item-sub">{{ deleteTarget ? formatDate(deleteTarget.startDate) + ' - ' + formatDate(deleteTarget.endDate) : '' }}</p>
+                </div>
+                <div class="item-amount">{{ formatMoney(deleteTarget?.currency || defaultCurrency, deleteTarget?.amount || 0) }}</div>
+            </div>
+            <p class="sub">This cannot be undone.</p>
+            <p v-if="deleteError" class="error-text">{{ deleteError }}</p>
+            <div class="actions">
+                <button type="button" class="text-btn" @click="closeBudgetDeleteConfirm">Cancel</button>
+                <button type="button" class="primary-btn solid danger" :disabled="deleting" @click="confirmDeleteBudget">
+                    {{ deleting ? 'Deleting...' : 'Delete' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div v-if="showDeleteConfirm" class="overlay">
         <div class="sheet confirm-sheet">
             <div class="sheet-head">
@@ -943,8 +1001,8 @@
 
     <nav class="bottom-nav">
         <button class="nav-btn" :class="{ active: activeTab === 'home' }" @click="setTab('home')">
-            <mdicon name="home-outline" size="22" />
-            <span>Home</span>
+            <mdicon name="view-dashboard-outline" size="22" />
+            <span>Dashboard</span>
         </button>
         <button class="nav-btn" :class="{ active: activeTab === 'transactions' }" @click="setTab('transactions')">
             <mdicon name="swap-horizontal" size="22" />
@@ -964,7 +1022,8 @@
 
 <script>
 import { ref, watch, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import store from '@/store'
+import { useRouter, useRoute } from 'vue-router'
 import { useExpenses } from '@/composables/expenses'
 import { useAccounts } from '@/composables/accounts'
 import { useCurrencies } from '@/composables/currencies'
@@ -976,6 +1035,7 @@ export default {
     name: "ExpenseTrackingMobile",
     setup() {
         const router = useRouter()
+        const route = useRoute()
         const { listExpenses, createExpense, deleteExpense, createCategory, listCategories, updateExpense } = useExpenses()
         const { listAccounts } = useAccounts()
         const { listCurrencies } = useCurrencies()
@@ -988,7 +1048,8 @@ export default {
             deleteExpenseSchedule,
             markExpenseSchedulePaid
         } = useExpenseSchedules()
-        const activeTab = ref('home')
+        const initialTab = route.query?.tab ? String(route.query.tab) : 'home'
+        const activeTab = ref(['home', 'transactions', 'schedules', 'profile', 'insights'].includes(initialTab) ? initialTab : 'home')
         const setTab = (tab) => { activeTab.value = tab }
         const barLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
         const showAddCategory = ref(false)
@@ -1013,6 +1074,13 @@ export default {
         const currenciesLoaded = ref(false)
         const defaultCurrency = ref('PHP')
         const defaultAccountName = ref('')
+        const userEmail = ref('')
+        const userInitials = computed(() => {
+            if (userName.value) {
+                return userName.value.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+            }
+            return 'U'
+        })
         const budgets = ref([])
         const budgetsLoaded = ref(false)
         const showBudgetSheet = ref(false)
@@ -1092,6 +1160,26 @@ export default {
             if (!todayDay) return 0
             return insightsTotal.value / todayDay
         })
+        const weeklySeries = computed(() => {
+            const today = new Date()
+            const series = []
+            for (let i = 6; i >= 0; i--) {
+                const day = new Date(today)
+                day.setDate(today.getDate() - i)
+                const total = insightsExpenses.value
+                    .filter(exp => {
+                        const d = new Date(exp.expenseDate)
+                        return d.toDateString() === day.toDateString()
+                    })
+                    .reduce((sum, e) => sum + Number(e.amount || 0), 0)
+                series.push({ label: day.toLocaleDateString(undefined, { weekday: 'short' }), total })
+            }
+            const max = Math.max(...series.map(s => s.total), 1)
+            return series.map(s => ({
+                ...s,
+                percent: `${Math.round((s.total / max) * 100)}%`
+            }))
+        })
         const categoryBreakdown = computed(() => {
             const total = insightsTotal.value || 1
             const map = new Map()
@@ -1125,7 +1213,17 @@ export default {
             return expenses.value.filter(exp => {
                 if (!exp.expenseDate) return false
                 const d = new Date(exp.expenseDate)
-                return d.getFullYear() === target.getFullYear() && d.getMonth() === target.getMonth()
+                const inMonth = d.getFullYear() === target.getFullYear() && d.getMonth() === target.getMonth()
+                if (!inMonth) return false
+                const b = selectedBudget.value
+                if (b) {
+                    const start = new Date(b.startDate)
+                    const end = new Date(b.endDate)
+                    if (d < start || d > end) return false
+                    if (exp.budgetId && exp.budgetId !== b.id) return false
+                    if (b.categoryId && exp.categoryId !== b.categoryId) return false
+                }
+                return true
             })
         })
         const plannedTransactions = computed(() => {
@@ -1136,6 +1234,13 @@ export default {
                 if (!when) return
                 const d = new Date(when)
                 if (d.getFullYear() !== target.getFullYear() || d.getMonth() !== target.getMonth()) return
+                const b = selectedBudget.value
+                if (b) {
+                    const start = new Date(b.startDate)
+                    const end = new Date(b.endDate)
+                    if (d < start || d > end) return
+                    if (b.categoryId && src.categoryId !== b.categoryId) return
+                }
                 const cat = categories.value.find(c => c.id === src.categoryId)
                 items.push({
                     id: `${type}-${src.id}`,
@@ -1182,6 +1287,31 @@ export default {
             const pct = Math.min(Math.max((spent / total) * 100, 0), 100)
             return `${pct}%`
         }
+        const budgetSummaryPill = computed(() => {
+            if (selectedBudget.value) {
+                const b = selectedBudget.value
+                const remaining = Math.max(0, Number(b.amount || 0) - Number(b.spent || 0))
+                return {
+                    label: `${formatMoney(b.currency || defaultCurrency.value, remaining)} left · ${b.name}`,
+                    percent: budgetProgress(b)
+                }
+            }
+            if (!budgets.value.length) return null
+            const now = viewMonthStart.value
+            const active = budgets.value.find(b => {
+                const start = new Date(b.startDate)
+                const end = new Date(b.endDate)
+                return start <= now && end >= now
+            }) || budgets.value[0]
+            const total = Number(active.amount || 0)
+            const spent = Number(active.spent || 0)
+            const remaining = Math.max(0, total - spent)
+            const percent = `${Math.min(Math.max((spent / total) * 100, 0), 100)}%`
+            return {
+                label: `${formatMoney(active.currency || defaultCurrency.value, remaining)} left · ${active.name}`,
+                percent
+            }
+        })
         const activeBudgetsForExpense = computed(() => {
             if (!budgets.value.length) return []
             const dateStr = expenseForm.value.expenseDate || todayStr()
@@ -1192,24 +1322,6 @@ export default {
                 return start <= dateObj && end >= dateObj
             })
             return list
-        })
-        const budgetSummaryPill = computed(() => {
-            if (!budgets.value.length) return null
-            const now = viewMonthStart.value
-            const active = budgets.value.find(b => {
-                const start = new Date(b.startDate)
-                const end = new Date(b.endDate)
-                return start <= now && end >= now
-            }) || budgets.value[0]
-            const total = Number(active.amount || 0)
-            const spent = Number(active.spent || 0)
-            if (!total) return null
-            const remaining = Math.max(0, total - spent)
-            const percent = `${Math.min(Math.max((spent / total) * 100, 0), 100)}%`
-            return {
-                label: `${formatMoney(active.currency || defaultCurrency.value, remaining)} left · ${active.name}`,
-                percent
-            }
         })
         const startEditBudget = (budget) => {
             editingBudgetId.value = budget.id
@@ -1229,14 +1341,9 @@ export default {
         const handleDeleteBudget = async(budget) => {
             const token = localStorage.getItem('token')
             if (!token || !budget?.id) return
-            const ok = window.confirm('Delete this budget?')
-            if (!ok) return
-            try {
-                await deleteBudget(token, budget.id)
-                budgets.value = budgets.value.filter(b => b.id !== budget.id)
-            } catch (err) {
-                console.error(err)
-            }
+            deleteTarget.value = budget
+            deleteError.value = ''
+            showBudgetDeleteConfirm.value = true
         }
         const touchStartX = ref(0)
         const onMonthTouchStart = (e) => {
@@ -1351,10 +1458,13 @@ export default {
             const currency = active?.currency || defaultCurrency.value || 'PHP'
             return `${currencySymbol(currency)} ${active?.amount ?? 0}`
         })
+        const budgetFilterId = ref('')
+        const selectedBudget = computed(() => budgets.value.find(b => b.id === budgetFilterId.value) || null)
         const showDeleteConfirm = ref(false)
         const deleteTarget = ref(null)
         const deleteError = ref('')
         const deleting = ref(false)
+        const showBudgetDeleteConfirm = ref(false)
         const colorPalette = ref([
             '#ef4444', '#f97316', '#f59e0b', '#84cc16',
             '#22c55e', '#14b8a6', '#06b6d4', '#0ea5e9',
@@ -1539,6 +1649,38 @@ export default {
 
         const totalBudget = computed(() => {
             return budgets.value.reduce((sum, b) => sum + Number(b.amount || 0), 0)
+        })
+
+        const currentMonthStart = computed(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+        const currentMonthEnd = computed(() => new Date(currentMonthStart.value.getFullYear(), currentMonthStart.value.getMonth() + 1, 0))
+        const previousMonthStart = computed(() => new Date(currentMonthStart.value.getFullYear(), currentMonthStart.value.getMonth() - 1, 1))
+        const previousMonthEnd = computed(() => new Date(currentMonthStart.value.getFullYear(), currentMonthStart.value.getMonth(), 0))
+        const currentMonthTotal = computed(() => {
+            return expenses.value.reduce((sum, exp) => {
+                if (!exp.expenseDate) return sum
+                const d = new Date(exp.expenseDate)
+                if (d >= currentMonthStart.value && d <= currentMonthEnd.value) {
+                    return sum + Number(exp.amount || 0)
+                }
+                return sum
+            }, 0)
+        })
+        const prevMonthTotal = computed(() => {
+            return expenses.value.reduce((sum, exp) => {
+                if (!exp.expenseDate) return sum
+                const d = new Date(exp.expenseDate)
+                if (d >= previousMonthStart.value && d <= previousMonthEnd.value) {
+                    return sum + Number(exp.amount || 0)
+                }
+                return sum
+            }, 0)
+        })
+        const monthChangeLabel = computed(() => {
+            const prev = prevMonthTotal.value
+            if (!prev) return 'vs last month: —'
+            const diff = ((currentMonthTotal.value - prev) / prev) * 100
+            const sign = diff > 0 ? '+' : ''
+            return `${sign}${diff.toFixed(1)}% vs last month`
         })
 
         const openBudgetSheet = () => {
@@ -1999,6 +2141,9 @@ export default {
             if (tab === 'insights' && expenses.value.length === 0) {
                 loadExpenses()
             }
+            if (tab === 'transactions' && !budgetsLoaded.value) {
+                loadBudgets()
+            }
         })
 
         watch(categories, (newCats) => {
@@ -2013,7 +2158,30 @@ export default {
             })
         })
 
+        const ensureProfile = async () => {
+            const token = localStorage.getItem('token')
+            if (!token) {
+                logout()
+                return
+            }
+            store.methods.loginUser(token)
+            if (!store.state.userProfile) {
+                const { response, error } = await getProfile(token)
+                if (error.value === null && response.value?.userInfo) {
+                    const profile = response.value.userInfo
+                    store.methods.setUserAdmin(profile.role === Role.ADMIN)
+                    store.methods.setUserProfile(profile)
+                } else {
+                    logout()
+                }
+            }
+        }
+
+
+        const userName = computed(() => store.state.userProfile?.fullName || 'User')
+
         onMounted(() => {
+            ensureProfile()
             if (activeTab.value === 'profile') {
                 loadCategories()
                 loadAccounts()
@@ -2029,7 +2197,37 @@ export default {
                 loadSubscriptions()
                 loadExpenseSchedules()
             }
+            if (activeTab.value === 'transactions') {
+                loadExpenses()
+                loadBudgets()
+            }
         })
+
+        const confirmDeleteBudget = async() => {
+            const budget = deleteTarget.value
+            const token = localStorage.getItem('token')
+            if (!token || !budget?.id) return
+            deleteError.value = ''
+            deleting.value = true
+            try {
+                await deleteBudget(token, budget.id)
+                budgets.value = budgets.value.filter(b => b.id !== budget.id)
+                showBudgetDeleteConfirm.value = false
+                deleteTarget.value = null
+            } catch (err) {
+                console.error(err)
+                deleteError.value = err?.message || 'Unable to delete budget.'
+            } finally {
+                deleting.value = false
+            }
+        }
+
+        const closeBudgetDeleteConfirm = () => {
+            showBudgetDeleteConfirm.value = false
+            deleteTarget.value = null
+            deleteError.value = ''
+            deleting.value = false
+        }
 
         return {
             router,
@@ -2058,6 +2256,9 @@ export default {
             handleSaveCategory,
             budgets,
             totalBudget,
+            currentMonthTotal,
+            monthChangeLabel,
+            budgetFilterId,
             activeBudgetAmount,
             startEditBudget,
             handleDeleteBudget,
@@ -2099,6 +2300,7 @@ export default {
             insightsRangeLabel,
             categoryBreakdown,
             topCategory,
+            weeklySeries,
             showDeleteConfirm,
             deleteTarget,
             deleteError,
@@ -2143,8 +2345,14 @@ export default {
             handleDeleteExpense,
             startEditExpense,
             handlePayPlanned,
+            showBudgetDeleteConfirm,
+            confirmDeleteBudget,
+            closeBudgetDeleteConfirm,
             formatMoney,
-            currencySymbol
+            currencySymbol,
+            userName,
+            userEmail,
+            userInitials
         }
     }
 }
@@ -2180,6 +2388,7 @@ export default {
 
 .icon-btn.ghost {
     background: transparent;
+    margin-right: 10px;
 }
 
 .quick-pill {
@@ -2228,8 +2437,11 @@ export default {
 }
 
 .card.primary {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: #fff;
+    background: linear-gradient(135deg, rgba(49, 46, 129, 0.6), rgba(30, 27, 75, 0.85));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.35);
+    color: #e2e8f0;
 }
 
 .budget-card .budget-list {
@@ -2546,6 +2758,19 @@ export default {
     padding: 10px;
 }
 
+.empty-state {
+    display: grid;
+    place-items: center;
+    gap: 6px;
+    padding: 20px 0;
+    color: #475569;
+}
+
+.empty-state .icon-circle {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
 .compact-item .item-title {
     white-space: nowrap;
     overflow: hidden;
@@ -2587,53 +2812,56 @@ export default {
     box-shadow: 0 8px 22px rgba(79, 70, 229, 0.1);
 }
 
-.insights-hero {
+.insights-page {
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 50%, #e0f2fe 100%);
+    color: #0f172a;
+}
+
+.insights-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: #fff;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.25);
+    align-items: flex-start;
+    padding: 6px 2px 12px;
 }
 
 .insights-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    margin-bottom: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
 }
 
 .insight-card {
-    padding: 14px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    padding: 16px;
+    border-radius: 16px;
+    background: #fff;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.05);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    color: #0f172a;
 }
 
 .insight-card.glow {
-    background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+    background: linear-gradient(145deg, #eef2ff, #e0f2fe);
     border: 1px solid #c7d2fe;
-    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.18);
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.16);
 }
 
 .insight-card.purple {
-    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-    border-color: #ddd6fe;
+    background: linear-gradient(145deg, #ede9fe, #ddd6fe);
+    border-color: #c4b5fd;
 }
 
 .insight-card.green {
-    background: linear-gradient(135deg, #ecfdf3, #dcfce7);
-    border-color: #bbf7d0;
+    background: linear-gradient(145deg, #dcfce7, #bbf7d0);
+    border-color: #86efac;
 }
 
 .insight-block {
     background: #fff;
-    border-radius: 14px;
+    border-radius: 16px;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    padding: 14px;
 }
 
 .category-list {
@@ -2651,6 +2879,7 @@ export default {
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     background: #f8fafc;
+    color: #0f172a;
 }
 
 .cat-main {
@@ -2674,9 +2903,45 @@ export default {
 .budget-health-card {
     padding: 12px;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 14px;
     background: #f8fafc;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+    color: #0f172a;
+}
+
+.chip.glass {
+    background: rgba(255, 255, 255, 0.75);
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
+}
+
+.week-bars {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.week-bar {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+}
+
+.bar-track {
+    width: 100%;
+    height: 120px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.bar-fill {
+    width: 100%;
+    border-radius: 10px 10px 0 0;
 }
 
 .transactions-header .months {
