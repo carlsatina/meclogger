@@ -22,6 +22,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 repositories {
@@ -43,6 +46,14 @@ dependencies {
 }
 
 apply from: 'capacitor.build.gradle'
+
+// Override generated Java version to match your JDK (17). If you move to JDK 21, update these values.
+android {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
 
 try {
     def servicesJSON = file('google-services.json')
