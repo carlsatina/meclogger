@@ -1,4 +1,5 @@
 
+import { Prisma } from '@prisma/client'
 import prisma from '../../lib/prisma'
 import jwt from 'jsonwebtoken'
 import * as dotenv from 'dotenv'
@@ -80,8 +81,19 @@ const register = async (req: any, res: any) => {
             status: 201,
             message: "Registration successful!"
         })
-    } catch (e) {
+    } catch (e: any) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+            return res.status(409).json({
+                status: 409,
+                message: 'Account already exists for this email or phone.'
+            })
+        }
+
         console.log("error: ", e)
+        res.status(500).json({
+            status: 500,
+            message: 'Registration failed. Please try again.'
+        })
     }
 }
 

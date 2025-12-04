@@ -7,7 +7,7 @@ npm install
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+npm run dev
 ```
 
 ### Compiles and minifies for production
@@ -15,5 +15,10 @@ npm run serve
 npm run build
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### Preview production build locally
+```
+npm run preview
+```
+
+### Notes
+- Vite is used instead of Vue CLI. Environment variables should use the `VITE_` prefix (e.g. `VITE_BACKEND_API`, `VITE_GOOGLE_CLIENT_ID`, `VITE_FACEBOOK_ID`). Legacy `VUE_APP_` prefixes are still read for backward compatibility.

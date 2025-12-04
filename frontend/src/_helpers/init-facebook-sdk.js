@@ -1,4 +1,4 @@
-const facebookAppId = process.env.VUE_APP_FACEBOOK_ID;
+const facebookAppId = import.meta.env.VITE_FACEBOOK_ID || import.meta.env.VUE_APP_FACEBOOK_ID;
 
 const initFacebookSdk = () => {
     return new Promise(resolve => {
