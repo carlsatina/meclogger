@@ -7,7 +7,7 @@
     "node": ">=22 <25"
   },
   "scripts": {
-    "build": "npm run prisma:migrate:deploy &&npx prisma generate && npx tsc",
+    "build": "npx prisma generate && npx tsc",
     "start": "node index.js",
     "prod": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\"",
     "dev": "NODE_ENV=development nodemon index.ts",
