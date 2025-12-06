@@ -16,7 +16,28 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is not set in the environment')
 }
 
+const readCaFromEnv = (): string | null => {
+  const inlineCa = process.env.DB_SSL_CA
+  if (inlineCa && inlineCa.trim().length > 0) {
+    return inlineCa
+  }
+  const inlineCaB64 = process.env.DB_SSL_CA_B64
+  if (inlineCaB64 && inlineCaB64.trim().length > 0) {
+    try {
+      return Buffer.from(inlineCaB64, 'base64').toString('utf8')
+    } catch {
+      throw new Error('Invalid base64 content in DB_SSL_CA_B64')
+    }
+  }
+  return null
+}
+
 const getSslConfig = () => {
+  const caFromEnv = readCaFromEnv()
+  if (caFromEnv) {
+    return { ca: caFromEnv, rejectUnauthorized: true }
+  }
+
   const envCaPath = process.env.DB_SSL_CA_PATH
   const defaultCaPath = path.resolve(process.cwd(), 'certs', 'db-ca.crt')
   const chosenPath = envCaPath

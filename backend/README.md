@@ -53,8 +53,11 @@ API_DOC_URL='http://localhost'
 # Optional: enable Vercel Blob for media uploads
 # VERCEL_BLOB_READ_WRITE_TOKEN="<your-vercel-blob-token>"
 # Database TLS (preferred secure setup)
-# Place your provider root CA at backend/certs/db-ca.crt (or set DB_SSL_CA_PATH to a custom path)
+# Option A: Place your provider root CA at backend/certs/db-ca.crt (or set DB_SSL_CA_PATH to a custom path)
 # DB_SSL_CA_PATH="certs/db-ca.crt"
+# Option B: Inline the CA via env (PEM text or base64)
+# DB_SSL_CA="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n"
+# DB_SSL_CA_B64="BASE64ENCODEDPEM"
 ```
 
 #### For `prisma`
