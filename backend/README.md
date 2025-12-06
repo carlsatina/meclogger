@@ -50,6 +50,8 @@ The `.env` file must be in the root folder and the variables are the following:
 PORT=9000
 ACCESS_TOKEN_SECRET="xxxxx"
 API_DOC_URL='http://localhost'
+# Optional: enable Vercel Blob for media uploads
+# VERCEL_BLOB_READ_WRITE_TOKEN="<your-vercel-blob-token>"
 ```
 
 #### For `prisma`

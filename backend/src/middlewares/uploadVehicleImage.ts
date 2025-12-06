@@ -1,19 +1,9 @@
-import multer from 'multer'
-import path from 'path'
+import multer, { FileFilterCallback } from 'multer'
+import type { Express } from 'express'
 
-const storage = multer.diskStorage({
-    destination: function(req, file, callback) {
-        const targetPath = process.env.NODE_ENV === 'development'
-            ? path.join(__dirname, '../../uploaded-images/vehicles')
-            : path.join(__dirname, '../../../uploaded-images/vehicles')
-        callback(null, targetPath)
-    },
-    filename: function(req, file, callback) {
-        callback(null, `${Date.now()}-${file.originalname}`)
-    }
-})
+const storage = multer.memoryStorage()
 
-const fileFilter = (req: any, file: any, cb: any) => {
+const fileFilter = (req: any, file: Express.Multer.File, cb: FileFilterCallback) => {
     if (
         file.mimetype === 'image/jpeg' ||
         file.mimetype === 'image/jpg' ||

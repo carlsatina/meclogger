@@ -3,9 +3,13 @@ import { ExtendedRequest } from '../../extendedRequest'
 import { RecordType } from '@prisma/client'
 import fs from 'fs'
 import path from 'path'
+import type { Express } from 'express'
+import { uploadImageToStorage } from '../services/blobStorage'
 
 const RECORDS_PUBLIC_PATH = '/records'
-const RECORDS_UPLOAD_PATH = path.join(__dirname, '../../uploaded-images/records')
+const RECORDS_UPLOAD_PATH = path.resolve(process.cwd(), 'uploaded-images', 'records')
+
+const isRemoteUrl = (url: string) => /^https?:\/\//i.test(url)
 
 const normalizeRecordType = (type?: string): RecordType => {
     if (!type || typeof type !== 'string') return RecordType.OTHER
@@ -17,7 +21,8 @@ const normalizeRecordType = (type?: string): RecordType => {
     return RecordType.OTHER
 }
 
-const resolveDiskPathForFile = (fileUrl: string) => {
+const resolveDiskPathForFile = (fileUrl: string): string | null => {
+    if (isRemoteUrl(fileUrl)) return null
     const normalized = fileUrl.replace(/^\/+/, '') // strip leading slash
     return path.join(RECORDS_UPLOAD_PATH, normalized.replace(/^records\/?/, ''))
 }
@@ -204,16 +209,22 @@ const createMedicalRecord = async (req: ExtendedRequest, res: any) => {
     })
 
     if (files.length) {
-        const fileData = files.map(file => ({
-            url: `${RECORDS_PUBLIC_PATH}/${path.basename(file.path)}`,
-            mimeType: file.mimetype,
-            sizeBytes: file.size,
-            originalName: file.originalname,
-            recordId: record.id
-        }))
-        await prisma.fileAsset.createMany({
-            data: fileData
-        })
+        try {
+            const uploads = await Promise.all(files.map(file => uploadImageToStorage(file, 'records')))
+            const fileData = files.map((file, idx) => ({
+                url: uploads[idx].url,
+                mimeType: file.mimetype,
+                sizeBytes: file.size,
+                originalName: file.originalname,
+                recordId: record.id
+            }))
+            await prisma.fileAsset.createMany({
+                data: fileData
+            })
+        } catch (error: any) {
+            const message = error?.message || 'Unable to upload files'
+            return res.status(500).json({ status: 500, message })
+        }
     }
 
     const recordWithFiles = await prisma.medicalRecord.findUnique({
@@ -292,24 +303,32 @@ const updateMedicalRecord = async (req: ExtendedRequest, res: any) => {
 
             removableFiles.forEach(file => {
                 const filePath = resolveDiskPathForFile(file.url)
-                fs.unlink(filePath, () => {
-                    // ignore errors
-                })
+                if (filePath) {
+                    fs.unlink(filePath, () => {
+                        // ignore errors
+                    })
+                }
             })
         }
     }
 
     if (files.length) {
-        const fileData = files.map(file => ({
-            url: `${RECORDS_PUBLIC_PATH}/${path.basename(file.path)}`,
-            mimeType: file.mimetype,
-            sizeBytes: file.size,
-            originalName: file.originalname,
-            recordId: recordId
-        }))
-        await prisma.fileAsset.createMany({
-            data: fileData
-        })
+        try {
+            const uploads = await Promise.all(files.map(file => uploadImageToStorage(file, 'records')))
+            const fileData = files.map((file, idx) => ({
+                url: uploads[idx].url,
+                mimeType: file.mimetype,
+                sizeBytes: file.size,
+                originalName: file.originalname,
+                recordId: recordId
+            }))
+            await prisma.fileAsset.createMany({
+                data: fileData
+            })
+        } catch (error: any) {
+            const message = error?.message || 'Unable to upload files'
+            return res.status(500).json({ status: 500, message })
+        }
     }
 
     const updatedWithFiles = await prisma.medicalRecord.findUnique({
@@ -358,9 +377,11 @@ const deleteMedicalRecord = async (req: ExtendedRequest, res: any) => {
 
     files.forEach(file => {
         const filePath = resolveDiskPathForFile(file.url)
-        fs.unlink(filePath, () => {
-            // ignore errors
-        })
+        if (filePath) {
+            fs.unlink(filePath, () => {
+                // ignore errors
+            })
+        }
     })
 
     res.status(200).json({

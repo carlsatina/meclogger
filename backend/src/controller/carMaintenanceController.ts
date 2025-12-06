@@ -1,5 +1,7 @@
 import prisma from '../../lib/prisma'
 import { Request, Response } from 'express'
+import type { Express } from 'express'
+import { uploadImageToStorage } from '../services/blobStorage'
 
 const ensureUser = (req: any, res: Response) => {
     if (!req.user) {
@@ -30,7 +32,7 @@ export const addVehicle = async(req: Request, res: Response) => {
         imageUrl,
         notes
     } = req.body || {}
-    const uploadedImage = (req as any).file
+    const uploadedImage = (req as any).file as Express.Multer.File | undefined
 
     if (!make || !model) {
         return res.status(400).json({
@@ -39,9 +41,17 @@ export const addVehicle = async(req: Request, res: Response) => {
         })
     }
 
-    const resolvedImageUrl = uploadedImage
-        ? `/vehicles/${uploadedImage.filename}`
-        : imageUrl || null
+    let resolvedImageUrl = imageUrl || null
+
+    if (uploadedImage) {
+        try {
+            const upload = await uploadImageToStorage(uploadedImage, 'vehicles')
+            resolvedImageUrl = upload.url
+        } catch (error: any) {
+            const message = error?.message || 'Unable to upload vehicle image'
+            return res.status(500).json({ status: 500, message })
+        }
+    }
 
     try {
         const vehicle = await prisma.vehicle.create({
@@ -189,7 +199,7 @@ export const updateVehicle = async(req: Request, res: Response) => {
         imageUrl,
         notes
     } = req.body || {}
-    const uploadedImage = (req as any).file
+    const uploadedImage = (req as any).file as Express.Multer.File | undefined
 
     try {
         const existing = await prisma.vehicle.findFirst({
@@ -201,9 +211,12 @@ export const updateVehicle = async(req: Request, res: Response) => {
                 message: 'Vehicle not found'
             })
         }
-        const resolvedImageUrl = uploadedImage
-            ? `/vehicles/${uploadedImage.filename}`
-            : imageUrl || existing.imageUrl || null
+        let resolvedImageUrl = imageUrl || existing.imageUrl || null
+
+        if (uploadedImage) {
+            const upload = await uploadImageToStorage(uploadedImage, 'vehicles')
+            resolvedImageUrl = upload.url
+        }
 
         const vehicle = await prisma.vehicle.update({
             where: { id },
