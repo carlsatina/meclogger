@@ -2,6 +2,7 @@
 // These should be kept in sync with backend/prisma/schema.prisma
 
 export enum Role {
+  GUEST = 'GUEST',
   USER = 'USER',
   ADMIN = 'ADMIN'
 }

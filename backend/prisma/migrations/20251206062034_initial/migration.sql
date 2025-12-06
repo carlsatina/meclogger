@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('GUEST', 'USER', 'ADMIN');
 
 -- CreateEnum
 CREATE TYPE "RecordType" AS ENUM ('PRESCRIPTION', 'DIAGNOSIS', 'LAB_RESULT', 'IMAGING', 'VACCINATION', 'DISCHARGE_SUMMARY', 'OTHER');
@@ -33,7 +33,7 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "role" "Role" NOT NULL DEFAULT 'USER',
+    "role" "Role" NOT NULL DEFAULT 'GUEST',
     "fullName" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "email" TEXT,
@@ -380,6 +380,7 @@ CREATE TABLE "Expense" (
     "currency" TEXT NOT NULL DEFAULT 'USD',
     "expenseDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "categoryId" TEXT,
+    "budgetId" TEXT,
     "subcategory" TEXT,
     "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "paymentMethod" "PaymentMethod" NOT NULL DEFAULT 'CASH',
@@ -597,6 +598,9 @@ CREATE INDEX "Expense_userId_expenseDate_idx" ON "Expense"("userId", "expenseDat
 CREATE INDEX "Expense_categoryId_idx" ON "Expense"("categoryId");
 
 -- CreateIndex
+CREATE INDEX "Expense_budgetId_idx" ON "Expense"("budgetId");
+
+-- CreateIndex
 CREATE INDEX "Expense_isRecurring_idx" ON "Expense"("isRecurring");
 
 -- CreateIndex
@@ -712,6 +716,9 @@ ALTER TABLE "ExpenseCategory" ADD CONSTRAINT "ExpenseCategory_userId_fkey" FOREI
 
 -- AddForeignKey
 ALTER TABLE "Expense" ADD CONSTRAINT "Expense_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "ExpenseCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Expense" ADD CONSTRAINT "Expense_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budget"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Expense" ADD CONSTRAINT "Expense_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -64,6 +64,21 @@
                 <mdicon name="chevron-right" size="20"/>
             </div>
         </div>
+
+        <div v-if="isAdmin" class="feature-card admin" @click="navigateTo('/admin/users')">
+            <div class="card-content">
+                <div class="icon-wrapper">
+                    <mdicon name="shield-account" size="24"/>
+                </div>
+                <div class="card-text">
+                    <h3 class="card-title admin-title">User Approvals</h3>
+                    <p class="card-description admin-desc">Review new registrations & set roles</p>
+                </div>
+            </div>
+            <div class="card-arrow">
+                <mdicon name="chevron-right" size="20"/>
+            </div>
+        </div>
     </div>
 </div>
 </template>
@@ -110,6 +125,9 @@ export default {
                     const profile = response.value.userInfo
                     store.methods.setUserAdmin(profile.role === Role.ADMIN)
                     store.methods.setUserProfile(profile)
+                    if (profile.role === Role.GUEST) {
+                        router.push('/pending-approval')
+                    }
                 } else {
                     logout()
                 }
@@ -121,11 +139,13 @@ export default {
         })
 
         const userName = computed(() => store.state.userProfile?.fullName || 'there')
+        const isAdmin = computed(() => store.state.userProfile?.role === Role.ADMIN || store.state.isUserAdmin)
 
         return {
             navigateTo,
             logout,
-            userName
+            userName,
+            isAdmin
         }
     }
 }
@@ -243,6 +263,10 @@ export default {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
+.feature-card.admin::before {
+    background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+}
+
 .feature-card:active {
     transform: scale(0.97);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
@@ -287,6 +311,10 @@ export default {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
+.feature-card.admin .icon-wrapper {
+    background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+}
+
 .card-text {
     flex: 1;
 }
@@ -304,6 +332,13 @@ export default {
     color: #6b7280;
     margin: 0;
     line-height: 1.3;
+}
+
+.feature-card.admin .card-title {
+    color: #312e81;
+}
+.feature-card.admin .card-description {
+    color: #4338ca;
 }
 
 .card-arrow {

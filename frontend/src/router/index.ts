@@ -56,6 +56,8 @@ import CarMaintenanceVehicleDetailWeb from '@/views/web/CarMaintenance/VehicleDe
 import CarMaintenanceVehicleDetail from '@/views/mobile/CarMaintenance/VehicleDetail.vue'
 import ExpenseTracking from '@/views/LandingPage/ExpenseTracking.vue'
 import ExpenseAccountsMobile from '@/views/mobile/ExpenseTracking/ManageAccounts.vue'
+import PendingApproval from '@/views/LandingPage/PendingApproval.vue'
+import AdminUsers from '@/views/LandingPage/AdminUsers.vue'
 
 
 const routes: Array<RouteRecordRaw> = [
@@ -400,6 +402,17 @@ const routes: Array<RouteRecordRaw> = [
     component: ExpenseAccountsMobile,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/pending-approval',
+    name: 'pending-approval',
+    component: PendingApproval
+  },
+  {
+    path: '/admin/users',
+    name: 'admin-users',
+    component: AdminUsers,
+    meta: { requiresAuth: true, adminOnly: true }
+  },
 
 ]
 
@@ -408,14 +421,41 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      next({ name: 'login', query: { redirect: to.fullPath } })
-      return
-    }
+const decodeToken = (token: string) => {
+  try {
+    const payload = token.split('.')[1]
+    const json = atob(payload)
+    return JSON.parse(json)
+  } catch {
+    return null
   }
+}
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  const requiresAuth = Boolean(to.meta.requiresAuth)
+  const adminOnly = Boolean((to.meta as any).adminOnly)
+
+  if (requiresAuth && !token) {
+    next({ name: 'login', query: { redirect: to.fullPath } })
+    return
+  }
+
+  const payload = token ? decodeToken(token) : null
+  const role = payload?.role
+  const isGuest = role === 'GUEST'
+  const isAdmin = role === 'ADMIN'
+
+  if (requiresAuth && isGuest && to.name !== 'pending-approval') {
+    next({ name: 'pending-approval' })
+    return
+  }
+
+  if (adminOnly && !isAdmin) {
+    next({ name: 'home' })
+    return
+  }
+
   next()
 })
 

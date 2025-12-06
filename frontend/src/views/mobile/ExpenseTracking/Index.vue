@@ -2218,6 +2218,9 @@ export default {
                     const profile = response.value.userInfo
                     store.methods.setUserAdmin(profile.role === Role.ADMIN)
                     store.methods.setUserProfile(profile)
+                    if (profile.role === Role.GUEST) {
+                        router.push('/pending-approval')
+                    }
                 } else {
                     logout()
                 }

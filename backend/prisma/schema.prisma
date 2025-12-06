@@ -11,7 +11,7 @@ model User {
   id                String            @id @default(cuid())
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
-  role              Role              @default(USER)
+  role              Role              @default(GUEST)
   fullName          String
   phone             String            @unique
   email             String?           @unique
@@ -537,6 +537,7 @@ model UserCurrency {
 }
 
 enum Role {
+  GUEST
   USER
   ADMIN
 }

@@ -6,7 +6,9 @@ import { ExtendedRequest } from '../../extendedRequest'
 import {
     login,
     register,
-    getProfile
+    getProfile,
+    listUsers,
+    updateUserRole
 } from '../controller/authController'
 
 dotenv.config()
@@ -25,6 +27,12 @@ const makeRouter = (
 
     // Get Profile
     router.get('/profile', authenticateUser, getProfile)
+
+    // Admin: list users
+    router.get('/users', authenticateUser, listUsers)
+
+    // Admin: update role
+    router.put('/users/:id/role', authenticateUser, updateUserRole)
 
   
     return router
