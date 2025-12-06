@@ -15,6 +15,10 @@
                         <mdicon name="pencil" :size="18"/>
                         <span>Edit</span>
                     </button>
+                    <button class="menu-item danger" @click="confirmDelete">
+                        <mdicon name="trash-can-outline" :size="18"/>
+                        <span>Delete</span>
+                    </button>
                 </div>
             </div>
         </template>
@@ -119,6 +123,20 @@
         </div>
     </div>
 
+    <div v-if="showDeleteConfirm" class="confirm-overlay">
+        <div class="confirm-card">
+            <h3>Delete this record?</h3>
+            <p class="sub">This will remove the record and its attachments.</p>
+            <div class="confirm-actions">
+                <button class="ghost" @click="showDeleteConfirm = false">Cancel</button>
+                <button class="danger-btn" :disabled="deleting" @click="deleteRecordAction">
+                    {{ deleting ? 'Deleting...' : 'Delete' }}
+                </button>
+            </div>
+            <p v-if="deleteError" class="error-text">{{ deleteError }}</p>
+        </div>
+    </div>
+
     <div v-if="viewer.open" class="image-viewer-overlay">
         <div class="viewer-content">
             <button class="viewer-close" @click="closeViewer">
@@ -192,7 +210,7 @@ export default {
         const record = ref(null)
         const loading = ref(true)
         const errorMessage = ref('')
-        const { fetchRecordById } = useMedicalRecords()
+        const { fetchRecordById, deleteRecord } = useMedicalRecords()
         const viewer = reactive({
             open: false,
             index: 0,
@@ -203,6 +221,9 @@ export default {
         })
         const menuOpen = ref(false)
         const menuRef = ref(null)
+        const showDeleteConfirm = ref(false)
+        const deleting = ref(false)
+        const deleteError = ref('')
 
         const recordId = computed(() => route.params.id)
         const backRoute = computed(() => {
@@ -218,6 +239,28 @@ export default {
             if (!menuOpen.value) return
             if (menuRef.value && !menuRef.value.contains(event.target)) {
                 menuOpen.value = false
+            }
+        }
+
+        const confirmDelete = () => {
+            menuOpen.value = false
+            showDeleteConfirm.value = true
+            deleteError.value = ''
+        }
+
+        const deleteRecordAction = async () => {
+            if (!record.value) return
+            deleting.value = true
+            deleteError.value = ''
+            const token = localStorage.getItem('token')
+            try {
+                await deleteRecord(token, record.value.id)
+                showDeleteConfirm.value = false
+                router.push('/medical-records')
+            } catch (err) {
+                deleteError.value = err?.message || 'Unable to delete record'
+            } finally {
+                deleting.value = false
             }
         }
 
@@ -501,6 +544,11 @@ export default {
             toggleMenu,
             menuRef,
             goToEdit,
+            confirmDelete,
+            showDeleteConfirm,
+            deleteRecordAction,
+            deleting,
+            deleteError,
             onTouchStart,
             onTouchMove,
             onTouchEnd,
@@ -837,5 +885,71 @@ export default {
 
 .menu-item:active {
     background: #f3f4f6;
+}
+
+.menu-item.danger {
+    color: #dc2626;
+}
+
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    z-index: 30;
+}
+
+.confirm-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
+    display: grid;
+    gap: 10px;
+}
+
+.confirm-card h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.confirm-card .sub {
+    margin: 0;
+    color: #475569;
+    font-size: 14px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.ghost {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+}
+
+.danger-btn {
+    border: none;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 800;
+}
+
+.error-text {
+    color: #dc2626;
+    margin: 0;
+    font-size: 13px;
 }
 </style>
