@@ -1,5 +1,7 @@
 <template>
 <div class="vital-entry-page">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
     <TopBar
         title="Blood Sugar"
         :show-back="true"
@@ -21,14 +23,14 @@
     </TopBar>
 
     <div class="record-detail-content">
-        <div v-if="loading" class="state-card">
+        <div v-if="loading" class="state-card glass-card">
             Loading record...
         </div>
-        <div v-else-if="errorMessage" class="state-card error">
+        <div v-else-if="errorMessage" class="state-card error glass-card">
             {{ errorMessage }}
         </div>
         <div v-else-if="record" class="detail-stack">
-            <section class="card measurement-card sugar">
+            <section class="card measurement-card sugar glass-card">
                 <div class="measurement-header">
                     <div class="measurement-icon">
                         <mdicon name="chart-line" :size="30"/>
@@ -58,7 +60,7 @@
                 </div>
             </section>
 
-            <section class="card">
+            <section class="card glass-card">
                 <h3>Date & Time</h3>
                 <div v-if="!isEditing" class="info-row">
                     <span>{{ formattedDate }}</span>
@@ -76,7 +78,7 @@
                 </div>
             </section>
 
-            <section class="card">
+            <section class="card glass-card">
                 <h3>Notes</h3>
                 <p v-if="!isEditing && record.notes">{{ record.notes }}</p>
                 <p v-else-if="!isEditing" class="empty-hint">No notes for this record.</p>
@@ -90,10 +92,10 @@
 
             <div v-if="isEditing" class="edit-actions">
                 <p v-if="formError" class="edit-error">{{ formError }}</p>
-                <button class="edit-cancel" type="button" @click="cancelEdit" :disabled="saving">
+                <button class="edit-cancel glass-btn-ghost" type="button" @click="cancelEdit" :disabled="saving">
                     Cancel
                 </button>
-                <button class="edit-save" type="button" @click="saveChanges" :disabled="saving">
+                <button class="edit-save glass-btn-primary" type="button" @click="saveChanges" :disabled="saving">
                     {{ saving ? 'Saving...' : 'Save changes' }}
                 </button>
             </div>
@@ -277,203 +279,36 @@ export default {
 </script>
 
 <style scoped>
-.vital-entry-page {
-    min-height: 100vh;
-    background: #f8f9fa;
-}
-
-.record-detail-content {
-    padding: 20px 16px 40px;
-}
-
-.state-card {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    text-align: center;
-    color: #4b5563;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.state-card.error {
-    color: #b91c1c;
-}
-
-.detail-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.card {
-    background: white;
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 15px 35px rgba(17, 24, 39, 0.08);
-    border: 1px solid #eef2ff;
-}
-
-.measurement-card {
-    text-align: center;
-    background: linear-gradient(135deg, #fd7267 0%, #f5a14a 100%);
-    color: white;
-}
-
-.measurement-card.sugar {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-}
-
-.measurement-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
-}
-
-.measurement-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.measurement-label {
-    margin: 0;
-    font-size: 15px;
-    opacity: 0.9;
-}
-
-.measurement-status {
-    margin: 2px 0 0;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.85;
-}
-
-.measurement-value {
-    font-size: 46px;
-    font-weight: 700;
-    margin: 0;
-}
-
-.measurement-subtitle {
-    margin: 4px 0 0;
-    font-size: 14px;
-    opacity: 0.85;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-group input,
-.form-group select,
-.card textarea {
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 14px;
-}
-
-.card textarea {
-    resize: vertical;
-    min-height: 120px;
-}
-
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    color: #4b5563;
-}
-
-.empty-hint {
-    color: #9ca3af;
-    margin: 0;
-}
-
-.edit-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.edit-error {
-    color: #dc2626;
-    margin: 0;
-    font-size: 13px;
-    text-align: center;
-}
-
-.edit-actions button {
-    border: none;
-    border-radius: 12px;
-    padding: 14px;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-.edit-cancel {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.edit-save {
-    background: #4f46e5;
-    color: white;
-}
-
-.menu-wrapper {
-    position: relative;
-}
-
-.menu-button {
-    border: none;
-    background: transparent;
-    padding: 6px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #374151;
-}
-
-.menu-dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    padding: 6px 0;
-    z-index: 20;
-    min-width: 150px;
-}
-
-.menu-item {
-    width: 100%;
-    border: none;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    font-size: 14px;
-    color: #1f2937;
-    cursor: pointer;
-}
-
-.menu-item:active {
-    background: #f3f4f6;
-}
-
+.vital-entry-page { min-height: 100vh; background: #05060a; position: relative; overflow: hidden; padding-bottom: 80px; }
+.bg-orb { position: absolute; filter: blur(60px); opacity: 0.28; z-index: 0; }
+.orb-1 { width: 320px; height: 320px; border-radius: 50%; background: linear-gradient(135deg, #22d3ee, #a855f7); top: -140px; left: -110px; }
+.orb-2 { width: 260px; height: 260px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #06b6d4); bottom: -120px; right: -90px; }
+.record-detail-content { padding: 16px; position: relative; z-index: 1; }
+.detail-stack { display: flex; flex-direction: column; gap: 14px; }
+.card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 12px 26px rgba(0,0,0,0.32); }
+.measurement-card { display: flex; flex-direction: column; gap: 12px; }
+.measurement-header { display: flex; align-items: center; gap: 12px; }
+.measurement-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #22d3ee, #a855f7); color: #0b1020; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
+.measurement-label { margin: 0; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.measurement-status { margin: 2px 0 0; font-size: 16px; font-weight: 800; color: #e2e8f0; }
+.measurement-display { display: flex; align-items: baseline; gap: 8px; }
+.measurement-value { margin: 0; font-size: 28px; font-weight: 800; color: #e2e8f0; }
+.measurement-subtitle { margin: 0; font-size: 13px; color: #94a3b8; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 12px; color: #94a3b8; font-weight: 700; }
+.form-group input, .form-group textarea, .form-group select { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px; background: rgba(255,255,255,0.05); color: #e2e8f0; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: rgba(103,232,249,0.6); box-shadow: 0 0 0 2px rgba(103,232,249,0.25); }
+.info-row { display: flex; justify-content: space-between; font-size: 14px; color: #e2e8f0; }
+.state-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; padding: 16px; border-radius: 14px; text-align: center; box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
+.state-card.error { color: #f87171; border-color: rgba(239,68,68,0.35); }
+.menu-button { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 6px; color: #e2e8f0; }
+.menu-dropdown { position: absolute; top: 40px; right: 0; background: rgba(10,12,20,0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; box-shadow: 0 12px 24px rgba(0,0,0,0.32); display: flex; flex-direction: column; min-width: 140px; overflow: hidden; }
+.menu-item { background: transparent; border: none; color: #e2e8f0; padding: 10px 12px; display: flex; align-items: center; gap: 8px; text-align: left; }
+.menu-item:active { background: rgba(255,255,255,0.08); }
+.empty-hint { color: #94a3b8; font-size: 13px; margin: 0; }
+.edit-actions { display: flex; flex-direction: column; gap: 10px; }
+.edit-error { color: #f87171; font-size: 13px; margin: 0; }
+.edit-cancel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; color: #e2e8f0; font-weight: 700; }
+.edit-save { border-radius: 12px; padding: 12px; font-weight: 700; }
 </style>
