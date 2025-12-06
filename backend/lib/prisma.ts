@@ -15,7 +15,14 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is not set in the environment')
 }
 
-const pool = new Pool({ connectionString })
+// Pragmatic TLS fix for Supabase/pgBouncer with self-signed root:
+// allow self-signed certs while keeping TLS encryption.
+const pool = new Pool({
+  connectionString,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+})
 const adapter = new PrismaPg(pool)
 
 const prisma = new PrismaClient({ adapter })
