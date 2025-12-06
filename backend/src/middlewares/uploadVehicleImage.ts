@@ -12,7 +12,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: FileFilterCallback)
     ) {
         cb(null, true)
     } else {
-        cb('Not an image! Please upload an image', false)
+        cb(new Error('Not an image! Please upload an image'))
     }
 }
 
