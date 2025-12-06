@@ -2,7 +2,8 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import dotenv from 'dotenv'
 import path from 'path'
-import { Pool, defaults as pgDefaults } from 'pg'
+import fs from 'fs'
+import { Pool } from 'pg'
 
 const prismaEnvPath = path.resolve(process.cwd(), 'prisma/.env')
 
@@ -15,20 +16,32 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is not set in the environment')
 }
 
-// Pragmatic TLS bypass for self-signed certs (Supabase/pgBouncer):
-// allow TLS but skip certificate validation.
-pgDefaults.ssl = { rejectUnauthorized: false }
-if (!process.env.NODE_TLS_REJECT_UNAUTHORIZED) {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+const getSslConfig = () => {
+  const envCaPath = process.env.DB_SSL_CA_PATH
+  const defaultCaPath = path.resolve(process.cwd(), 'certs', 'db-ca.crt')
+  const chosenPath = envCaPath
+    ? path.resolve(process.cwd(), envCaPath)
+    : defaultCaPath
+
+  if (fs.existsSync(chosenPath)) {
+    const ca = fs.readFileSync(chosenPath, 'utf8')
+    return { ca, rejectUnauthorized: true }
+  }
+
+  // Development fallback: keep running without a CA, but do not allow this in production.
+  if (process.env.NODE_ENV === 'development') {
+    return { rejectUnauthorized: false }
+  }
+
+  throw new Error(
+    'DB_SSL_CA_PATH is required for secure TLS with your provider. ' +
+    'Set DB_SSL_CA_PATH to the root CA file path.'
+  )
 }
 
-// Pragmatic TLS fix for Supabase/pgBouncer with self-signed root:
-// allow self-signed certs while keeping TLS encryption.
 const pool = new Pool({
   connectionString,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: getSslConfig(),
 })
 const adapter = new PrismaPg(pool)
 
