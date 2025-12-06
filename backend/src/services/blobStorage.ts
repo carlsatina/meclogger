@@ -50,7 +50,7 @@ export const uploadImageToStorage = async(
     file: Express.Multer.File,
     folder: string = 'vehicles'
 ): Promise<UploadResult> => {
-    const token = process.env.VERCEL_BLOB_READ_WRITE_TOKEN
+    const token = process.env.BLOB_READ_WRITE_TOKEN
 
     if (!file?.buffer || !file.originalname) {
         throw new Error('Invalid file upload payload')
