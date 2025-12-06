@@ -12,7 +12,7 @@
           <p class="sub">Review new registrations and set roles.</p>
         </div>
       </div>
-      <button class="ghost" @click="backToHome">
+      <button class="ghost glass-btn-ghost" @click="backToHome">
         <mdicon name="home" size="18" />
         <span>Home</span>
       </button>
@@ -22,23 +22,23 @@
       <div v-if="loading" class="hint">Loading users…</div>
       <div v-else-if="error" class="error-text">{{ error }}</div>
       <div v-else class="cards">
-        <article class="user-card" v-for="u in users" :key="u.id">
+        <article class="user-card glass-card" v-for="u in users" :key="u.id">
           <div class="user-head">
-            <div class="avatar">{{ initials(u.fullName) }}</div>
+            <div class="avatar glass-avatar">{{ initials(u.fullName) }}</div>
             <div>
               <p class="name">{{ u.fullName || 'Unknown' }}</p>
               <p class="meta">{{ formatDate(u.createdAt) }}</p>
             </div>
-            <span class="pill" :class="u.role.toLowerCase()">{{ u.role }}</span>
+            <span class="pill glass-pill" :class="u.role.toLowerCase()">{{ u.role }}</span>
           </div>
           <p class="email">{{ u.email || 'No email' }}</p>
           <div class="role-row">
             <label class="label">Role</label>
-            <select v-model="draftRoles[u.id]" class="select">
+            <select v-model="draftRoles[u.id]" class="select glass-select">
               <option v-for="r in roleOptions" :key="r" :value="r">{{ r }}</option>
             </select>
           </div>
-          <button class="primary" :disabled="saving[u.id]" @click="changeRole(u.id)">
+          <button class="primary glass-btn-primary" :disabled="saving[u.id]" @click="changeRole(u.id)">
             {{ saving[u.id] ? 'Saving…' : 'Update role' }}
           </button>
         </article>
