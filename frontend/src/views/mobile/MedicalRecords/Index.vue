@@ -1,5 +1,7 @@
 <template>
 <div class="medical-records-container">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
     <!-- Top Bar -->
     <TopBar 
         :title="getTabTitle()"
@@ -35,13 +37,13 @@
         <div v-if="activeTab === 'home'" class="tab-content">
             <!-- Quick Action Cards -->
             <div class="action-cards-grid">
-                <div class="action-card-large" @click="navigateToAddRecord">
+                <div class="action-card-large glass-card" @click="navigateToAddRecord">
                     <div class="action-icon-wrapper">
                         <mdicon name="clipboard-plus" :size="48"/>
                     </div>
                     <h4>Add medical record</h4>
                 </div>
-                <div class="action-card-large" @click="navigateToMedicineReminder">
+                <div class="action-card-large glass-card" @click="navigateToMedicineReminder">
                     <div class="action-icon-wrapper">
                         <mdicon name="pill" :size="48"/>
                     </div>
@@ -54,7 +56,7 @@
                 <h3 class="section-title">Today's Reminder</h3>
                 <a href="#" class="see-all-link" @click="router.push('/medical-records/medicine-reminders/history')">See all</a>
             </div>
-            <div class="reminder-list">
+            <div class="reminder-list glass-card">
                 <div v-if="!hasActiveProfile" class="reminder-empty">
                     Select or add a profile to see reminders here.
                 </div>
@@ -107,7 +109,7 @@
                 </div>
                 <template v-else>
                     <div 
-                        class="record-item"
+                        class="record-item glass-card"
                         v-for="record in recentMedicalRecords"
                         :key="record.id"
                         @click="openRecordDetail(record)"
@@ -139,7 +141,7 @@
                 </div>
                 <template v-else>
                     <div 
-                        class="record-card" 
+                        class="record-card glass-card" 
                         v-for="record in medicalRecords" 
                         :key="record.id"
                         @click="openRecordDetail(record)"
@@ -178,7 +180,7 @@
         <div v-if="activeTab === 'health'" class="tab-content">
             <div class="health-metrics">
                 <!-- Blood Pressure Card -->
-                <div class="health-card" @click="navigateToBloodPressure">
+                <div class="health-card glass-card" @click="navigateToBloodPressure">
                     <div class="health-card-header">
                         <div>
                             <h4 class="health-title">Blood Pressure</h4>
@@ -217,7 +219,7 @@
                 </div>
 
                 <!-- Blood Sugar Card -->
-                <div class="health-card" @click="navigateToBloodSugar">
+                <div class="health-card glass-card" @click="navigateToBloodSugar">
                     <div class="health-card-header">
                         <div>
                             <h4 class="health-title">Blood Sugar</h4>
@@ -276,7 +278,7 @@
                 </div>
 
                 <!-- Body Weight Card -->
-                <div class="health-card" @click="navigateToBodyWeight">
+                <div class="health-card glass-card" @click="navigateToBodyWeight">
                     <div class="health-card-header">
                         <div>
                             <h4 class="health-title">Body Weight</h4>
@@ -299,7 +301,7 @@
                 </div>
 
                 <!-- Illness Card -->
-                <div class="health-card illness-card" @click="navigateToIllness">
+                <div class="health-card illness-card glass-card" @click="navigateToIllness">
                     <div class="health-card-header">
                         <div>
                             <h4 class="health-title">Illness</h4>
@@ -383,7 +385,7 @@
                 </div>
             </div>
 
-            <div class="profile-card">
+            <div class="profile-card glass-card">
                 <div 
                     class="profile-row"
                     v-for="item in profileSections"
@@ -398,7 +400,7 @@
                 </div>
             </div>
 
-            <div class="profile-card">
+            <div class="profile-card glass-card">
                 <div 
                     class="profile-row"
                     v-for="item in supportSections"
@@ -1135,20 +1137,50 @@ export default {
 <style scoped>
 .medical-records-container {
     min-height: 100vh;
-    background: #f8f9fa;
-    padding-bottom: 80px;
+    background: radial-gradient(circle at 20% 20%, rgba(79,70,229,0.15), transparent 40%),
+                radial-gradient(circle at 80% 10%, rgba(14,165,233,0.18), transparent 35%),
+                radial-gradient(circle at 50% 100%, rgba(34,197,94,0.12), transparent 40%),
+                #05060a;
+    padding-bottom: 96px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-orb {
+    position: absolute;
+    filter: blur(60px);
+    opacity: 0.28;
+    z-index: 0;
+}
+.orb-1 {
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    top: -140px;
+    left: -110px;
+}
+.orb-2 {
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #8b5cf6);
+    bottom: -110px;
+    right: -100px;
 }
 
 .action-icon {
     cursor: pointer;
-    color: #6f7efc;
+    color: #67e8f9;
     transition: all 0.2s ease;
-    padding: 4px;
-    border-radius: 8px;
+    padding: 6px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
 .action-icon:active {
-    background: #f3f4f6;
+    background: rgba(255,255,255,0.12);
     transform: scale(0.95);
 }
 
@@ -1159,9 +1191,10 @@ export default {
 }
 
 .content-wrapper {
-    padding: 20px 16px;
+    padding: 18px 16px 24px;
     min-height: calc(100vh - 140px);
-    background: #f8f9fa;
+    position: relative;
+    z-index: 1;
 }
 
 .tab-content {
@@ -1179,51 +1212,51 @@ export default {
     }
 }
 
-/* Action Cards Grid */
+/* Action Cards */
 .action-cards-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    margin-bottom: 32px;
+    margin-bottom: 26px;
 }
 
 .action-card-large {
-    background: white;
-    border-radius: 16px;
-    padding: 24px 16px;
+    padding: 18px 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    gap: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     min-height: 140px;
     justify-content: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
 }
 
-.action-card-large:active {
-    transform: scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+.action-card-large:hover {
+    transform: translateY(-2px);
+    border-color: rgba(103,232,249,0.4);
 }
 
 .action-icon-wrapper {
     width: 64px;
     height: 64px;
     background: linear-gradient(135deg, #6f7efc 0%, #9b57f4 100%);
-    border-radius: 16px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    box-shadow: 0 8px 20px rgba(111, 126, 252, 0.3);
+    box-shadow: 0 10px 20px rgba(111, 126, 252, 0.35);
 }
 
 .action-card-large h4 {
     font-size: 14px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: #e2e8f0;
     margin: 0;
     line-height: 1.4;
 }
@@ -1233,42 +1266,44 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .section-title {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #e2e8f0;
     margin: 0;
+    letter-spacing: -0.2px;
 }
 
 .see-all-link {
-    font-size: 14px;
-    color: #667eea;
+    font-size: 13px;
+    color: #67e8f9;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 /* Reminder List */
 .reminder-list {
-    background: white;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
-    padding: 4px;
-    margin-bottom: 32px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 6px;
+    margin-bottom: 28px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
 }
 
 .reminder-empty {
     text-align: center;
-    padding: 20px;
-    color: #6b7280;
-    font-size: 14px;
+    padding: 18px;
+    color: #94a3b8;
+    font-size: 13px;
 }
 
 .reminder-item {
-    padding: 16px 12px;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(148,163,184,0.15);
 }
 
 .reminder-item:last-child {
@@ -1283,14 +1318,14 @@ export default {
 
 .reminder-name {
     font-size: 15px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 4px 0;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin: 0;
 }
 
 .reminder-details {
-    font-size: 13px;
-    color: #6b7280;
+    font-size: 12px;
+    color: #9ca3af;
     margin: 0;
 }
 
@@ -1301,28 +1336,29 @@ export default {
 }
 
 .reminder-slot-pill {
-    border: none;
-    background: rgba(124, 58, 237, 0.12);
-    color: #5b21b6;
+    border: 1px solid rgba(103,232,249,0.3);
+    background: rgba(103,232,249,0.08);
+    color: #67e8f9;
     border-radius: 999px;
     padding: 6px 12px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
 .reminder-slot-pill.checked {
-    background: #5b21b6;
-    color: white;
+    background: linear-gradient(135deg, #22d3ee, #a855f7);
+    border-color: transparent;
+    color: #0b1020;
 }
 
 .reminder-slot-pill .slot-icon {
     font-size: 14px;
 }
 
-/* Records List */
+/* Records */
 .records-list {
     display: flex;
     flex-direction: column;
@@ -1332,11 +1368,11 @@ export default {
 .records-loading {
     padding: 16px;
     text-align: center;
-    color: #6b7280;
+    color: #cbd5e1;
     font-size: 14px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
 }
 
 .records-loading.large {
@@ -1344,42 +1380,41 @@ export default {
 }
 
 .records-error {
-    color: #dc2626;
+    color: #f87171;
     text-align: center;
     font-size: 14px;
     margin-top: 12px;
 }
 
 .empty-state.small {
-    padding: 24px 12px;
+    padding: 20px 12px;
 }
 
 .record-item {
-    background: white;
+    background: rgba(255,255,255,0.05);
     border-radius: 16px;
-    padding: 16px;
+    padding: 14px 12px;
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255,255,255,0.08);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
 }
 
 .record-item:active {
-    transform: scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    transform: translateY(1px) scale(0.99);
 }
 
 .record-icon {
-    width: 48px;
-    height: 48px;
-    background: #f0f4ff;
-    border-radius: 12px;
+    width: 46px;
+    height: 46px;
+    background: linear-gradient(145deg, rgba(103,232,249,0.1), rgba(168,85,247,0.12));
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #667eea;
+    color: #67e8f9;
     flex-shrink: 0;
 }
 
@@ -1390,56 +1425,54 @@ export default {
 .record-name {
     font-size: 15px;
     font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 4px 0;
+    color: #e2e8f0;
+    margin: 0 0 2px 0;
 }
 
 .record-type {
-    font-size: 13px;
-    color: #6b7280;
+    font-size: 12px;
+    color: #94a3b8;
     margin: 0;
 }
 
 .record-arrow {
-    color: #9ca3af;
+    color: #94a3b8;
     flex-shrink: 0;
 }
 
-/* Records List View */
 .records-list-view {
     display: flex;
     flex-direction: column;
     gap: 12px;
     position: relative;
-    padding-bottom: 80px;
+    padding-bottom: 88px;
 }
 
 .record-card {
-    background: white;
-    border-radius: 12px;
-    padding: 14px 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 14px 12px;
+    border: 1px solid rgba(255,255,255,0.08);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.record-card:active {
-    transform: scale(0.98);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+.record-card:hover {
+    border-color: rgba(103,232,249,0.4);
 }
 
 .record-icon-large {
-    width: 48px;
-    height: 48px;
-    background: #e8eaf6;
+    width: 46px;
+    height: 46px;
+    background: linear-gradient(145deg, rgba(103,232,249,0.1), rgba(34,197,94,0.12));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #667eea;
+    color: #67e8f9;
     flex-shrink: 0;
 }
 
@@ -1450,17 +1483,17 @@ export default {
 
 .record-title {
     font-size: 15px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 4px 0;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 2px 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .record-meta {
-    font-size: 13px;
-    color: #6b7280;
+    font-size: 12px;
+    color: #94a3b8;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -1475,80 +1508,72 @@ export default {
 /* Floating Action Button */
 .fab {
     position: fixed;
-    bottom: 100px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    background: #667eea;
-    border: none;
+    bottom: 98px;
+    right: 16px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #22d3ee, #a855f7);
+    border: 1px solid rgba(255,255,255,0.12);
     border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    color: white;
+    box-shadow: 0 16px 40px rgba(34, 211, 238, 0.35);
+    color: #0b1020;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 100;
+    transition: all 0.2s ease;
+    z-index: 1000;
 }
 
 .fab:active {
-    transform: scale(0.9);
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    transform: scale(0.94);
 }
 
 /* Health Metrics */
 .health-metrics {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
 
 .health-card {
-    background: white;
+    background: rgba(255,255,255,0.05);
     border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.3);
 }
 
-.health-card:active {
-    transform: scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+.health-card:hover {
+    border-color: rgba(103,232,249,0.4);
 }
 
 .health-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 }
 
 .health-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 4px 0;
-}
-
-.health-tag {
-    font-size: 14px;
-    font-weight: 400;
-    color: #6b7280;
+    font-size: 15px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 2px 0;
 }
 
 .health-subtitle {
-    font-size: 13px;
-    color: #9ca3af;
+    font-size: 12px;
+    color: #94a3b8;
     margin: 0;
 }
 
 .health-chevron {
-    color: #9ca3af;
+    color: #94a3b8;
 }
 
-/* Health Chart */
 .health-chart {
     position: relative;
     display: flex;
@@ -1560,9 +1585,9 @@ export default {
     flex-direction: column;
     justify-content: space-between;
     font-size: 11px;
-    color: #9ca3af;
+    color: #94a3b8;
     padding: 10px 0;
-    min-width: 30px;
+    min-width: 32px;
 }
 
 .chart-area {
@@ -1575,18 +1600,17 @@ export default {
     top: 0;
     right: 0;
     font-size: 11px;
-    color: #9ca3af;
+    color: #94a3b8;
 }
 
 .chart-unit-bottom {
     display: block;
     text-align: right;
     font-size: 11px;
-    color: #9ca3af;
+    color: #94a3b8;
     margin-top: 8px;
 }
 
-/* Blood Pressure Bar Chart */
 .chart-bars {
     display: flex;
     justify-content: space-around;
@@ -1603,15 +1627,15 @@ export default {
 }
 
 .bp-bar {
-    width: 8px;
+    width: 10px;
     height: 100px;
     position: relative;
 }
 
 .bp-range {
-    width: 8px;
-    background: linear-gradient(180deg, #a5b4fc 0%, #c7d2fe 100%);
-    border-radius: 4px;
+    width: 10px;
+    background: linear-gradient(180deg, #22d3ee 0%, #a855f7 100%);
+    border-radius: 6px;
     position: absolute;
     left: 0;
     display: flex;
@@ -1624,18 +1648,18 @@ export default {
 .bp-dot-bottom {
     width: 8px;
     height: 8px;
-    background: #667eea;
+    background: #0b1020;
     border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.7);
     display: block;
     margin: 0 auto;
 }
 
 .chart-label {
-    font-size: 12px;
-    color: #6b7280;
+    font-size: 11px;
+    color: #94a3b8;
 }
 
-/* Line Chart */
 .line-chart {
     width: 100%;
     height: 120px;
@@ -1648,8 +1672,8 @@ export default {
 }
 
 .chart-x-labels span {
-    font-size: 12px;
-    color: #6b7280;
+    font-size: 11px;
+    color: #94a3b8;
 }
 
 .health-reading {
@@ -1661,26 +1685,26 @@ export default {
 
 .reading-value {
     font-size: 22px;
-    font-weight: 700;
-    color: #111827;
+    font-weight: 800;
+    color: #e2e8f0;
 }
 
 .reading-status {
     font-size: 13px;
-    color: #6b7280;
-    font-weight: 500;
+    color: #a5b4fc;
+    font-weight: 600;
 }
 
 .reading-status.increase {
-    color: #059669;
+    color: #22c55e;
 }
 
 .reading-status.decrease {
-    color: #dc2626;
+    color: #f87171;
 }
 
 .illness-card .health-subtitle {
-    color: #6b7280;
+    color: #94a3b8;
 }
 
 .illness-summary {
@@ -1699,7 +1723,7 @@ export default {
 .illness-diagnosis {
     font-size: 16px;
     font-weight: 700;
-    color: #111827;
+    color: #f8fafc;
 }
 
 .illness-status-block {
@@ -1718,32 +1742,36 @@ export default {
     font-size: 12px;
     font-weight: 700;
     text-transform: capitalize;
-    background: #eef2ff;
-    color: #4f46e5;
+    background: rgba(103,232,249,0.16);
+    color: #67e8f9;
+    border: 1px solid rgba(103,232,249,0.25);
 }
 
 .pill-badge.subtle {
-    background: #f3f4f6;
-    color: #4b5563;
-    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    color: #cbd5e1;
+    border-color: rgba(255,255,255,0.08);
 }
 
 .pill-badge.recovered,
 .pill-badge.resolved {
-    background: #ecfdf3;
-    color: #16a34a;
+    background: rgba(34,197,94,0.15);
+    color: #4ade80;
+    border-color: rgba(34,197,94,0.25);
 }
 
 .pill-badge.ongoing,
 .pill-badge.chronic {
-    background: #fff7ed;
-    color: #ea580c;
+    background: rgba(234,88,12,0.15);
+    color: #fb923c;
+    border-color: rgba(234,88,12,0.25);
 }
 
 .pill-badge.severe,
 .pill-badge.critical {
-    background: #fef2f2;
-    color: #dc2626;
+    background: rgba(239,68,68,0.15);
+    color: #f87171;
+    border-color: rgba(239,68,68,0.25);
 }
 
 .illness-meta {
@@ -1755,32 +1783,33 @@ export default {
 
 .illness-date {
     font-size: 12px;
-    color: #6b7280;
+    color: #94a3b8;
 }
 
 .symptom-chip {
-    background: #f3f4f6;
-    color: #374151;
+    background: rgba(255,255,255,0.05);
+    color: #e2e8f0;
     border-radius: 999px;
     padding: 6px 10px;
     font-size: 12px;
     font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* Chart Placeholder */
 .health-chart-placeholder {
     height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f9fafb;
+    background: rgba(255,255,255,0.04);
     border-radius: 12px;
     margin-bottom: 8px;
+    border: 1px dashed rgba(148,163,184,0.25);
 }
 
 .placeholder-text {
-    font-size: 14px;
-    color: #9ca3af;
+    font-size: 13px;
+    color: #94a3b8;
     margin: 0;
 }
 
@@ -1792,32 +1821,34 @@ export default {
     justify-content: center;
     padding: 60px 20px;
     text-align: center;
+    color: #cbd5e1;
 }
 
 .empty-icon {
-    color: #d1d5db;
+    color: #64748b;
     margin-bottom: 16px;
 }
 
 .empty-title {
     font-size: 18px;
-    font-weight: 600;
-    color: #374151;
+    font-weight: 700;
+    color: #e2e8f0;
     margin: 0 0 8px 0;
 }
 
 .empty-text {
     font-size: 14px;
-    color: #6b7280;
+    color: #94a3b8;
     margin: 0;
     line-height: 1.5;
     max-width: 280px;
 }
 
+/* Profile Tab */
 .profile-tab {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
 
 .profile-header {
@@ -1828,28 +1859,28 @@ export default {
 
 .profile-header h2 {
     margin: 0;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
-    color: #111827;
+    color: #e2e8f0;
 }
 
 .back-btn,
 .icon-btn {
-    border: none;
-    background: #f3f4f6;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.06);
     border-radius: 12px;
     padding: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #111827;
+    color: #e2e8f0;
 }
 
 .profile-switcher {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
 }
 
 .profile-switcher.empty {
@@ -1861,7 +1892,7 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    min-width: 70px;
+    min-width: 72px;
     cursor: pointer;
 }
 
@@ -1869,43 +1900,45 @@ export default {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    border: 2px solid transparent;
+    border: 2px solid rgba(255,255,255,0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f4f4f4;
-    color: #6b7280;
+    background: rgba(255,255,255,0.05);
+    color: #cbd5e1;
 }
 
 .profile-avatar.active .avatar-circle {
-    border-color: #667eea;
-    color: #667eea;
-    background: rgba(102, 126, 234, 0.08);
+    border-color: rgba(103,232,249,0.5);
+    color: #67e8f9;
+    background: rgba(103,232,249,0.12);
 }
 
 .profile-avatar span {
-    font-size: 13px;
-    color: #1f2937;
+    font-size: 12px;
+    color: #e2e8f0;
 }
 
 .profile-avatar.add .avatar-circle {
-    border-color: #d1d5db;
-    background: white;
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
 }
 
 .profile-card {
-    background: white;
-    border-radius: 18px;
-    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
-    padding: 8px 0;
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+    padding: 6px 0;
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
 .profile-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 20px;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(148,163,184,0.12);
+    color: #e2e8f0;
 }
 
 .profile-row:last-child {
@@ -1916,94 +1949,79 @@ export default {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: #111827;
     font-weight: 600;
 }
 
-/* Health Category Modal */
+/* Modal */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background: rgba(5, 6, 10, 0.7);
     display: flex;
     align-items: flex-end;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    z-index: 1200;
+    animation: fadeIn 0.25s ease;
 }
 
 .modal-content {
-    background: white;
-    border-radius: 24px 24px 0 0;
+    background: rgba(10, 12, 20, 0.95);
+    border-radius: 22px 22px 0 0;
     width: 100%;
-    padding: 24px;
-    animation: slideUp 0.3s ease;
+    padding: 22px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 -6px 30px rgba(0,0,0,0.4);
+    animation: slideUp 0.25s ease;
 }
 
 @keyframes slideUp {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
 }
 
 .modal-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #f3f4f6;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(148,163,184,0.12);
 }
 
 .modal-icon {
-    color: #667eea;
+    color: #67e8f9;
 }
 
 .modal-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: 17px;
+    font-weight: 700;
+    color: #f8fafc;
     margin: 0;
 }
 
 .modal-options {
     display: flex;
     flex-direction: column;
-    gap: 0;
 }
 
 .modal-option {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px 8px;
+    gap: 14px;
+    padding: 14px 6px;
     cursor: pointer;
     transition: background 0.2s ease;
     border-radius: 12px;
+    color: #e2e8f0;
 }
 
 .modal-option:active {
-    background: #f9fafb;
+    background: rgba(255,255,255,0.05);
 }
 
 .option-radio {
     width: 24px;
     height: 24px;
-    border: 2px solid #d1d5db;
+    border: 2px solid rgba(255,255,255,0.25);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -2013,46 +2031,48 @@ export default {
 }
 
 .option-radio.selected {
-    border-color: #667eea;
-    background: #667eea;
+    border-color: #67e8f9;
+    background: #67e8f9;
 }
 
 .radio-dot {
     width: 8px;
     height: 8px;
-    background: white;
+    background: #0b1020;
     border-radius: 50%;
 }
 
 .option-label {
-    font-size: 16px;
-    color: #1a1a1a;
-    font-weight: 400;
+    font-size: 15px;
+    color: #e2e8f0;
+    font-weight: 500;
 }
 
+/* Toast */
 .toast-notification {
     position: fixed;
-    bottom: 90px;
+    bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #c084fc, #7c3aed);
-    color: white;
+    background: linear-gradient(135deg, #22d3ee, #a855f7);
+    color: #0b1020;
     padding: 14px 18px;
-    border-radius: 20px;
+    border-radius: 18px;
     font-size: 13px;
     z-index: 1500;
-    box-shadow: 0 20px 30px rgba(124, 58, 237, 0.35);
+    box-shadow: 0 18px 36px rgba(168,85,247,0.35);
     display: flex;
     align-items: center;
     gap: 12px;
     min-width: 280px;
+    border: 1px solid rgba(255,255,255,0.16);
 }
 
 .toast-icon {
     width: 40px;
     height: 40px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.15);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2065,36 +2085,39 @@ export default {
 .toast-title {
     margin: 0;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .toast-message {
     margin: 2px 0 0;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(11,16,32,0.8);
 }
 
+/* Profile prompt sheet */
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.65);
+    background: rgba(5, 6, 10, 0.75);
     display: grid;
     place-items: center;
     padding: 16px;
-    z-index: 1000;
+    z-index: 1300;
 }
 
 .sheet {
     width: 100%;
     max-width: 480px;
-    background: #fff;
+    background: rgba(10,12,20,0.95);
     border-radius: 18px;
     padding: 16px;
-    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 18px 36px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #e2e8f0;
 }
 
 .confirm-sheet {
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgba(103,232,249,0.25);
 }
 
 .sheet-head {
@@ -2103,5 +2126,4 @@ export default {
     justify-content: space-between;
     margin-bottom: 10px;
 }
-
 </style>

@@ -1,5 +1,5 @@
 <template>
-<div class="top-bar">
+<div class="top-bar glass-nav">
     <div class="top-bar-content">
         <div class="left-section">
             <mdicon 
@@ -73,16 +73,18 @@ export default {
     top: 0;
     left: 0;
     right: 0;
-    background: white;
+    background: rgba(5, 6, 10, 0.6);
     z-index: 999;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .top-bar-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    padding: 14px 16px;
     max-width: 100%;
 }
 
@@ -95,21 +97,21 @@ export default {
 
 .back-button {
     cursor: pointer;
-    color: #374151;
+    color: #67e8f9;
     transition: all 0.2s ease;
     padding: 4px;
     border-radius: 8px;
 }
 
 .back-button:active {
-    background: #f3f4f6;
+    background: rgba(255,255,255,0.08);
     transform: scale(0.95);
 }
 
 .title {
     font-size: 20px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: #e2e8f0;
     margin: 0;
     letter-spacing: -0.3px;
 }
@@ -130,21 +132,23 @@ export default {
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    background: #f3f4f6;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 999px;
     font-size: 12px;
-    color: #111827;
+    color: #e2e8f0;
+    backdrop-filter: blur(6px);
 }
 
 .profile-avatar {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: white;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #667eea;
+    color: #0b1020;
 }
 
 .profile-chip.main {

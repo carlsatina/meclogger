@@ -57,14 +57,15 @@ export default {
     bottom: 0;
     left: 0;
     right: 0;
-    background: white;
+    background: rgba(5, 6, 10, 0.85);
+    backdrop-filter: blur(12px);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 8px 0 12px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    padding: 10px 8px 14px;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35);
     z-index: 1000;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 .nav-item {
@@ -72,30 +73,35 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: 8px 12px;
+    padding: 10px 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: #9ca3af;
+    color: #94a3b8;
     flex: 1;
     max-width: 100px;
+    border-radius: 12px;
+    border: 1px solid transparent;
 }
 
 .nav-item:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
 }
 
 .nav-item.active {
-    color: #667eea;
+    color: #0b1020;
+    background: linear-gradient(135deg, #22d3ee, #a855f7);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.35);
 }
 
 .nav-label {
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 500;
     letter-spacing: 0.2px;
 }
 
 .nav-item.active .nav-label {
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* Add animation for icon */
