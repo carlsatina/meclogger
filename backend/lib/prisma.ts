@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import dotenv from 'dotenv'
 import path from 'path'
-import { Pool } from 'pg'
+import { Pool, defaults as pgDefaults } from 'pg'
 
 const prismaEnvPath = path.resolve(process.cwd(), 'prisma/.env')
 
@@ -13,6 +13,13 @@ const connectionString = process.env.DATABASE_URL
 
 if (!connectionString) {
   throw new Error('DATABASE_URL is not set in the environment')
+}
+
+// Pragmatic TLS bypass for self-signed certs (Supabase/pgBouncer):
+// allow TLS but skip certificate validation.
+pgDefaults.ssl = { rejectUnauthorized: false }
+if (!process.env.NODE_TLS_REJECT_UNAUTHORIZED) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 }
 
 // Pragmatic TLS fix for Supabase/pgBouncer with self-signed root:
