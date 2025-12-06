@@ -1,85 +1,79 @@
 <template>
-<div class="home-container">
-    <!-- Header Section -->
-<div class="header-section">
-    <div class="header-top">
-        <div class="greeting">
-            <p class="welcome-chip">Welcome back 👋</p>
-            <h1 class="welcome-text">{{ userName }}</h1>
-        </div>
-        <button class="logout-btn" @click="logout">
-            <mdicon name="logout" size="18"/>
-            <span>Logout</span>
-        </button>
-    </div>
-    <p class="subtitle">What would you like to manage today?</p>
-</div>
+<div class="home-shell">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
 
-    <!-- Features Grid -->
-    <div class="features-wrapper">
-        <!-- Medical Records Card -->
-        <div class="feature-card medical" @click="navigateTo('/medical-records')">
-            <div class="card-content">
-                <div class="icon-wrapper">
+    <header class="hero">
+        <div class="hero-top">
+            <div class="brand">
+                <div class="logo-mark">M</div>
+                <div>
+                    <p class="brand-chip">MEC LOGGER</p>
+                    <h1>Control your universe</h1>
+                    <p class="eyebrow">Hi, {{ userName }}</p>
+                </div>
+            </div>
+            <button class="ghost-btn" @click="logout">
+                <mdicon name="logout" size="18" />
+                <span>Logout</span>
+            </button>
+        </div>
+        <p class="hero-sub">Health, maintenance, and finances—unified in a sleek console.</p>
+    </header>
+
+    <section class="feature-stack">
+        <div class="glass-card medical" @click="navigateTo('/medical-records')">
+            <div class="chip">Health</div>
+            <div class="card-row">
+                <div class="icon-hex">
                     <mdicon name="hospital-box" size="24"/>
                 </div>
-                <div class="card-text">
-                    <h3 class="card-title">Medical Records</h3>
-                    <p class="card-description">Health tracking & medications</p>
+                <div>
+                    <h3>Medical Records</h3>
+                    <p>Vitals, prescriptions, and scans at light speed.</p>
                 </div>
-            </div>
-            <div class="card-arrow">
-                <mdicon name="chevron-right" size="20"/>
             </div>
         </div>
 
-        <!-- Car Maintenance Card -->
-        <div class="feature-card vehicle" @click="navigateTo('/car-maintenance')">
-            <div class="card-content">
-                <div class="icon-wrapper">
+        <div class="glass-card vehicle" @click="navigateTo('/car-maintenance')">
+            <div class="chip">Auto</div>
+            <div class="card-row">
+                <div class="icon-hex">
                     <mdicon name="car-wrench" size="24"/>
                 </div>
-                <div class="card-text">
-                    <h3 class="card-title">Car Maintenance</h3>
-                    <p class="card-description">Service history & reminders</p>
+                <div>
+                    <h3>Car Maintenance</h3>
+                    <p>Service history, reminders, and costs—always synced.</p>
                 </div>
-            </div>
-            <div class="card-arrow">
-                <mdicon name="chevron-right" size="20"/>
             </div>
         </div>
 
-        <!-- Expense Tracking Card -->
-        <div class="feature-card expense" @click="navigateTo('/expense-tracking')">
-            <div class="card-content">
-                <div class="icon-wrapper">
+        <div class="glass-card expense" @click="navigateTo('/expense-tracking')">
+            <div class="chip">Finance</div>
+            <div class="card-row">
+                <div class="icon-hex">
                     <mdicon name="cash-multiple" size="24"/>
                 </div>
-                <div class="card-text">
-                    <h3 class="card-title">Expense Tracking</h3>
-                    <p class="card-description">Budgets & financial goals</p>
+                <div>
+                    <h3>Expense Tracking</h3>
+                    <p>Budgets, insights, and subscriptions in one feed.</p>
                 </div>
-            </div>
-            <div class="card-arrow">
-                <mdicon name="chevron-right" size="20"/>
             </div>
         </div>
 
-        <div v-if="isAdmin" class="feature-card admin" @click="navigateTo('/admin/users')">
-            <div class="card-content">
-                <div class="icon-wrapper">
+        <div v-if="isAdmin" class="glass-card admin" @click="navigateTo('/admin/users')">
+            <div class="chip">Admin</div>
+            <div class="card-row">
+                <div class="icon-hex">
                     <mdicon name="shield-account" size="24"/>
                 </div>
-                <div class="card-text">
-                    <h3 class="card-title admin-title">User Approvals</h3>
-                    <p class="card-description admin-desc">Review new registrations & set roles</p>
+                <div>
+                    <h3>User Approvals</h3>
+                    <p>Review pending registrations and elevate roles.</p>
                 </div>
             </div>
-            <div class="card-arrow">
-                <mdicon name="chevron-right" size="20"/>
-            </div>
         </div>
-    </div>
+    </section>
 </div>
 </template>
 
@@ -152,231 +146,211 @@ export default {
 </script>
 
 <style scoped>
-.home-container {
-    min-height: 100vh;
-    background: #f8f9fa;
-    padding-bottom: 80px;
-}
-
-/* Header Section */
-.header-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 32px 20px 40px;
-    border-radius: 0 0 24px 24px;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-}
-
-.header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    color: white;
-}
-
-.greeting {
-    flex: 1;
-}
-
-.welcome-text {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 6px;
-    letter-spacing: -0.5px;
-}
-
-.subtitle {
-    font-size: 14px;
-    opacity: 0.9;
-    margin: 0;
-    font-weight: 400;
-}
-
-.welcome-chip {
-    margin: 0 0 6px;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.logout-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    border-radius: 999px;
-    color: white;
-    font-weight: 600;
-    padding: 8px 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.logout-btn:active {
-    transform: scale(0.97);
-}
-
-/* Features Wrapper */
-.features-wrapper {
-    padding: 0 16px;
-    margin-top: -24px;
-}
-
-/* Feature Cards */
-.feature-card {
-    background: white;
-    border-radius: 16px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.home-shell {
     position: relative;
+    min-height: 100vh;
+    padding: 18px 16px 80px;
+    background: radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.25), transparent 25%), 
+                radial-gradient(circle at 80% 0%, rgba(6, 182, 212, 0.25), transparent 22%),
+                #05060a;
+    color: #e5e7eb;
     overflow: hidden;
 }
 
-.feature-card::before {
-    content: '';
+.bg-orb {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    transition: width 0.3s ease;
+    filter: blur(50px);
+    opacity: 0.35;
+    z-index: 0;
+}
+.orb-1 {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    top: -100px;
+    left: -80px;
+}
+.orb-2 {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #8b5cf6);
+    bottom: -80px;
+    right: -60px;
 }
 
-.feature-card.medical::before {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.hero {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 10px;
+    padding: 14px 12px 6px;
 }
 
-.feature-card.vehicle::before {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+.hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
 }
 
-.feature-card.expense::before {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+.brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
 }
 
-.feature-card.admin::before {
-    background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+.logo-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: #0b1020;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 18px;
+    box-shadow: 0 10px 28px rgba(6, 182, 212, 0.4);
 }
 
-.feature-card:active {
-    transform: scale(0.97);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+.brand-chip {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #a5b4fc;
+    font-weight: 700;
 }
 
-.feature-card::before {
-    width: 4px;
+.hero h1 {
+    margin: 2px 0 2px;
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a5b4fc, #67e8f9);
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: -0.3px;
 }
 
-.feature-card:active::before {
-    width: 8px;
+.eyebrow {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 13px;
 }
 
-/* Card Content */
-.card-content {
+.hero-sub {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.ghost-btn {
+    border: 1px solid rgba(226, 232, 240, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    backdrop-filter: blur(6px);
+}
+
+.feature-stack {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.glass-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 18px 36px rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: grid;
+    gap: 10px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(94, 234, 212, 0.5);
+}
+
+.glass-card .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 11px;
+    color: #0b1020;
+    background: linear-gradient(135deg, #67e8f9, #a855f7);
+    box-shadow: 0 6px 14px rgba(6, 182, 212, 0.3);
+    width: fit-content;
+}
+
+.glass-card.admin .chip {
+    background: linear-gradient(135deg, #f97316, #ec4899);
+    box-shadow: 0 6px 14px rgba(236, 72, 153, 0.3);
+}
+
+.card-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    flex: 1;
 }
 
-.icon-wrapper {
-    width: 44px;
-    height: 44px;
+.icon-hex {
+    width: 42px;
+    height: 42px;
     border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    flex-shrink: 0;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    display: grid;
+    place-items: center;
+    color: #0b1020;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
 }
 
-.feature-card.medical .icon-wrapper {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.glass-card.admin .icon-hex {
+    background: linear-gradient(135deg, #f97316, #ec4899);
 }
 
-.feature-card.vehicle .icon-wrapper {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.feature-card.expense .icon-wrapper {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.feature-card.admin .icon-wrapper {
-    background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
-}
-
-.card-text {
-    flex: 1;
-}
-
-.card-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 2px 0;
+.glass-card h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #e2e8f0;
     letter-spacing: -0.2px;
 }
 
-.card-description {
-    font-size: 12px;
-    color: #6b7280;
-    margin: 0;
-    line-height: 1.3;
+.glass-card p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: #cbd5e1;
+    line-height: 1.4;
 }
 
-.feature-card.admin .card-title {
-    color: #312e81;
-}
-.feature-card.admin .card-description {
-    color: #4338ca;
-}
-
-.card-arrow {
-    color: #9ca3af;
-    display: flex;
-    align-items: center;
-    transition: transform 0.3s ease;
-}
-
-.feature-card:active .card-arrow {
-    transform: translateX(4px);
-}
-
-/* Responsive adjustments */
 @media (max-width: 375px) {
-    .welcome-text {
-        font-size: 22px;
+    .hero h1 {
+        font-size: 20px;
     }
-    
-    .subtitle {
-        font-size: 13px;
+    .glass-card h3 {
+        font-size: 15px;
     }
-    
-    .card-title {
-        font-size: 14px;
+    .glass-card p {
+        font-size: 12px;
     }
-    
-    .card-description {
-        font-size: 11px;
-    }
-    
-    .icon-wrapper {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .feature-card {
-        padding: 12px 14px;
+    .logo-mark {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
     }
 }
 </style>
