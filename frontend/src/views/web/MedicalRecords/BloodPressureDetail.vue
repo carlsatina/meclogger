@@ -1,50 +1,54 @@
 <template>
-<div class="vital-detail-container">
-    <div class="vital-detail-wrapper">
-        <div class="detail-header">
-            <button class="back-btn" @click="goBack">
-                <mdicon name="arrow-left" :size="20"/>
+<div class="medical-shell vital-page">
+    <div class="medical-orb orb-1"></div>
+    <div class="medical-orb orb-2"></div>
+    <div class="vital-wrapper glass-card">
+        <div class="vital-header">
+            <button class="icon-btn-ghost" @click="goBack">
+                <mdicon name="arrow-left" :size="20" />
             </button>
-            <div class="header-text">
-                <p class="header-label">Vitals · Blood Pressure</p>
-                <h2>{{ profileName }}</h2>
+            <div class="title-block">
+                <p class="eyebrow">Vitals · Blood Pressure</p>
+                <h2 class="page-title">{{ profileName }}</h2>
             </div>
-            <button class="add-btn" @click="goToAddRecord">
-                <mdicon name="plus" :size="18"/>
-                <span>Add record</span>
-            </button>
+            <div class="vital-actions">
+                <button class="primary-btn" @click="goToAddRecord">
+                    <mdicon name="plus" :size="18" />
+                    <span>Add record</span>
+                </button>
+            </div>
         </div>
 
         <div v-if="loading" class="state-card">Loading blood pressure records...</div>
-        <div v-else-if="errorMessage" class="state-card error">{{ errorMessage }}</div>
+        <div v-else-if="errorMessage" class="state-card">{{ errorMessage }}</div>
 
-        <div v-else class="detail-content">
-            <section class="measurement-panel">
-                <div class="measurement-header">
-                    <div class="measurement-icon">
-                        <mdicon name="heart-pulse" :size="32"/>
+        <div v-else class="vital-grid">
+            <section class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon">
+                        <mdicon name="heart-pulse" :size="32" />
                     </div>
                     <div>
-                        <p class="measurement-label">Latest reading</p>
-                        <p class="measurement-status" :class="latestStatus?.toLowerCase()">
+                        <p class="metric-label">Latest reading</p>
+                        <p class="metric-status" :class="latestStatus?.toLowerCase()">
                             {{ latestStatus || 'No data' }}
                         </p>
                     </div>
                 </div>
-                <div v-if="latestRecord" class="measurement-value">
+                <div v-if="latestRecord" class="metric-value">
                     <h3>{{ latestRecord.systolic }}/{{ latestRecord.diastolic }}</h3>
                     <p>mmHg</p>
-                    <p class="measurement-date">{{ latestRecord.formattedDate }} · {{ latestRecord.formattedTime }}</p>
+                    <p class="metric-date">{{ latestRecord.formattedDate }} · {{ latestRecord.formattedTime }}</p>
                 </div>
-                <p v-else class="empty-hint">No blood pressure records yet.</p>
+                <p v-else class="vital-empty">No blood pressure records yet.</p>
             </section>
 
-            <section class="history-panel">
-                <div class="history-header">
-                    <h3>Recent history</h3>
+            <section class="history-card">
+                <div class="section-header">
+                    <h3 class="section-title">Recent history</h3>
                 </div>
                 <div v-if="history.length" class="history-list">
-                    <div class="history-row" v-for="entry in history" :key="entry.id">
+                    <div class="history-row" v-for="entry in history" :key="entry.id" @click="openEntry(entry.id)">
                         <div class="history-date">
                             <p class="history-day">{{ entry.formattedDate }}</p>
                             <p class="history-time">{{ entry.formattedTime }}</p>
@@ -58,7 +62,7 @@
                         </span>
                     </div>
                 </div>
-                <p v-else class="empty-hint">Recent readings will appear here.</p>
+                <p v-else class="vital-empty">Recent readings will appear here.</p>
             </section>
         </div>
     </div>
@@ -155,6 +159,14 @@ export default {
             router.push({ path: '/medical-records', query: { tab: 'health' } })
         }
 
+        const openEntry = (id) => {
+            if (!id) return
+            router.push({
+                path: `/medical-records/blood-pressure/${id}`,
+                query: { from: '/medical-records?tab=health' }
+            })
+        }
+
         const goToAddRecord = () => {
             router.push('/medical-records/blood-pressure/add')
         }
@@ -182,233 +194,9 @@ export default {
             latestStatus,
             history,
             goBack,
+            openEntry,
             goToAddRecord
         }
     }
 }
 </script>
-
-<style scoped>
-.vital-detail-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 32px 16px;
-}
-
-.vital-detail-wrapper {
-    width: 100%;
-    max-width: 960px;
-    background: white;
-    border-radius: 28px;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
-    padding: 32px;
-}
-
-.detail-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.back-btn,
-.add-btn {
-    border: none;
-    border-radius: 12px;
-    background: #eef2ff;
-    color: #4338ca;
-    padding: 10px 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-.header-text {
-    flex: 1;
-}
-
-.header-label {
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin: 0;
-}
-
-.header-text h2 {
-    margin: 4px 0 0;
-    font-size: 24px;
-}
-
-.detail-content {
-    display: grid;
-    grid-template-columns: 360px 1fr;
-    gap: 24px;
-}
-
-.measurement-panel,
-.history-panel {
-    background: #f8fafc;
-    border-radius: 24px;
-    padding: 24px;
-    border: 1px solid var(--text-primary);
-}
-
-.measurement-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.measurement-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: rgba(99, 102, 241, 0.15);
-    color: #4f46e5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.measurement-label {
-    margin: 0;
-    color: #475569;
-}
-
-.measurement-status {
-    margin: 2px 0 0;
-    font-weight: 600;
-}
-
-.measurement-status.normal {
-    color: #16a34a;
-}
-
-.measurement-status.elevated {
-    color: #d97706;
-}
-
-.measurement-status.high {
-    color: #dc2626;
-}
-
-.measurement-value {
-    text-align: center;
-}
-
-.measurement-value h3 {
-    font-size: 48px;
-    margin: 0;
-}
-
-.measurement-value p {
-    margin: 4px 0;
-    color: #64748b;
-}
-
-.measurement-date {
-    font-size: 14px;
-}
-
-.empty-hint {
-    color: var(--text-muted);
-    margin: 0;
-}
-
-.history-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.history-row {
-    display: grid;
-    grid-template-columns: 160px 1fr auto;
-    align-items: center;
-    background: white;
-    border: 1px solid var(--text-primary);
-    border-radius: 16px;
-    padding: 16px 20px;
-}
-
-.history-day {
-    margin: 0;
-    font-weight: 600;
-}
-
-.history-time {
-    margin: 4px 0 0;
-    color: var(--text-muted);
-}
-
-.reading-value {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.reading-sub {
-    margin: 2px 0 0;
-    color: var(--text-muted);
-}
-
-.status-chip {
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 13px;
-    text-transform: uppercase;
-}
-
-.status-chip.normal {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.status-chip.elevated {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.status-chip.high {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.state-card {
-    padding: 24px;
-    border-radius: 20px;
-    background: #f8fafc;
-    text-align: center;
-    color: #475569;
-}
-
-.state-card.error {
-    color: #dc2626;
-}
-
-@media (max-width: 900px) {
-    .detail-content {
-        grid-template-columns: 1fr;
-    }
-}
-</style>

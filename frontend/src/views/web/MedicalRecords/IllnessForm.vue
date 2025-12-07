@@ -1,87 +1,87 @@
 <template>
-<div class="vital-detail-container">
-    <div class="vital-detail-wrapper">
-        <div class="detail-header">
-            <button class="back-btn" @click="goBack">
-                <mdicon name="arrow-left" :size="20"/>
+<div class="medical-shell">
+    <div class="medical-orb orb-1"></div>
+    <div class="medical-orb orb-2"></div>
+    <div class="add-record-wrapper glass-card">
+        <div class="header">
+            <button class="icon-btn-ghost" @click="goBack">
+                <mdicon name="arrow-left" :size="20" />
             </button>
-            <div class="header-text">
-                <p class="header-label">Vitals · Illness</p>
-                <h2>{{ isEdit ? 'Edit illness entry' : 'Add illness entry' }}</h2>
+            <div class="title-block">
+                <p class="eyebrow">Vitals · Illness</p>
+                <h2 class="page-title">{{ isEdit ? 'Edit illness entry' : 'Add illness entry' }}</h2>
             </div>
         </div>
 
-        <div class="form-card">
-            <form class="form" @submit.prevent="submit">
-                <div class="form-grid">
-                    <label>
-                        <span>Diagnosis *</span>
-                        <input v-model="form.diagnosis" type="text" required placeholder="e.g., Influenza"/>
-                    </label>
-                    <label>
-                        <span>Date & Time</span>
-                        <input v-model="form.recordedAt" type="datetime-local"/>
-                    </label>
-                </div>
-
-                <label>
-                    <span>Symptoms (comma separated)</span>
-                    <input v-model="symptomsInput" type="text" placeholder="Fever, Cough, Fatigue"/>
+        <form class="form-grid" @submit.prevent="submit">
+            <div class="form-grid two-column">
+                <label class="form-group">
+                    <span class="form-label">Diagnosis *</span>
+                    <input class="form-input" v-model="form.diagnosis" type="text" required placeholder="e.g., Influenza" />
                 </label>
-
-                <div class="form-grid">
-                    <label>
-                        <span>Body Temperature</span>
-                        <input v-model="form.bodyTemperature" type="number" step="0.1" min="30" max="45" placeholder="37.5"/>
-                    </label>
-                    <label>
-                        <span>Unit</span>
-                        <select v-model="form.temperatureUnit">
-                            <option value="C">°C</option>
-                            <option value="F">°F</option>
-                        </select>
-                    </label>
-                </div>
-
-                <div class="form-grid">
-                    <label>
-                        <span>Severity</span>
-                        <select v-model="form.severity">
-                            <option value="MILD">Mild</option>
-                            <option value="MODERATE">Moderate</option>
-                            <option value="SEVERE">Severe</option>
-                            <option value="CRITICAL">Critical</option>
-                        </select>
-                    </label>
-                    <label>
-                        <span>Status</span>
-                        <select v-model="form.status">
-                            <option value="ONGOING">Ongoing</option>
-                            <option value="RECOVERED">Recovered</option>
-                            <option value="RESOLVED">Resolved</option>
-                            <option value="CHRONIC">Chronic</option>
-                        </select>
-                    </label>
-                </div>
-
-                <label>
-                    <span>Medications (comma separated)</span>
-                    <input v-model="medicationsInput" type="text" placeholder="Ibuprofen, Paracetamol"/>
+                <label class="form-group">
+                    <span class="form-label">Date & Time</span>
+                    <input class="form-input" v-model="form.recordedAt" type="datetime-local" />
                 </label>
+            </div>
 
-                <label>
-                    <span>Notes</span>
-                    <textarea v-model="form.notes" rows="4" placeholder="Add observations or advice"></textarea>
+            <label class="form-group">
+                <span class="form-label">Symptoms (comma separated)</span>
+                <input class="form-input" v-model="symptomsInput" type="text" placeholder="Fever, Cough, Fatigue" />
+            </label>
+
+            <div class="form-grid two-column">
+                <label class="form-group">
+                    <span class="form-label">Body Temperature</span>
+                    <input class="form-input" v-model="form.bodyTemperature" type="number" step="0.1" min="30" max="45" placeholder="37.5" />
                 </label>
+                <label class="form-group">
+                    <span class="form-label">Unit</span>
+                    <select class="form-select" v-model="form.temperatureUnit">
+                        <option value="C">°C</option>
+                        <option value="F">°F</option>
+                    </select>
+                </label>
+            </div>
 
-                <div class="form-actions">
-                    <button class="secondary-btn" type="button" @click="goBack">Cancel</button>
-                    <button class="add-btn" type="submit" :disabled="submitting">
-                        {{ submitting ? 'Saving...' : (isEdit ? 'Update entry' : 'Save entry') }}
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="form-grid two-column">
+                <label class="form-group">
+                    <span class="form-label">Severity</span>
+                    <select class="form-select" v-model="form.severity">
+                        <option value="MILD">Mild</option>
+                        <option value="MODERATE">Moderate</option>
+                        <option value="SEVERE">Severe</option>
+                        <option value="CRITICAL">Critical</option>
+                    </select>
+                </label>
+                <label class="form-group">
+                    <span class="form-label">Status</span>
+                    <select class="form-select" v-model="form.status">
+                        <option value="ONGOING">Ongoing</option>
+                        <option value="RECOVERED">Recovered</option>
+                        <option value="RESOLVED">Resolved</option>
+                        <option value="CHRONIC">Chronic</option>
+                    </select>
+                </label>
+            </div>
+
+            <label class="form-group">
+                <span class="form-label">Medications (comma separated)</span>
+                <input class="form-input" v-model="medicationsInput" type="text" placeholder="Ibuprofen, Paracetamol" />
+            </label>
+
+            <label class="form-group">
+                <span class="form-label">Notes</span>
+                <textarea class="form-textarea" v-model="form.notes" rows="4" placeholder="Add observations or advice"></textarea>
+            </label>
+
+            <div class="form-actions">
+                <button class="icon-btn-ghost" type="button" @click="goBack">Cancel</button>
+                <button class="primary-btn" type="submit" :disabled="submitting">
+                    {{ submitting ? 'Saving...' : (isEdit ? 'Update entry' : 'Save entry') }}
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 </template>
@@ -205,139 +205,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.vital-detail-container {
-    background: #f8fafc;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 24px 16px 40px;
-}
-
-.vital-detail-wrapper {
-    width: 100%;
-    max-width: 900px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.detail-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.back-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    border: 1px solid var(--text-primary);
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.header-text {
-    flex: 1;
-}
-
-.header-label {
-    margin: 0;
-    font-size: 13px;
-    color: #6b7280;
-}
-
-.header-text h2 {
-    margin: 2px 0 0;
-    font-size: 22px;
-    color: #0f172a;
-}
-
-.form-card {
-    background: white;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-    border: 1px solid #e5e7eb;
-}
-
-.form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 13px;
-    color: #475569;
-}
-
-input,
-textarea,
-select {
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid var(--text-primary);
-    font-size: 14px;
-}
-
-textarea {
-    resize: vertical;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 6px;
-}
-
-.secondary-btn {
-    border: 1px solid var(--text-primary);
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 10px 14px;
-    cursor: pointer;
-    font-weight: 700;
-}
-
-.add-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: none;
-    border-radius: 12px;
-    padding: 10px 14px;
-    background: linear-gradient(135deg, #7c3aed, #6366f1);
-    color: white;
-    font-weight: 700;
-    box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25);
-    cursor: pointer;
-}
-
-.add-btn:disabled {
-    opacity: 0.7;
-}
-
-@media (max-width: 820px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    .header-text h2 {
-        font-size: 18px;
-    }
-}
-</style>

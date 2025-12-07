@@ -1,50 +1,54 @@
 <template>
-<div class="vital-detail-container">
-    <div class="vital-detail-wrapper">
-        <div class="detail-header">
-            <button class="back-btn" @click="goBack">
-                <mdicon name="arrow-left" :size="20"/>
+<div class="medical-shell vital-page">
+    <div class="medical-orb orb-1"></div>
+    <div class="medical-orb orb-2"></div>
+    <div class="vital-wrapper glass-card">
+        <div class="vital-header">
+            <button class="icon-btn-ghost" @click="goBack">
+                <mdicon name="arrow-left" :size="20" />
             </button>
-            <div class="header-text">
-                <p class="header-label">Vitals · Body Weight</p>
-                <h2>{{ profileName }}</h2>
+            <div class="title-block">
+                <p class="eyebrow">Vitals · Body Weight</p>
+                <h2 class="page-title">{{ profileName }}</h2>
             </div>
-            <button class="add-btn" @click="goToAddRecord">
-                <mdicon name="plus" :size="18"/>
-                <span>Add record</span>
-            </button>
+            <div class="vital-actions">
+                <button class="primary-btn" @click="goToAddRecord">
+                    <mdicon name="plus" :size="18" />
+                    <span>Add record</span>
+                </button>
+            </div>
         </div>
 
         <div v-if="loading" class="state-card">Loading body weight records...</div>
-        <div v-else-if="errorMessage" class="state-card error">{{ errorMessage }}</div>
+        <div v-else-if="errorMessage" class="state-card">{{ errorMessage }}</div>
 
-        <div v-else class="detail-content">
-            <section class="measurement-panel weight">
-                <div class="measurement-header">
-                    <div class="measurement-icon">
-                        <mdicon name="scale-bathroom" :size="32"/>
+        <div v-else class="vital-grid">
+            <section class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon">
+                        <mdicon name="scale-bathroom" :size="32" />
                     </div>
                     <div>
-                        <p class="measurement-label">Latest measurement</p>
-                        <p class="measurement-status" :class="weightTrendClass">
+                        <p class="metric-label">Latest measurement</p>
+                        <p class="metric-status" :class="weightTrendClass">
                             {{ weightTrendLabel }}
                         </p>
                     </div>
                 </div>
-                <div v-if="latestRecord" class="measurement-value">
+                <div v-if="latestRecord" class="metric-value">
                     <h3>{{ latestRecord.value }}</h3>
                     <p>kg</p>
-                    <p class="measurement-date">{{ latestRecord.formattedDate }} · {{ latestRecord.formattedTime }}</p>
+                    <p class="metric-date">{{ latestRecord.formattedDate }} · {{ latestRecord.formattedTime }}</p>
                 </div>
-                <p v-else class="empty-hint">No body weight records yet.</p>
+                <p v-else class="vital-empty">No body weight records yet.</p>
             </section>
 
-            <section class="history-panel">
-                <div class="history-header">
-                    <h3>Recent history</h3>
+            <section class="history-card">
+                <div class="section-header">
+                    <h3 class="section-title">Recent history</h3>
                 </div>
                 <div v-if="history.length" class="history-list">
-                    <div class="history-row" v-for="entry in history" :key="entry.id">
+                    <div class="history-row" v-for="entry in history" :key="entry.id" @click="openEntry(entry.id)">
                         <div class="history-date">
                             <p class="history-day">{{ entry.formattedDate }}</p>
                             <p class="history-time">{{ entry.formattedTime }}</p>
@@ -57,7 +61,7 @@
                         </div>
                     </div>
                 </div>
-                <p v-else class="empty-hint">Recent measurements will appear here.</p>
+                <p v-else class="vital-empty">Recent measurements will appear here.</p>
             </section>
         </div>
     </div>
@@ -180,6 +184,14 @@ export default {
             router.push({ path: '/medical-records', query: { tab: 'health' } })
         }
 
+        const openEntry = (id) => {
+            if (!id) return
+            router.push({
+                path: `/medical-records/body-weight/${id}`,
+                query: { from: '/medical-records?tab=health' }
+            })
+        }
+
         const goToAddRecord = () => {
             router.push('/medical-records/body-weight/add')
         }
@@ -208,219 +220,9 @@ export default {
             weightTrendClass,
             history,
             goBack,
+            openEntry,
             goToAddRecord
         }
     }
 }
 </script>
-
-<style scoped>
-.vital-detail-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 32px 16px;
-}
-
-.vital-detail-wrapper {
-    width: 100%;
-    max-width: 960px;
-    background: white;
-    border-radius: 28px;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
-    padding: 32px;
-}
-
-.detail-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.back-btn,
-.add-btn {
-    border: none;
-    border-radius: 12px;
-    background: #dcfce7;
-    color: #15803d;
-    padding: 10px 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-.header-text {
-    flex: 1;
-}
-
-.header-label {
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin: 0;
-}
-
-.header-text h2 {
-    margin: 4px 0 0;
-    font-size: 24px;
-}
-
-.detail-content {
-    display: grid;
-    grid-template-columns: 360px 1fr;
-    gap: 24px;
-}
-
-.measurement-panel,
-.history-panel {
-    background: #f0fdf4;
-    border-radius: 24px;
-    padding: 24px;
-    border: 1px solid #bbf7d0;
-}
-
-.measurement-panel.weight {
-    background: #ecfdf5;
-    border-color: #a7f3d0;
-}
-
-.measurement-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.measurement-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: rgba(16, 185, 129, 0.15);
-    color: #0f766e;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.measurement-label {
-    margin: 0;
-    color: #0f766e;
-}
-
-.measurement-status {
-    margin: 2px 0 0;
-    font-weight: 600;
-}
-
-.measurement-status.up {
-    color: #dc2626;
-}
-
-.measurement-status.down {
-    color: #15803d;
-}
-
-.measurement-status.stable {
-    color: #0f172a;
-}
-
-.measurement-value {
-    text-align: center;
-}
-
-.measurement-value h3 {
-    font-size: 48px;
-    margin: 0;
-}
-
-.measurement-value p {
-    margin: 4px 0;
-    color: #0f766e;
-}
-
-.measurement-date {
-    font-size: 14px;
-    color: #0f172a;
-}
-
-.empty-hint {
-    color: var(--text-muted);
-    margin: 0;
-}
-
-.history-panel {
-    background: white;
-    border: 1px solid #d1fae5;
-}
-
-.history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.history-row {
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    align-items: center;
-    border: 1px solid #d1fae5;
-    border-radius: 16px;
-    padding: 16px 20px;
-}
-
-.history-day {
-    margin: 0;
-    font-weight: 600;
-}
-
-.history-time {
-    margin: 4px 0 0;
-    color: #0f172a;
-}
-
-.reading-value {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.reading-sub {
-    margin: 2px 0 0;
-    font-weight: 600;
-}
-
-.reading-sub.up {
-    color: #dc2626;
-}
-
-.reading-sub.down {
-    color: #15803d;
-}
-
-.reading-sub.stable {
-    color: #4b5563;
-}
-
-.state-card {
-    padding: 24px;
-    border-radius: 20px;
-    background: #ecfdf5;
-    text-align: center;
-    color: #0f766e;
-}
-
-.state-card.error {
-    color: #dc2626;
-}
-
-@media (max-width: 900px) {
-    .detail-content {
-        grid-template-columns: 1fr;
-    }
-}
-</style>

@@ -1,45 +1,50 @@
 <template>
-<div class="page">
-    <div class="page-header">
-        <button class="ghost-btn" @click="goBack">
-            <mdicon name="arrow-left" :size="20"/>
-            Back
-        </button>
-        <div class="header-text">
-            <p class="eyebrow">Medicine reminders</p>
-            <h2 class="title">{{ weekLabel }}</h2>
-            <p class="year-label">{{ calendarYear }}</p>
+<div class="medical-shell calendar-shell">
+    <div class="medical-orb orb-1"></div>
+    <div class="medical-orb orb-2"></div>
+
+    <div class="glass-card header-card">
+        <div class="page-header">
+            <button class="icon-btn-ghost" @click="goBack">
+                <mdicon name="arrow-left" :size="20" />
+                <span>Back</span>
+            </button>
+            <div class="header-text">
+                <p class="eyebrow">Medicine reminders</p>
+                <h2 class="page-title">{{ weekLabel }}</h2>
+                <p class="year-label">{{ calendarYear }}</p>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn-ghost" @click="previousWeek">
+                    <mdicon name="chevron-left" :size="18" />
+                    <span>Previous</span>
+                </button>
+                <button class="icon-btn-ghost" @click="nextWeek">
+                    <span>Next</span>
+                    <mdicon name="chevron-right" :size="18" />
+                </button>
+                <button class="primary-btn" @click="navigateToAddReminder">
+                    <mdicon name="plus" :size="18" />
+                    Add reminder
+                </button>
+            </div>
         </div>
-        <div class="header-actions">
-            <button class="pill-btn" @click="previousWeek">
-                <mdicon name="chevron-left" :size="18"/>
-                Previous
-            </button>
-            <button class="pill-btn" @click="nextWeek">
-                Next
-                <mdicon name="chevron-right" :size="18"/>
-            </button>
-            <button class="primary-btn" @click="navigateToAddReminder">
-                <mdicon name="plus" :size="18"/>
-                Add reminder
+
+        <div class="calendar-strip card-section">
+            <button
+                v-for="day in weekDays"
+                :key="day.iso"
+                class="day-chip"
+                :class="{ active: day.isSelected, today: day.isToday }"
+                @click="selectDay(day.dateObj)"
+            >
+                <span class="day-name">{{ day.label }}</span>
+                <span class="day-number">{{ day.date }}</span>
             </button>
         </div>
     </div>
 
-    <div class="calendar-strip">
-        <button
-            v-for="day in weekDays"
-            :key="day.iso"
-            class="day-chip"
-            :class="{ active: day.isSelected, today: day.isToday }"
-            @click="selectDay(day.dateObj)"
-        >
-            <span class="day-name">{{ day.label }}</span>
-            <span class="day-number">{{ day.date }}</span>
-        </button>
-    </div>
-
-    <div class="day-reminders">
+    <div class="glass-card day-reminders">
         <div class="day-summary">
             <div>
                 <p class="summary-label">Selected day</p>
@@ -51,8 +56,8 @@
         <div v-if="loading" class="day-empty">Loading reminders...</div>
         <div v-else-if="!dayReminders.length" class="day-empty">No reminders for this day.</div>
         <div v-else class="reminder-list">
-            <div 
-                class="reminder-card"
+            <div
+                class="reminder-card card-section"
                 v-for="reminder in dayReminders"
                 :key="reminder.id"
             >
@@ -281,258 +286,221 @@ export default {
 </script>
 
 <style scoped>
-.page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4ebf5 100%);
-    padding: 24px;
+.calendar-shell {
+  padding: 24px 16px 32px;
+}
+
+.header-card {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 16px;
+  padding: 18px;
 }
 
 .page-header {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.ghost-btn {
-    border: 1px solid #d1d5db;
-    background: white;
-    border-radius: 12px;
-    padding: 10px 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: #374151;
-    width: fit-content;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-text {
-    text-align: center;
+  text-align: center;
 }
 
 .eyebrow {
-    margin: 0;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #6b7280;
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
 }
 
-.title {
-    margin: 6px 0;
-    font-size: 26px;
-    color: #111827;
+.page-title {
+  margin: 4px 0;
 }
 
 .year-label {
-    margin: 0;
-    color: #6b7280;
-    font-weight: 600;
+  margin: 0;
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 .header-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.pill-btn {
-    border: none;
-    background: white;
-    color: #4f46e5;
-    padding: 10px 14px;
-    border-radius: 14px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.15);
-}
-
-.primary-btn {
-    border: none;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 14px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .calendar-strip {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 8px;
-    margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .day-chip {
-    border: 1px solid transparent;
-    background: white;
-    border-radius: 12px;
-    padding: 12px 6px;
-    text-align: center;
-    color: #475569;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-ghost-bg);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 12px 6px;
+  text-align: center;
+  box-shadow: var(--glass-card-shadow);
+  transition: all 0.2s ease;
 }
 
 .day-chip.today {
-    border-color: rgba(79, 70, 229, 0.25);
-    background: #eef2ff;
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .day-chip.active {
-    background: #4f46e5;
-    color: white;
-    border-color: transparent;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+  color: #0b1020;
+  border-color: transparent;
 }
 
 .day-name {
-    display: block;
-    font-size: 12px;
-    margin-bottom: 4px;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
 }
 
 .day-number {
-    font-size: 16px;
-    font-weight: 700;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .day-reminders {
-    background: white;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-    margin-top: 12px;
+  position: relative;
+  z-index: 1;
+  padding: 18px;
 }
 
 .day-summary {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .summary-label {
-    margin: 0;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 12px;
+  margin: 0;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
 }
 
 .summary-date {
-    margin: 4px 0 0;
-    font-size: 20px;
-    color: #111827;
+  margin: 4px 0 0;
+  font-size: 20px;
+  color: var(--text-primary);
 }
 
 .tag {
-    background: #ecfeff;
-    color: #0ea5e9;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 12px;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+  color: #0b1020;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: var(--glass-card-shadow);
 }
 
 .day-empty {
-    color: #9ca3af;
-    text-align: center;
-    padding: 20px 8px;
-    margin: 0;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px 8px;
+  margin: 0;
 }
 
 .reminder-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .reminder-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 12px;
-    background: #f9fafb;
+  border-radius: 14px;
 }
 
 .reminder-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-    gap: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  gap: 12px;
 }
 
 .reminder-name {
-    margin: 0;
-    font-size: 15px;
-    color: #111827;
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-primary);
 }
 
 .reminder-frequency {
-    background: #eef2ff;
-    color: #4338ca;
-    padding: 6px 10px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 12px;
-    white-space: nowrap;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #0b1020;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .reminder-meta {
-    margin: 4px 0 8px;
-    color: #6b7280;
-    font-size: 13px;
+  margin: 4px 0 8px;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .reminder-slots {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .slot-chip {
-    border: 1px solid #e5e7eb;
-    background: white;
-    color: #1f2937;
-    padding: 6px 10px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-ghost-bg);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .slot-chip.checked {
-    border-color: #22c55e;
-    background: #ecfdf3;
-    color: #15803d;
+  border-color: transparent;
+  background: linear-gradient(135deg, #bbf7d0, #34d399);
+  color: #0b1020;
 }
 
 .slot-status {
-    font-size: 14px;
+  font-size: 14px;
 }
 
 @media (max-width: 900px) {
-    .page-header {
-        grid-template-columns: 1fr;
-        text-align: left;
-    }
+  .page-header {
+      grid-template-columns: 1fr;
+      text-align: left;
+  }
 
-    .header-text {
-        text-align: left;
-    }
+  .header-text {
+      text-align: left;
+  }
 
-    .header-actions {
-        justify-content: flex-start;
-    }
+  .header-actions {
+      justify-content: flex-start;
+  }
+
+  .calendar-strip {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 </style>
