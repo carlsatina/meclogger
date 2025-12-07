@@ -1,0 +1,302 @@
+.car-shell {
+  min-height: 100vh;
+  background: var(--bg-main);
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 64px;
+  color: var(--text-primary);
+}
+
+.car-hero {
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #0b1020;
+  padding: 16px;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.car-hero .car-hero-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.car-hero .car-hero-sub {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(11, 16, 32, 0.85);
+}
+
+.car-icon-btn {
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-ghost-bg);
+  color: var(--text-primary);
+  padding: 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-icon-btn.ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.car-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.car-card {
+  background: var(--glass-card-bg);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 16px;
+  box-shadow: var(--glass-card-shadow);
+  padding: 14px;
+}
+
+.car-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.car-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.car-field label {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.car-input,
+.car-select,
+.car-textarea {
+  width: 100%;
+  border: 1px solid var(--glass-card-border);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--glass-ghost-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.car-input:focus,
+.car-select:focus,
+.car-textarea:focus {
+  outline: none;
+  border-color: rgba(103, 232, 249, 0.6);
+  box-shadow: 0 0 0 2px rgba(103, 232, 249, 0.25);
+}
+
+.car-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.car-type-list {
+  margin-top: 8px;
+  background: var(--glass-ghost-bg);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.14);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px;
+}
+
+.car-type-option {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 10px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.car-type-option:active {
+  background: var(--glass-ghost-bg);
+}
+
+.car-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #0b1020;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+  box-shadow: 0 12px 26px rgba(34, 197, 94, 0.25);
+}
+
+.car-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.car-btn.ghost {
+  background: var(--glass-ghost-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-card-border);
+  box-shadow: none;
+}
+
+.car-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  background: var(--pill-gradient);
+  color: #0b1020;
+}
+
+.car-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.28;
+  z-index: 0;
+}
+
+.car-orb.one {
+  width: 280px;
+  height: 280px;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  top: -120px;
+  left: -90px;
+}
+
+.car-orb.two {
+  width: 240px;
+  height: 240px;
+  background: linear-gradient(135deg, var(--accent-3), var(--accent-4));
+  bottom: -100px;
+  right: -70px;
+}
+
+.car-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--glass-ghost-bg);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: var(--glass-card-shadow);
+}
+
+.car-search input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.car-empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 16px;
+  background: var(--glass-ghost-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--glass-card-border);
+}
+
+.car-empty.small {
+  padding: 10px;
+}
+
+.car-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.car-actions {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+.car-btn.danger {
+  background: var(--danger-gradient);
+  color: #0b1020;
+}
+
+.car-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--glass-ghost-bg);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-top: 1px solid var(--glass-card-border);
+  padding: 8px 4px;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.car-nav-item {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.car-nav-item.active {
+  color: var(--accent-1);
+  font-weight: 700;
+}
+
+.car-fab {
+  position: fixed;
+  bottom: 88px;
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #0b1020;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-fab.wide {
+  width: auto;
+  padding: 12px 14px;
+  border-radius: 18px;
+  gap: 8px;
+  font-weight: 800;
+}

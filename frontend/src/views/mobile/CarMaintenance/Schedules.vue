@@ -1,111 +1,117 @@
 <template>
-<div class="schedule-page">
-    <div class="top-banner">
-        <button class="icon-btn" @click="goBack">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <div class="car-hero">
+        <button class="car-icon-btn" @click="goBack">
             <mdicon name="chevron-left" :size="22"/>
         </button>
-        <h2 class="title">Maintenance Schedules</h2>
-        <span class="icon-btn ghost"></span>
-    </div>
-
-    <div class="vehicle-pill" @click="toggleVehiclePicker">
-        <div class="avatar">
-            <img v-if="selectedVehicle?.imageUrl" :src="selectedVehicle.imageUrl.startsWith('http') ? selectedVehicle.imageUrl : `${API_BASE_URL}${selectedVehicle.imageUrl}`" alt="Vehicle" />
-            <mdicon v-else name="car-sports" :size="26"/>
+        <div>
+            <h2 class="car-hero-title">Maintenance Schedules</h2>
+            <p class="car-hero-sub">Never miss a service</p>
         </div>
-        <div class="vehicle-meta">
-            <p class="vehicle-name">{{ selectedVehicle ? displayName(selectedVehicle) : 'Select a vehicle' }}</p>
-            <p class="vehicle-type">{{ selectedVehicle?.vehicleType || '' }}</p>
-            <p class="vehicle-odo" v-if="selectedVehicle">Odometer: {{ formattedOdometer }}</p>
-            <p class="vehicle-updated">Last update: {{ formattedOdometerDate || '—' }}</p>
-        </div>
-        <div class="vehicle-actions">
-            <button class="update-btn small" @click.stop="updateOdometer" :disabled="!selectedVehicle">
-                Update
-            </button>
-            <mdicon name="chevron-down" :size="22" class="vehicle-dropdown"/>
-        </div>
-    </div>
-    <div v-if="showVehiclePicker" class="vehicle-picker">
-        <button 
-            v-for="v in vehicles" 
-            :key="v.id" 
-            class="picker-item"
-            @click.stop="selectVehicle(v.id)"
-        >
-            <span class="picker-name">{{ displayName(v) }}</span>
-            <span class="picker-odo">Odometer: {{ formatMileage(v.currentMileage) }}</span>
+        <button class="car-icon-btn" @click="addSchedule">
+            <mdicon name="plus" :size="20"/>
         </button>
-        <p v-if="!vehicles.length" class="picker-empty">No vehicles yet.</p>
     </div>
 
-    <div class="search-bar">
-        <mdicon name="magnify" :size="20"/>
-        <input
-            v-model="searchTerm"
-            type="text"
-            placeholder="Search schedules..."
-            @input="debouncedSearch"
-        />
-    </div>
-
-    <div v-if="loading" class="empty-wrapper">
-        <p class="empty-title">Loading schedules...</p>
-        <p class="empty-text">Please wait.</p>
-    </div>
-    <div v-else-if="errorMessage" class="empty-wrapper">
-        <p class="empty-title">Unable to load schedules</p>
-        <p class="empty-text">{{ errorMessage }}</p>
-    </div>
-    <div v-else-if="filteredReminders.length" class="schedule-list">
-        <div
-            v-for="item in filteredReminders"
-            :key="item.id"
-            class="schedule-card"
-            @click="openDetail(item)"
-        >
-            <div class="schedule-top">
-                <p class="schedule-title">{{ item.maintenanceType || item.title }}</p>
-                <div
-                    class="schedule-date-pill"
-                    :class="statusFor(item).class"
-                    @click.stop="toggleReminderStatus(item)"
-                >
-                    <span>{{ formatDate(item.dueDate) || 'No date' }}</span>
-                    <mdicon :name="statusFor(item).icon" :size="18"/>
-                </div>
+    <div class="car-body">
+        <div class="vehicle-pill car-card" @click="toggleVehiclePicker">
+            <div class="avatar">
+                <img v-if="selectedVehicle?.imageUrl" :src="selectedVehicle.imageUrl.startsWith('http') ? selectedVehicle.imageUrl : `${API_BASE_URL}${selectedVehicle.imageUrl}`" alt="Vehicle" />
+                <mdicon v-else name="car-sports" :size="26"/>
             </div>
-            <div class="schedule-bottom">
-                <div class="schedule-meta">
-                    <mdicon name="counter" :size="18"/>
-                    <span>{{ formatMileage(item.dueMileage) }}</span>
+            <div class="vehicle-meta">
+                <p class="vehicle-name">{{ selectedVehicle ? displayName(selectedVehicle) : 'Select a vehicle' }}</p>
+                <p class="vehicle-type">{{ selectedVehicle?.vehicleType || '' }}</p>
+                <p class="vehicle-odo" v-if="selectedVehicle">Odometer: {{ formattedOdometer }}</p>
+                <p class="vehicle-updated">Last update: {{ formattedOdometerDate || '—' }}</p>
+            </div>
+            <div class="vehicle-actions">
+                <button class="update-btn small" @click.stop="updateOdometer" :disabled="!selectedVehicle">
+                    Update
+                </button>
+                <mdicon name="chevron-down" :size="22" class="vehicle-dropdown"/>
+            </div>
+        </div>
+        <div v-if="showVehiclePicker" class="vehicle-picker car-card">
+            <button 
+                v-for="v in vehicles" 
+                :key="v.id" 
+                class="picker-item"
+                @click.stop="selectVehicle(v.id)"
+            >
+                <span class="picker-name">{{ displayName(v) }}</span>
+                <span class="picker-odo">Odometer: {{ formatMileage(v.currentMileage) }}</span>
+            </button>
+            <p v-if="!vehicles.length" class="picker-empty">No vehicles yet.</p>
+        </div>
+
+        <div class="car-search car-card">
+            <mdicon name="magnify" :size="20"/>
+            <input
+                v-model="searchTerm"
+                type="text"
+                placeholder="Search schedules..."
+                @input="debouncedSearch"
+            />
+        </div>
+
+        <div v-if="loading" class="car-empty">
+            Loading schedules...
+        </div>
+        <div v-else-if="errorMessage" class="car-empty">
+            {{ errorMessage }}
+        </div>
+        <div v-else-if="filteredReminders.length" class="car-list">
+            <div
+                v-for="item in filteredReminders"
+                :key="item.id"
+                class="schedule-card car-card"
+                @click="openDetail(item)"
+            >
+                <div class="schedule-top">
+                    <p class="schedule-title">{{ item.maintenanceType || item.title }}</p>
+                    <div
+                        class="schedule-date-pill"
+                        :class="statusFor(item).class"
+                        @click.stop="toggleReminderStatus(item)"
+                    >
+                        <span>{{ formatDate(item.dueDate) || 'No date' }}</span>
+                        <mdicon :name="statusFor(item).icon" :size="18"/>
+                    </div>
                 </div>
-                <div class="schedule-meta">
-                    <mdicon name="calendar" :size="18"/>
-                    <span>{{ deadlineText(item) }}</span>
+                <div class="schedule-bottom">
+                    <div class="schedule-meta">
+                        <mdicon name="counter" :size="18"/>
+                        <span>{{ formatMileage(item.dueMileage) }}</span>
+                    </div>
+                    <div class="schedule-meta">
+                        <mdicon name="calendar" :size="18"/>
+                        <span>{{ deadlineText(item) }}</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div v-else class="empty-wrapper">
-        <p class="empty-title">No schedules yet</p>
-        <p class="empty-text">Tap the + button to add a scheduled maintenance for this vehicle.</p>
+        <div v-else class="car-empty">
+            Tap the + button to add a scheduled maintenance for this vehicle.
+        </div>
     </div>
 
-    <div v-if="detailReminder" class="detail-drawer" @click="closeDetail">
-        <div class="drawer-content" @click.stop>
+    <div v-if="detailReminder" class="drawer-overlay" @click="closeDetail">
+        <div class="drawer-content car-card" @click.stop>
             <div class="drawer-header">
-                <button class="icon-btn" @click="closeDetail">
+                <button class="car-icon-btn" @click="closeDetail">
                     <mdicon name="chevron-left" :size="22"/>
                 </button>
                 <h3 class="drawer-title">{{ detailReminder.maintenanceType || detailReminder.title }}</h3>
-                <button class="icon-btn" @click="editReminder">
+                <button class="car-icon-btn" @click="editReminder">
                     <mdicon name="pencil" :size="20"/>
                 </button>
             </div>
             <p class="drawer-date">{{ formatDate(detailReminder.dueDate) || 'No due date' }}</p>
             <div class="drawer-row">
-                <span class="label">Mileages</span>
+                <span class="label">Mileage</span>
                 <span class="value">{{ formatMileage(detailReminder.dueMileage) }}</span>
             </div>
             <div class="drawer-row">
@@ -117,59 +123,59 @@
                 <span class="value">{{ detailReminder.description }}</span>
             </div>
             <div class="drawer-actions">
-                <button class="danger" @click="confirmDelete">Delete</button>
-                <button class="primary" @click="editReminder">Edit</button>
+                <button class="car-btn danger" @click="confirmDelete">Delete</button>
+                <button class="car-btn" @click="editReminder">Edit</button>
             </div>
         </div>
     </div>
 
-    <div v-if="showDeleteModal" class="modal-backdrop delete-backdrop" @click="cancelDelete">
-        <div class="modal-delete">
-            <p class="modal-title">Delete schedule?</p>
-            <p class="modal-text">This cannot be undone.</p>
-            <div class="modal-actions">
-                <button class="cancel" @click="cancelDelete">Cancel</button>
-                <button class="confirm" @click="performDelete">Delete</button>
+    <div v-if="showDeleteModal" class="glass-confirm-overlay" @click.self="cancelDelete">
+        <div class="glass-confirm-card">
+            <h3 class="glass-confirm-title">Delete schedule?</h3>
+            <p class="glass-confirm-text">This cannot be undone.</p>
+            <div class="glass-confirm-actions">
+                <button type="button" @click="cancelDelete">Cancel</button>
+                <button type="button" class="danger" @click="performDelete">Delete</button>
             </div>
         </div>
     </div>
 
-    <div v-if="showOdometerModal" class="modal-backdrop odometer-backdrop" @click="showOdometerModal = false">
-        <div class="modal" @click.stop>
-            <p class="modal-title">Update Odometer</p>
-            <p class="modal-text">Current: {{ formattedOdometer }}</p>
+    <div v-if="showOdometerModal" class="glass-confirm-overlay" @click.self="showOdometerModal = false">
+        <div class="glass-confirm-card">
+            <h3 class="glass-confirm-title">Update Odometer</h3>
+            <p class="glass-confirm-text">Current: {{ formattedOdometer }}</p>
             <input v-model="odometerInput" type="number" min="0" class="modal-input" />
-            <div class="modal-actions">
-                <button class="cancel" @click="showOdometerModal = false">Cancel</button>
-                <button class="confirm" :disabled="savingOdometer" @click="saveOdometer">
+            <div class="glass-confirm-actions">
+                <button type="button" @click="showOdometerModal = false">Cancel</button>
+                <button type="button" class="confirm" :disabled="savingOdometer" @click="saveOdometer">
                     {{ savingOdometer ? 'Saving...' : 'Save' }}
                 </button>
             </div>
         </div>
     </div>
 
-    <button class="fab" @click="addSchedule">
+    <button class="car-fab" @click="addSchedule">
         <mdicon name="plus" :size="24"/>
     </button>
 
-    <nav class="bottom-nav">
-        <button class="nav-item" @click="goHome">
-            <mdicon name="home" :size="22"/>
-            <span>Home</span>
+    <nav class="car-bottom-nav glass-nav-orb">
+        <button class="car-nav-item" @click="goHome">
+            <mdicon name="view-dashboard-outline" :size="22"/>
+            <span>Dashboard</span>
         </button>
-        <button class="nav-item active">
+        <button class="car-nav-item active">
             <mdicon name="clipboard-list-outline" :size="22"/>
             <span>Schedules</span>
         </button>
-        <button class="nav-item" @click="goReport">
+        <button class="car-nav-item" @click="goReport">
             <mdicon name="chart-pie" :size="22"/>
             <span>Report</span>
         </button>
-        <button class="nav-item" @click="goVehicles">
+        <button class="car-nav-item" @click="goVehicles">
             <mdicon name="car" :size="22"/>
             <span>Vehicles</span>
         </button>
-        <button class="nav-item" @click="goSettings">
+        <button class="car-nav-item" @click="goSettings">
             <mdicon name="cog-outline" :size="22"/>
             <span>Settings</span>
         </button>
@@ -475,467 +481,246 @@ export default {
 </script>
 
 <style scoped>
-.schedule-page {
-    min-height: 100vh;
-    background: #f2f4f8;
-    padding-bottom: 90px;
-}
-
-.top-banner {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 14px 16px 22px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-}
-
-.title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.icon-btn {
-    border: none;
-    background: transparent;
-    color: inherit;
-    padding: 6px;
-}
-
-.icon-btn.ghost {
-    visibility: hidden;
-}
-
 .vehicle-pill {
-    margin: 0 16px;
-    margin-top: -28px;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-    border-radius: 16px;
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 10px 20px rgba(13, 115, 221, 0.3);
+  margin-top: 12px;
+  color: var(--text-primary);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--glass-card-shadow);
+  cursor: pointer;
 }
 
 .avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--glass-ghost-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--glass-card-border);
 }
 
 .avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .vehicle-meta p {
-    margin: 0;
+  margin: 0;
 }
 
 .vehicle-name {
-    font-weight: 700;
-    font-size: 15px;
-}
-
-.vehicle-odo {
-    font-size: 12px;
-    opacity: 0.9;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .vehicle-type {
-    font-size: 13px;
-    opacity: 0.9;
-}
-
-.vehicle-updated {
-    font-size: 11px;
-    opacity: 0.8;
-    margin: 2px 0 0;
-}
-
-.vehicle-actions {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.vehicle-dropdown {
-    color: white;
-}
-
-.update-btn {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    border: none;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 12px;
-}
-
-.picker-name {
-    font-weight: 700;
-}
-
-.picker-odo {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-.vehicle-picker {
-    margin: 8px 16px 0;
-    background: white;
-    color: #1f2937;
-    border-radius: 12px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
-    overflow: hidden;
-}
-
-.picker-item {
-    width: 100%;
-    border: none;
-    background: transparent;
-    padding: 10px 12px;
-    text-align: left;
-    font-weight: 600;
-    color: #111827;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.picker-item + .picker-item {
-    border-top: 1px solid #f3f4f6;
-}
-
-.picker-empty {
-    margin: 0;
-    padding: 10px 12px;
-    color: #6b7280;
-    font-size: 13px;
+  font-size: 13px;
+  opacity: 0.9;
 }
 
 .vehicle-odo {
-    font-size: 12px;
-    opacity: 0.9;
+  font-size: 12px;
+  opacity: 0.9;
 }
 
-.search-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: white;
-    border-radius: 12px;
-    padding: 10px 12px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
-    margin: 12px 16px;
+.vehicle-updated {
+  font-size: 11px;
+  opacity: 0.8;
+  margin: 2px 0 0;
 }
 
-.search-bar input {
-    border: none;
-    outline: none;
-    width: 100%;
-    font-size: 14px;
+.vehicle-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.empty-wrapper {
-    padding: 80px 16px;
-    text-align: center;
-    color: #9ca3af;
+.vehicle-dropdown {
+  opacity: 0.9;
 }
 
-.illustration {
-    color: #3b82f6;
-    margin-bottom: 16px;
+.update-btn {
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-ghost-bg);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: none;
 }
 
-.empty-text {
-    margin: 0;
-    font-size: 16px;
-    color: #9ca3af;
+.update-btn.small {
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
-.schedule-list {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.vehicle-picker {
+  margin-top: 8px;
+  color: var(--text-primary);
+  border-radius: 12px;
+  box-shadow: var(--glass-card-shadow);
+  border: 1px solid var(--glass-card-border);
+  overflow: hidden;
+}
+
+.picker-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.picker-item + .picker-item {
+  border-top: 1px solid var(--glass-card-border);
+}
+
+.picker-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .schedule-card {
-    background: white;
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  display: grid;
+  gap: 10px;
+  cursor: pointer;
 }
 
 .schedule-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .schedule-title {
-    margin: 0;
-    font-weight: 700;
-    color: #1f2937;
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 800;
 }
 
 .schedule-date-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-ghost-bg);
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-.status-upcoming {
-    background: #eef2ff;
-    color: #4f46e5;
+.schedule-date-pill.status-missed {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
-.status-done {
-    background: #e7f8ef;
-    color: #059669;
-}
-
-.status-missed {
-    background: #fee2e2;
-    color: #dc2626;
+.schedule-date-pill.status-complete {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 .schedule-bottom {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-primary);
+  font-size: 13px;
 }
 
 .schedule-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #4b5563;
-    font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    z-index: 9999;
-}
-
-.modal-backdrop.delete-backdrop {
-    z-index: 10000;
-}
-
-.modal {
-    background: white;
-    border-radius: 16px;
-    padding: 16px;
-    width: 100%;
-    max-width: 340px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
-    position: relative;
-    z-index: 10000;
-}
-.odometer-backdrop {
-    z-index: 12000;
-}
-.modal-delete {
-    background: white;
-    border-radius: 16px;
-    padding: 16px;
-    width: 100%;
-    max-width: 340px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
-    position: relative;
-    z-index: 20000;
-}
-
-.modal-title {
-    margin: 0 0 4px;
-    font-weight: 800;
-    font-size: 16px;
-    color: #1f2937;
-}
-
-.modal-text {
-    margin: 0 0 12px;
-    color: #6b7280;
-    font-size: 14px;
-}
-
-.modal-input {
-    width: 100%;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 10px 12px;
-    font-size: 16px;
-    margin-bottom: 12px;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.modal-actions button {
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-weight: 700;
-    border: none;
-}
-
-.cancel {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.confirm {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    color: white;
-}
-
-.detail-drawer {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    padding: 16px;
-    z-index: 500;
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 16px;
+  z-index: 1050;
 }
 
 .drawer-content {
-    background: white;
-    border-radius: 18px;
-    width: 100%;
-    max-width: 520px;
-    padding: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
+  width: 100%;
+  max-width: 520px;
+  border-radius: 18px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
 }
 
 .drawer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .drawer-title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 800;
-    color: #1f2937;
-    flex: 1;
-    text-align: center;
+  margin: 0;
+  color: var(--text-primary);
 }
 
 .drawer-date {
-    margin: 4px 0 12px;
-    color: #6b7280;
-    font-size: 14px;
-    text-align: center;
+  margin: 0 0 6px;
+  color: var(--text-muted);
 }
 
 .drawer-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #f3f4f6;
-    font-size: 14px;
-    color: #111827;
-}
-
-.drawer-row .label {
-    color: #6b7280;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 6px 0;
+  color: var(--text-primary);
+  font-size: 14px;
 }
 
 .drawer-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
 }
 
-.drawer-actions button {
-    border: none;
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-weight: 700;
+.label {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
-.drawer-actions .danger {
-    background: #fee2e2;
-    color: #b91c1c;
+.value {
+  font-weight: 700;
 }
 
-.drawer-actions .primary {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    color: white;
-}
-
-.fab {
-    position: fixed;
-    bottom: 84px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    border-radius: 28px;
-    border: none;
-    background: #f7931e;
-    color: white;
-    box-shadow: 0 10px 20px rgba(247, 147, 30, 0.35);
-}
-
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    border-top: 1px solid #e5e7eb;
-    padding: 8px 4px;
-}
-
-.nav-item {
-    border: none;
-    background: transparent;
-    color: #8a95a6;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-}
-
-.nav-item.active {
-    color: #f5576c;
-    font-weight: 700;
+.modal-input {
+  width: 100%;
+  border: 1px solid var(--glass-card-border);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 16px;
+  margin: 8px 0 12px;
+  background: var(--glass-ghost-bg);
+  color: var(--text-primary);
 }
 </style>

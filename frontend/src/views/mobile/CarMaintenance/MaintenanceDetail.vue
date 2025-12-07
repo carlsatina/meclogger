@@ -1,24 +1,35 @@
 <template>
-<div class="maintenance-detail-page">
-    <div class="top-banner">
-        <button class="icon-btn" @click="goBack">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <div class="car-hero">
+        <button class="car-icon-btn" @click="goBack">
             <mdicon name="chevron-left" :size="22"/>
         </button>
-        <h2 class="title">Maintenance Detail</h2>
-        <button class="icon-btn" @click="editRecord">
+        <div>
+            <h2 class="car-hero-title">Maintenance Detail</h2>
+            <p class="car-hero-sub">Service record overview</p>
+        </div>
+        <button class="car-icon-btn" @click="editRecord">
             <mdicon name="pencil" :size="20"/>
         </button>
     </div>
 
-    <div class="card">
-        <div class="hero-image">
-            <img v-if="vehicleImage" :src="vehicleImage" alt="Vehicle" />
-            <mdicon v-else name="car" :size="48"/>
+    <div v-if="loading" class="empty-state car-card">Loading...</div>
+    <div v-else-if="errorMessage" class="empty-state car-card">{{ errorMessage }}</div>
+    <div v-else-if="record" class="car-body">
+        <div class="hero car-card">
+            <div class="hero-image">
+                <img v-if="vehicleImage" :src="vehicleImage" alt="Vehicle" />
+                <mdicon v-else name="car" :size="48"/>
+            </div>
+            <div class="hero-meta">
+                <p class="title-text">{{ record?.title }}</p>
+                <p class="meta">{{ vehicleName }}</p>
+            </div>
         </div>
-        <p class="title-text center">{{ record?.title }}</p>
-        <p class="meta center">{{ vehicleName }}</p>
 
-        <div class="info-grid">
+        <div class="info-grid car-card">
             <div class="info-item full">
                 <span class="label">Type</span>
                 <span class="value">{{ record?.maintenanceType }}</span>
@@ -45,24 +56,24 @@
             </div>
         </div>
 
-        <div class="notes" v-if="record?.description">
+        <div class="notes car-card" v-if="record?.description">
             <p class="label">Notes</p>
             <p class="value">{{ record.description }}</p>
         </div>
+
+        <div class="actions">
+            <button class="car-btn danger" @click="confirmDelete = true">Delete</button>
+            <button class="car-btn" @click="editRecord">Edit</button>
+        </div>
     </div>
 
-    <div class="actions">
-        <button class="delete-btn" @click="confirmDelete = true">Delete</button>
-        <button class="edit-btn" @click="editRecord">Edit</button>
-    </div>
-
-    <div v-if="confirmDelete" class="modal-backdrop" @click.self="confirmDelete = false">
-        <div class="modal">
-            <p class="modal-title">Delete maintenance record?</p>
-            <p class="modal-text">This action cannot be undone.</p>
-            <div class="modal-actions">
-                <button class="cancel" @click="confirmDelete = false">Cancel</button>
-                <button class="danger" @click="deleteRecord">Delete</button>
+    <div v-if="confirmDelete" class="glass-confirm-overlay" @click.self="confirmDelete = false">
+        <div class="glass-confirm-card">
+            <h3 class="glass-confirm-title">Delete maintenance record?</h3>
+            <p class="glass-confirm-text">This action cannot be undone.</p>
+            <div class="glass-confirm-actions">
+                <button type="button" @click="confirmDelete = false">Cancel</button>
+                <button type="button" class="danger" @click="deleteRecord">Delete</button>
             </div>
         </div>
     </div>
@@ -178,209 +189,104 @@ export default {
 </script>
 
 <style scoped>
-.maintenance-detail-page {
-    min-height: 100vh;
-    background: #f2f4f8;
-    padding-bottom: 40px;
-}
-
-.top-banner {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 14px 16px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-}
-
-.title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.icon-btn {
-    border: none;
-    background: transparent;
-    color: inherit;
-    padding: 6px;
-}
-
-.card {
-    margin: 16px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-    padding: 16px;
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .hero-image {
-    width: 100%;
-    min-height: 160px;
-    max-height: 240px;
-    border-radius: 16px;
-    overflow: hidden;
-    background: #eef2ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 8px;
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: var(--glass-ghost-bg);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--glass-card-border);
+  overflow: hidden;
 }
 
 .hero-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .title-text {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 800;
-}
-
-.title-text.center {
-    text-align: center;
-}
-
-.meta.center {
-    text-align: center;
+  margin: 0;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--text-primary);
 }
 
 .meta {
-    margin: 2px 0 0;
-    color: #6b7280;
-    font-size: 13px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
 }
 
 .info-item {
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 10px;
-}
-
-.info-item.inline {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--glass-ghost-bg);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 12px;
+  padding: 10px;
+  color: var(--text-primary);
 }
 
 .info-item.full {
-    grid-column: span 2;
+  grid-column: 1 / -1;
 }
 
 .label {
-    display: block;
-    color: #6b7280;
-    font-size: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
 }
 
 .value {
-    color: #111827;
-    font-weight: 700;
+  font-weight: 700;
+  font-size: 15px;
 }
 
-.notes {
-    margin-top: 12px;
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 12px;
+.notes .label {
+  margin-bottom: 6px;
+}
+
+.notes .value {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
 .actions {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 16px 16px;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 16px;
 }
 
-.delete-btn {
-    flex: 1;
-    border: none;
-    background: #ef4444;
-    color: white;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: 700;
+.car-btn.danger {
+  background: var(--danger-gradient);
+  color: #0b1020;
 }
 
-.edit-btn {
-    flex: 1;
-    border: none;
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    color: white;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: 700;
-}
-
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    z-index: 3000;
-}
-
-.modal {
-    display: block;
-    position: relative;
-    background: white;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 360px;
-    height: auto;
-}
-
-.modal-title {
-    margin: 0 0 6px;
-    font-weight: 800;
-    color: #111827;
-}
-
-.modal-text {
-    margin: 0 0 12px;
-    color: #4b5563;
-    font-size: 14px;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-}
-
-.modal-actions .cancel {
-    border: 1px solid #e5e7eb;
-    background: white;
-    color: #111827;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-weight: 700;
-}
-
-.modal-actions .danger {
-    border: none;
-    background: #ef4444;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-weight: 700;
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
 }
 </style>

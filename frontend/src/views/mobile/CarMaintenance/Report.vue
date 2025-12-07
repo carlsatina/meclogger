@@ -1,66 +1,71 @@
 <template>
-<div class="report-page">
-    <div class="top-banner">
-        <button class="icon-btn" @click="goBack">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <div class="car-hero">
+        <button class="car-icon-btn" @click="goBack">
             <mdicon name="chevron-left" :size="22"/>
         </button>
-        <h2 class="title">Report</h2>
-        <button class="icon-btn">
-            <mdicon name="tune" :size="22"/>
-        </button>
+        <div>
+            <h2 class="car-hero-title">Report</h2>
+            <p class="car-hero-sub">Service cost breakdown</p>
+        </div>
+        <span class="car-icon-btn ghost"></span>
     </div>
 
-    <div class="card" v-if="chartData.length">
-        <div class="chart-placeholder">
-            <div class="donut">
-                <div 
-                    class="donut-segment" 
-                    v-for="(slice, idx) in chartData" 
-                    :key="slice.label"
-                    :style="segmentStyle(slice, idx)"
-                ></div>
+    <div class="car-body">
+        <div class="report-card car-card" v-if="chartData.length">
+            <div class="chart-placeholder">
+                <div class="donut">
+                    <div 
+                        class="donut-segment" 
+                        v-for="(slice, idx) in chartData" 
+                        :key="slice.label"
+                        :style="segmentStyle(slice, idx)"
+                    ></div>
+                </div>
+            </div>
+            <div class="total">
+                <p class="total-label">Total : {{ formatCurrency(totalCost, currency) }}</p>
+                <p class="total-range">{{ dateRange }}</p>
             </div>
         </div>
-        <div class="total">
-            <p class="total-label">Total : {{ formatCurrency(totalCost, currency) }}</p>
-            <p class="total-range">{{ dateRange }}</p>
+
+        <div v-else class="car-empty">
+            <div class="icon-circle teal">
+                <mdicon name="chart-donut" :size="22" />
+            </div>
+            <h4>No reports yet</h4>
+            <p class="sub">Log maintenance for your vehicles to see reports here.</p>
+        </div>
+
+        <div class="legend car-card" v-if="legendData.length">
+            <div class="legend-row" v-for="item in legendData" :key="item.label">
+                <span class="dot" :style="{ background: item.color }">{{ item.percent }}%</span>
+                <span class="legend-text">{{ item.label }}</span>
+                <span class="legend-value">{{ formatCurrency(item.cost, currency) }}</span>
+            </div>
         </div>
     </div>
 
-    <div v-else class="empty-state">
-        <div class="icon-circle teal">
-            <mdicon name="chart-donut" :size="22" />
-        </div>
-        <h4>No reports yet</h4>
-        <p class="sub">Log maintenance for your vehicles to see reports here.</p>
-    </div>
-
-    <div class="legend" v-if="legendData.length">
-        <div class="legend-row" v-for="item in legendData" :key="item.label">
-            <span class="dot" :style="{ background: item.color }">{{ item.percent }}%</span>
-            <span class="legend-text">{{ item.label }}</span>
-            <span class="legend-value">{{ formatCurrency(item.cost, currency) }}</span>
-        </div>
-    </div>
-
-    <nav class="bottom-nav">
-        <button class="nav-item" @click="goHome">
-            <mdicon name="home" :size="22"/>
-            <span>Home</span>
+    <nav class="car-bottom-nav glass-nav-orb">
+        <button class="car-nav-item" @click="goHome">
+            <mdicon name="view-dashboard-outline" :size="22"/>
+            <span>Dashboard</span>
         </button>
-        <button class="nav-item" @click="goSchedules">
+        <button class="car-nav-item" @click="goSchedules">
             <mdicon name="clipboard-list-outline" :size="22"/>
             <span>Schedules</span>
         </button>
-        <button class="nav-item active">
+        <button class="car-nav-item active">
             <mdicon name="chart-pie" :size="22"/>
             <span>Report</span>
         </button>
-        <button class="nav-item" @click="goVehicles">
+        <button class="car-nav-item" @click="goVehicles">
             <mdicon name="car" :size="22"/>
             <span>Vehicles</span>
         </button>
-        <button class="nav-item" @click="goSettings">
+        <button class="car-nav-item" @click="goSettings">
             <mdicon name="cog-outline" :size="22"/>
             <span>Settings</span>
         </button>
@@ -193,176 +198,98 @@ export default {
 </script>
 
 <style scoped>
-.report-page {
-    min-height: 100vh;
-    background: #f2f4f8;
-    padding-bottom: 80px;
-}
-
-.top-banner {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 14px 16px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-}
-
-.title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.icon-btn {
-    border: none;
-    background: transparent;
-    color: inherit;
-    padding: 6px;
-}
-
-.card {
-    background: white;
-    border-radius: 16px;
-    margin: 16px;
-    padding: 16px;
-    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.08);
+.report-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
 }
 
 .chart-placeholder {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    padding: 12px 0 6px;
+  width: 200px;
+  height: 200px;
+  display: grid;
+  place-items: center;
 }
 
 .donut {
-    position: relative;
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    background: #f3f4f6;
-    overflow: hidden;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-ghost-bg);
+  border: 1px solid var(--glass-card-border);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.15);
 }
 
 .donut-segment {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-}
-
-.empty-state {
-    margin: 24px 0;
-    text-align: center;
-    color: #475569;
-    display: grid;
-    place-items: center;
-    gap: 8px;
-    padding: 20px 0;
-}
-
-.donut:after {
-    content: '';
-    position: absolute;
-    inset: 36px;
-    background: white;
-    border-radius: 50%;
+  position: absolute;
+  inset: 0;
 }
 
 .total {
-    text-align: center;
-    margin-top: 8px;
+  text-align: center;
 }
 
 .total-label {
-    margin: 0;
-    font-weight: 800;
-    font-size: 16px;
-    color: #111827;
+  margin: 0;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .total-range {
-    margin: 4px 0 0;
-    color: #6b7280;
-    font-size: 13px;
+  margin: 0;
+  color: var(--text-muted);
 }
 
 .legend {
-    padding: 0 16px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .legend-row {
-    display: grid;
-    grid-template-columns: 70px 1fr auto;
-    align-items: center;
-    gap: 10px;
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
 }
 
 .dot {
-    width: 48px;
-    height: 48px;
-    border-radius: 24px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 13px;
-}
-
-.d1 {
-    background: #a03364;
-}
-
-.d2 {
-    background: #824f79;
-}
-
-.d3 {
-    background: #23a127;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 10px;
+  color: #0b1020;
+  font-weight: 800;
 }
 
 .legend-text {
-    color: #1f2937;
-    font-weight: 600;
+  font-weight: 700;
 }
 
 .legend-value {
-    color: #4b5563;
-    font-weight: 600;
-    font-size: 14px;
+  font-weight: 800;
 }
 
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    border-top: 1px solid #e5e7eb;
-    padding: 8px 4px;
+.icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  background: var(--pill-gradient);
+  color: #0b1020;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
 }
 
-.nav-item {
-    border: none;
-    background: transparent;
-    color: #8a95a6;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-}
-
-.nav-item.active {
-    color: #f5576c;
-    font-weight: 700;
+.sub {
+  margin: 0;
+  color: var(--text-muted);
 }
 </style>

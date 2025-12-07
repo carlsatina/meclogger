@@ -1,15 +1,20 @@
 <template>
-<div class="add-vehicle-page">
-    <div class="top-banner">
-        <button class="icon-btn" @click="goBack">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <div class="car-hero">
+        <button class="car-icon-btn" @click="goBack">
             <mdicon name="chevron-left" :size="22"/>
         </button>
-        <h2 class="title">Add Vehicle</h2>
-        <span class="icon-btn ghost"></span>
+        <div>
+            <h2 class="car-hero-title">{{ isEditing ? 'Edit Vehicle' : 'Add Vehicle' }}</h2>
+            <p class="car-hero-sub">Keep your garage organized</p>
+        </div>
+        <span class="car-icon-btn ghost"></span>
     </div>
 
-    <form class="form" @submit.prevent="submitVehicle">
-        <div class="field">
+    <form class="car-body car-form" @submit.prevent="submitVehicle">
+        <div class="car-card upload-card">
             <label>Vehicle Image</label>
             <div class="upload-box" @click="triggerFileInput">
                 <mdicon name="image-multiple" :size="22"/>
@@ -21,24 +26,24 @@
             </div>
         </div>
         
-        <div class="two-col">
-            <div class="field">
+        <div class="car-grid-2">
+            <div class="car-field">
                 <label>Make</label>
-                <input v-model="form.make" type="text" required placeholder="Toyota" />
+                <input v-model="form.make" type="text" required placeholder="Toyota" class="car-input" />
             </div>
-            <div class="field">
+            <div class="car-field">
                 <label>Model</label>
-                <input v-model="form.model" type="text" required placeholder="Fortuner" />
+                <input v-model="form.model" type="text" required placeholder="Fortuner" class="car-input" />
             </div>
         </div>
-        <div class="two-col">
-            <div class="field">
+        <div class="car-grid-2">
+            <div class="car-field">
                 <label>Year</label>
-                <input v-model="form.year" type="number" min="1900" max="2100" placeholder="2012" />
+                <input v-model="form.year" type="number" min="1900" max="2100" placeholder="2012" class="car-input" />
             </div>
-            <div class="field">
+            <div class="car-field">
                 <label>Vehicle Type</label>
-                <select v-model="form.vehicleType">
+                <select v-model="form.vehicleType" class="car-select">
                     <option value="CAR">Car</option>
                     <option value="SUV">SUV</option>
                     <option value="PICKUP">Pickup</option>
@@ -50,44 +55,44 @@
             </div>
         </div>
 
-        <div class="two-col">
-            <div class="field">
+        <div class="car-grid-2">
+            <div class="car-field">
                 <label>Color</label>
-                <input v-model="form.color" type="text" placeholder="Blue" />
+                <input v-model="form.color" type="text" placeholder="Blue" class="car-input" />
             </div>
-            <div class="field">
+            <div class="car-field">
                 <label>License Plate</label>
-                <input v-model="form.licensePlate" type="text" placeholder="ABC123" />
+                <input v-model="form.licensePlate" type="text" placeholder="ABC123" class="car-input" />
             </div>
         </div>
-        <div class="field">
+        <div class="car-field">
             <label>Reg. Exp. Date</label>
-            <input v-model="form.registrationExpiryDate" type="date" />
+            <input v-model="form.registrationExpiryDate" type="date" class="car-input" />
         </div>
-        <div class="field">
+        <div class="car-field">
             <label>VIN</label>
-            <input v-model="form.vin" type="text" placeholder="Optional" />
+            <input v-model="form.vin" type="text" placeholder="Optional" class="car-input" />
         </div>
-        <div class="two-col">
-            <div class="field">
+        <div class="car-grid-2">
+            <div class="car-field">
                 <label>Purchase Date</label>
-                <input v-model="form.purchaseDate" type="date" />
+                <input v-model="form.purchaseDate" type="date" class="car-input" />
             </div>
-            <div class="field">
+            <div class="car-field">
                 <label>Current Mileage</label>
-                <input v-model="form.currentMileage" type="number" min="0" placeholder="80456" />
+                <input v-model="form.currentMileage" type="number" min="0" placeholder="80456" class="car-input" />
             </div>
         </div>
-        <div class="field">
+        <div class="car-field">
             <label>Notes</label>
-            <textarea v-model="form.notes" rows="3" placeholder="Extra details"></textarea>
+            <textarea v-model="form.notes" rows="3" placeholder="Extra details" class="car-textarea"></textarea>
         </div>
 
-        <button class="primary-btn" type="submit" :disabled="submitting">
+        <button class="car-btn" type="submit" :disabled="submitting">
             {{ submitting ? 'Saving...' : (isEditing ? 'Update Vehicle' : 'Save Vehicle') }}
         </button>
-        <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-        <p v-if="successMessage" class="success">{{ successMessage }}</p>
+        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+        <p v-if="successMessage" class="success-text">{{ successMessage }}</p>
     </form>
 </div>
 </template>
@@ -277,117 +282,48 @@ export default {
 </script>
 
 <style scoped>
-.add-vehicle-page {
-    min-height: 100vh;
-    background: #f2f4f8;
-    padding-bottom: 40px;
-}
-
-.top-banner {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 14px 16px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-}
-
-.title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.icon-btn {
-    border: none;
-    background: transparent;
-    color: inherit;
-    padding: 6px;
-}
-
-.icon-btn.ghost {
-    visibility: hidden;
-}
-
-.form {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-label {
-    font-weight: 600;
-    color: #374151;
-    font-size: 14px;
-}
-
-input, textarea, select {
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 14px;
-    background: white;
-}
-
-.two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+.upload-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .upload-box {
-    border: 1px dashed var(--text-secondary);
-    padding: 12px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: #4b5563;
-    cursor: pointer;
+  border: 1px dashed var(--glass-card-border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  background: var(--glass-ghost-bg);
+  cursor: pointer;
 }
 
 .hidden {
-    display: none;
+  display: none;
+}
+
+.preview {
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--glass-card-border);
 }
 
 .preview img {
-    margin-top: 8px;
-    width: 100%;
-    min-height: 160px;
-    max-height: 240px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    object-fit: cover;
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-.primary-btn {
-    border: none;
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    color: white;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 15px;
+.error-text {
+  color: #ef4444;
+  margin: 8px 0 0;
 }
 
-.error {
-    color: #dc2626;
-    font-size: 13px;
-    margin: 0;
-}
-
-.success {
-    color: #16a34a;
-    font-size: 13px;
-    margin: 0;
+.success-text {
+  color: #22c55e;
+  margin: 8px 0 0;
 }
 </style>

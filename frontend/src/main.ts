@@ -10,6 +10,7 @@ import "bootstrap"
 
 import "css-ripple-effect/dist/ripple.min.css"
 import "./assets/styles/glass.css"
+import "./assets/styles/car/base.css"
 
 import mdiVue from 'mdi-vue/v3'
 import * as mdijs from '@mdi/js'

@@ -1,17 +1,22 @@
 <template>
-<div class="vehicle-detail-page">
-    <div class="top-banner">
-        <button class="icon-btn" @click="goBack">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <div class="car-hero">
+        <button class="car-icon-btn" @click="goBack">
             <mdicon name="chevron-left" :size="22"/>
         </button>
-        <h2 class="title">Vehicle Details</h2>
-        <span class="icon-btn ghost"></span>
+        <div>
+            <h2 class="car-hero-title">Vehicle Details</h2>
+            <p class="car-hero-sub">Specs and registration info</p>
+        </div>
+        <span class="car-icon-btn ghost"></span>
     </div>
 
-    <div v-if="loading" class="empty">Loading...</div>
-    <div v-else-if="errorMessage" class="empty">{{ errorMessage }}</div>
-    <div v-else-if="vehicle" class="content">
-        <div class="hero">
+    <div v-if="loading" class="empty-state car-card">Loading...</div>
+    <div v-else-if="errorMessage" class="empty-state car-card">{{ errorMessage }}</div>
+    <div v-else-if="vehicle" class="car-body">
+        <div class="hero car-card">
             <div class="hero-thumb">
                 <img v-if="vehicle.imageUrl" :src="vehicle.imageUrl.startsWith('http') ? vehicle.imageUrl : `${API_BASE_URL}${vehicle.imageUrl}`" alt="Vehicle" />
                 <mdicon v-else name="car-sports" :size="42"/>
@@ -23,7 +28,7 @@
             </div>
         </div>
 
-        <div class="detail-card">
+        <div class="detail-card car-card">
             <div class="row">
                 <span class="label">License Plate</span>
                 <span class="value">{{ vehicle.licensePlate || 'No data' }}</span>
@@ -47,18 +52,18 @@
         </div>
 
         <div class="actions">
-            <button class="danger" @click="showDelete = true">Delete</button>
-            <button class="primary" @click="editVehicle">Edit</button>
+            <button class="car-btn danger" @click="showDelete = true">Delete</button>
+            <button class="car-btn" @click="editVehicle">Edit</button>
         </div>
     </div>
 
-    <div v-if="showDelete" class="modal-backdrop" @click="showDelete = false">
-        <div class="modal" @click.stop>
-            <p class="modal-title">Delete vehicle?</p>
-            <p class="modal-text">This cannot be undone.</p>
-            <div class="modal-actions">
-                <button class="cancel" @click="showDelete = false">Cancel</button>
-                <button class="confirm" :disabled="deleting" @click="confirmDelete">
+    <div v-if="showDelete" class="glass-confirm-overlay" @click.self="showDelete = false">
+        <div class="glass-confirm-card">
+            <h3 class="glass-confirm-title">Delete vehicle?</h3>
+            <p class="glass-confirm-text">This cannot be undone.</p>
+            <div class="glass-confirm-actions">
+                <button type="button" @click="showDelete = false" :disabled="deleting">Cancel</button>
+                <button type="button" class="danger" :disabled="deleting" @click="confirmDelete">
                     {{ deleting ? 'Deleting...' : 'Delete' }}
                 </button>
             </div>
@@ -157,204 +162,18 @@ export default {
 </script>
 
 <style scoped>
-.vehicle-detail-page {
-    min-height: 100vh;
-    background: #f2f4f8;
-    padding-bottom: 60px;
-}
-
-.top-banner {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 14px 16px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-}
-
-.title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.icon-btn {
-    border: none;
-    background: transparent;
-    color: inherit;
-    padding: 6px;
-}
-
-.icon-btn.ghost {
-    visibility: hidden;
-}
-
-.empty {
-    padding: 24px 16px;
-    color: #6b7280;
-}
-
-.content {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-.hero {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: white;
-    padding: 12px;
-    border-radius: 14px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
-}
-
-.hero-thumb {
-    width: 86px;
-    height: 76px;
-    border-radius: 12px;
-    background: #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.hero-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.hero-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.name {
-    margin: 0;
-    font-weight: 800;
-    font-size: 16px;
-    color: #111827;
-}
-
-.type, .mileage {
-    margin: 0;
-    color: #6b7280;
-    font-size: 13px;
-}
-
-.detail-card {
-    background: white;
-    border-radius: 14px;
-    padding: 12px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
-}
-
-.row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 14px;
-    color: #111827;
-}
-
-.row:last-child {
-    border-bottom: none;
-}
-
-.label {
-    color: #6b7280;
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.actions button {
-    flex: 1;
-    border: none;
-    border-radius: 12px;
-    padding: 12px;
-    font-weight: 700;
-    font-size: 14px;
-}
-
-.primary {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    color: white;
-}
-
-.danger {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    z-index: 3000;
-}
-
-.modal {
-    display: block;
-    position: relative;
-    background: white;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 360px;
-    height: auto;
-}
-
-.modal-title {
-    margin: 0 0 4px;
-    font-weight: 800;
-    font-size: 16px;
-    color: #1f2937;
-}
-
-.modal-text {
-    margin: 0 0 12px;
-    color: #6b7280;
-    font-size: 14px;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.modal-actions button {
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-weight: 700;
-    border: none;
-}
-
-.cancel {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.confirm {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    color: white;
-}
+.hero { display: flex; align-items: center; gap: 12px; }
+.hero-thumb { width: 68px; height: 68px; border-radius: 16px; background: var(--glass-ghost-bg); display: grid; place-items: center; border: 1px solid var(--glass-card-border); overflow: hidden; }
+.hero-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.hero-meta p { margin: 0; }
+.hero-meta .name { font-weight: 800; font-size: 18px; color: var(--text-primary); }
+.hero-meta .type { font-size: 13px; color: var(--text-muted); }
+.hero-meta .mileage { font-size: 12px; color: var(--text-muted); }
+.detail-card { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--text-primary); }
+.label { font-weight: 700; color: var(--text-muted); }
+.value { font-weight: 600; }
+.actions { display: flex; gap: 10px; padding: 0 16px 16px; }
+.car-btn.danger { background: var(--danger-gradient); color: #0b1020; }
+.empty-state { text-align: center; color: var(--text-muted); }
 </style>

@@ -197,8 +197,8 @@ h2 {
 .ghost {
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(226, 232, 240, 0.3);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-ghost-bg);
   color: var(--text-primary);
   display: inline-flex;
   gap: 6px;
@@ -206,6 +206,7 @@ h2 {
   cursor: pointer;
   font-size: 14px;
   backdrop-filter: blur(6px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 .stack {
   display: grid;

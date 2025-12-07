@@ -1,36 +1,43 @@
 <template>
-<div class="add-schedule-page">
-    <div class="top-banner">
-        <button class="icon-btn" @click="goBack">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <div class="car-hero">
+        <button class="car-icon-btn" @click="goBack">
             <mdicon name="chevron-left" :size="22"/>
         </button>
-        <h2 class="title">Add Schedule</h2>
-        <span class="icon-btn ghost"></span>
+        <div>
+            <h2 class="car-hero-title">{{ editingId ? 'Edit Schedule' : 'Add Schedule' }}</h2>
+            <p class="car-hero-sub">Create reminders for maintenance</p>
+        </div>
+        <span class="car-icon-btn ghost"></span>
     </div>
 
-    <form class="form" @submit.prevent="submitSchedule">
-        <div class="field">
+    <form class="car-body car-form" @submit.prevent="submitSchedule">
+        <div class="car-field">
             <label>Vehicle</label>
-            <select v-model="form.vehicleId" required>
+            <select v-model="form.vehicleId" required class="car-select">
                 <option value="" disabled>Select vehicle</option>
                 <option v-for="vehicle in vehicles" :key="vehicle.id" :value="vehicle.id">
                     {{ displayName(vehicle) }}
                 </option>
             </select>
         </div>
-        <div class="field type-field">
+        <div class="car-field type-field">
             <label>Maintenance Type</label>
-            <div class="type-input-wrapper">
+            <div class="type-input">
                 <input
                     v-model="form.maintenanceType"
                     type="text"
                     placeholder="Select or type"
+                    class="car-input"
+                    @focus="showTypeDropdown = true"
                 />
                 <button type="button" class="type-toggle" @click="toggleTypeDropdown">
                     <mdicon name="chevron-down" :size="22"/>
                 </button>
             </div>
-            <div v-if="showTypeDropdown" class="type-dropdown">
+            <div v-if="showTypeDropdown" class="type-dropdown car-card">
                 <button
                     v-for="option in typeOptions"
                     :key="option"
@@ -42,26 +49,26 @@
                 </button>
             </div>
         </div>
-        <div class="two-col">
-            <div class="field">
+        <div class="car-grid-2">
+            <div class="car-field">
                 <label>Due Date</label>
-                <input v-model="form.dueDate" type="date" required />
+                <input v-model="form.dueDate" type="date" required class="car-input" />
             </div>
-            <div class="field">
+            <div class="car-field">
                 <label>Due Mileage</label>
-                <input v-model="form.dueMileage" type="number" min="0" placeholder="100000" />
+                <input v-model="form.dueMileage" type="number" min="0" placeholder="100000" class="car-input" />
             </div>
         </div>
-        <div class="field">
+        <div class="car-field">
             <label>Notes</label>
-            <textarea v-model="form.notes" rows="3" placeholder="Add details"></textarea>
+            <textarea v-model="form.notes" rows="3" placeholder="Add details" class="car-textarea"></textarea>
         </div>
 
-        <button class="primary-btn" type="submit" :disabled="submitting">
+        <button class="car-btn" type="submit" :disabled="submitting">
             {{ submitting ? 'Saving...' : 'Save Schedule' }}
         </button>
-        <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-        <p v-if="successMessage" class="success">{{ successMessage }}</p>
+        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+        <p v-if="successMessage" class="success-text">{{ successMessage }}</p>
     </form>
 </div>
 </template>
@@ -227,6 +234,7 @@ export default {
             submitting,
             errorMessage,
             successMessage,
+            editingId,
             goBack,
             submitSchedule,
             displayName,
@@ -240,145 +248,63 @@ export default {
 </script>
 
 <style scoped>
-.add-schedule-page {
-    min-height: 100vh;
-    background: #f2f4f8;
-    padding-bottom: 40px;
-}
-
-.top-banner {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 14px 16px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-}
-
-.title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.icon-btn {
-    border: none;
-    background: transparent;
-    color: inherit;
-    padding: 6px;
-}
-
-.icon-btn.ghost {
-    visibility: hidden;
-}
-
-.form {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
 .type-field {
-    position: relative;
+  position: relative;
 }
 
-.type-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
+.type-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--glass-card-border);
+  border-radius: 12px;
+  padding: 4px 6px 4px 10px;
+  background: var(--glass-ghost-bg);
 }
 
-.type-input-wrapper input {
-    width: 100%;
-    padding-right: 44px;
+.type-input .car-input {
+  border: none;
+  background: transparent;
+  padding: 8px 0;
+  box-shadow: none;
 }
 
 .type-toggle {
-    position: absolute;
-    right: 6px;
-    top: 6px;
-    bottom: 6px;
-    width: 36px;
-    border: none;
-    border-radius: 10px;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 6px;
+  border-radius: 10px;
 }
 
 .type-dropdown {
-    margin-top: 6px;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 6px;
 }
 
 .type-option {
-    width: 100%;
-    border: none;
-    background: transparent;
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 14px;
-    color: #111827;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 10px;
+  border-radius: 10px;
+  text-align: left;
+  font-weight: 700;
 }
 
-.type-option + .type-option {
-    border-top: 1px solid #f3f4f6;
+.type-option:active {
+  background: var(--glass-ghost-bg);
 }
 
-label {
-    font-weight: 600;
-    color: #374151;
-    font-size: 14px;
+.error-text {
+  color: #ef4444;
+  margin: 6px 0 0;
 }
 
-input, textarea, select {
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 14px;
-    background: white;
-}
-
-.two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.primary-btn {
-    border: none;
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    color: white;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 15px;
-}
-
-.error {
-    color: #dc2626;
-    font-size: 13px;
-    margin: 0;
-}
-
-.success {
-    color: #16a34a;
-    font-size: 13px;
-    margin: 0;
+.success-text {
+  color: #22c55e;
+  margin: 6px 0 0;
 }
 </style>

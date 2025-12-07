@@ -1,23 +1,29 @@
 <template>
-<div class="vehicles-page">
-    <div class="top-banner">
-        <button class="icon-btn" @click="goBack">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <div class="car-hero">
+        <button class="car-icon-btn" @click="goBack">
             <mdicon name="chevron-left" :size="22"/>
         </button>
-        <h2 class="title">Vehicles</h2>
-        <span class="icon-btn ghost"></span>
+        <div>
+            <h2 class="car-hero-title">Vehicles</h2>
+            <p class="car-hero-sub">Manage your garage</p>
+        </div>
+        <span class="car-icon-btn ghost"></span>
     </div>
 
-    <div class="search-bar">
-        <mdicon name="magnify" :size="20" />
-        <input v-model="search" type="text" placeholder="Search Vehicle" />
-    </div>
+    <div class="car-body">
+        <div class="car-search car-card">
+            <mdicon name="magnify" :size="20" />
+            <input v-model="search" type="text" placeholder="Search vehicle" />
+        </div>
 
-        <div class="vehicle-list">
-            <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+        <div class="car-list">
+            <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
             <template v-if="filteredVehicles.length">
                 <div
-                    class="vehicle-card"
+                    class="vehicle-card car-card"
                     v-for="vehicle in filteredVehicles"
                     :key="vehicle.id"
                     @click="openDetail(vehicle.id)"
@@ -34,51 +40,62 @@
                         <p class="vehicle-name">{{ displayName(vehicle) }}</p>
                         <div class="info-row">
                             <span class="label">License Plate</span>
-                            <span class="value">: {{ formatValue(vehicle.licensePlate) }}</span>
+                            <span class="value">{{ formatValue(vehicle.licensePlate) }}</span>
                         </div>
                         <div class="info-row">
                             <span class="label">VIN</span>
-                            <span class="value">: {{ formatValue(vehicle.vin) }}</span>
+                            <span class="value">{{ formatValue(vehicle.vin) }}</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Reg. Exp. Date</span>
-                            <span class="value">: <em>{{ formatExpiry(vehicle.registrationExpiryDate) }}</em></span>
+                            <span class="value"><em>{{ formatExpiry(vehicle.registrationExpiryDate) }}</em></span>
                         </div>
                     </div>
                 </div>
             </template>
-            <div v-else class="empty-vehicles">
+            <div v-else class="car-empty">
                 <div class="icon-circle teal">
                     <mdicon name="car" :size="24" />
                 </div>
                 <h4>No vehicles yet</h4>
                 <p class="sub">Create your first vehicle to start tracking maintenance and schedules.</p>
+                <div class="empty-actions">
+                    <button class="car-btn" type="button" @click="addVehicle">
+                        <mdicon name="plus" :size="18" />
+                        <span>Add vehicle</span>
+                    </button>
+                    <button class="car-btn ghost" type="button" @click="goHome">
+                        <mdicon name="home" :size="18" />
+                        <span>Home</span>
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
 
-        <button class="fab add-vehicle" @click="addVehicle">
-            <mdicon name="car" :size="20"/>
-            <span>Add vehicle</span>
-        </button>
+    <button class="car-fab wide" @click="addVehicle">
+        <mdicon name="car" :size="20"/>
+        <span>Add vehicle</span>
+    </button>
 
-    <nav class="bottom-nav">
-        <button class="nav-item" @click="goHome">
-            <mdicon name="home" :size="22"/>
-            <span>Home</span>
+    <nav class="car-bottom-nav glass-nav-orb">
+        <button class="car-nav-item" @click="goDashboard">
+            <mdicon name="view-dashboard-outline" :size="22"/>
+            <span>Dashboard</span>
         </button>
-        <button class="nav-item" @click="goSchedules">
+        <button class="car-nav-item" @click="goSchedules">
             <mdicon name="clipboard-list-outline" :size="22"/>
             <span>Schedules</span>
         </button>
-        <button class="nav-item" @click="goReport">
+        <button class="car-nav-item" @click="goReport">
             <mdicon name="chart-pie" :size="22"/>
             <span>Report</span>
         </button>
-        <button class="nav-item active">
+        <button class="car-nav-item active">
             <mdicon name="car" :size="22"/>
             <span>Vehicles</span>
         </button>
-        <button class="nav-item" @click="goSettings">
+        <button class="car-nav-item" @click="goSettings">
             <mdicon name="cog-outline" :size="22"/>
             <span>Settings</span>
         </button>
@@ -103,7 +120,8 @@ export default {
         const openMenuId = ref('')
 
         const goBack = () => router.back()
-        const goHome = () => router.push('/car-maintenance')
+        const goHome = () => router.push('/')
+        const goDashboard = () => router.push('/car-maintenance')
         const goSchedules = () => router.push('/car-maintenance/schedules')
         const goSettings = () => router.push('/car-maintenance/settings')
         const goReport = () => router.push('/car-maintenance/report')
@@ -154,6 +172,7 @@ export default {
             errorMessage,
             goBack,
             goHome,
+            goDashboard,
             goSchedules,
             goSettings,
             goReport,
@@ -169,215 +188,31 @@ export default {
 </script>
 
 <style scoped>
-.vehicles-page {
-    min-height: 100vh;
-    background: #f2f4f8;
-    padding-bottom: 80px;
+.vehicle-card { display: flex; gap: 12px; cursor: pointer; }
+.vehicle-thumb { width: 60px; height: 60px; border-radius: 12px; background: var(--glass-ghost-bg); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--glass-card-border); }
+.vehicle-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.vehicle-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.vehicle-name { margin: 0; font-weight: 800; font-size: 15px; color: var(--text-primary); }
+.info-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+.label { font-weight: 700; text-transform: uppercase; font-size: 11px; color: var(--text-muted); }
+.value { color: var(--text-primary); }
+.icon-circle { width: 44px; height: 44px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; background: var(--pill-gradient); color: #0b1020; box-shadow: 0 10px 22px rgba(0,0,0,0.18); }
+.sub { margin: 0; color: var(--text-muted); }
+.error-text { color: #dc2626; margin: 0; }
+.empty-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 
-.top-banner {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 14px 16px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
+.empty-actions .car-btn {
+  width: 100%;
+  justify-content: center;
 }
 
-.title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.icon-btn {
-    border: none;
-    background: transparent;
-    color: inherit;
-    padding: 6px;
-}
-
-.icon-btn.ghost {
-    visibility: hidden;
-}
-
-.search-bar {
-    margin: 14px 12px 8px;
-    background: white;
-    border-radius: 14px;
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: inset 0 0 0 1px #e5e7eb;
-}
-
-.search-bar input {
-    border: none;
-    outline: none;
-    flex: 1;
-    font-size: 14px;
-}
-
-.vehicle-list {
-    padding: 0 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.empty-vehicles {
-    margin-top: 20px;
-    padding: 18px;
-    border-radius: 14px;
-    border: 1px dashed var(--text-secondary);
-    background: #f8fafc;
-    text-align: center;
-    display: grid;
-    gap: 8px;
-    place-items: center;
-}
-
-.vehicle-card {
-    display: grid;
-    grid-template-columns: 90px 1fr auto;
-    gap: 12px;
-    background: white;
-    border-radius: 14px;
-    padding: 10px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-    align-items: center;
-}
-
-.vehicle-thumb {
-    width: 90px;
-    height: 80px;
-    border-radius: 12px;
-    background: #d9e6f7;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.vehicle-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 12px;
-}
-
-.fab {
-    position: fixed;
-    bottom: 84px;
-    right: 20px;
-    height: 52px;
-    padding: 0 16px;
-    border-radius: 18px;
-    border: none;
-    background: linear-gradient(135deg, #4f46e5, #22d3ee);
-    color: #fff;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    box-shadow: 0 12px 26px rgba(79, 70, 229, 0.3);
-}
-
-.vehicle-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.vehicle-name {
-    margin: 0;
-    font-weight: 800;
-    font-size: 15px;
-    color: #1f2937;
-}
-
-.info-row {
-    display: flex;
-    gap: 6px;
-    font-size: 12px;
-    color: #4b5563;
-}
-
-.label {
-    min-width: 88px;
-    color: #6b7280;
-}
-
-.value em {
-    font-style: italic;
-    color: #6b7280;
-}
-
-.menu-wrapper {
-    position: relative;
-    justify-self: end;
-}
-
-.card-menu {
-    border: none;
-    background: transparent;
-    color: #6b7280;
-}
-
-.card-actions {
-    position: absolute;
-    top: 28px;
-    right: 0;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    min-width: 120px;
-    z-index: 5;
-}
-
-.action-btn {
-    border: none;
-    background: transparent;
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 13px;
-    color: #1f2937;
-}
-
-.action-btn + .action-btn {
-    border-top: 1px solid #f1f5f9;
-}
-
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    border-top: 1px solid #e5e7eb;
-    padding: 8px 4px;
-}
-
-.nav-item {
-    border: none;
-    background: transparent;
-    color: #8a95a6;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-}
-
-.nav-item.active {
-    color: #f5576c;
-    font-weight: 700;
+.empty-actions .car-btn.ghost {
+  border: 1px solid var(--glass-card-border);
 }
 </style>
