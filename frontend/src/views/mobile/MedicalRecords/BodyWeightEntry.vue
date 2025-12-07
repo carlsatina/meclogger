@@ -9,15 +9,15 @@
     >
         <template #actions>
             <div class="menu-wrapper" ref="menuRef" v-if="record">
-                <button class="menu-button" type="button" @click.stop="toggleMenu">
+                <button class="menu-button glass-menu-button" type="button" @click.stop="toggleMenu">
                     <mdicon name="menu" :size="20"/>
                 </button>
-                <div v-if="menuOpen" class="menu-dropdown">
-                    <button class="menu-item" @click="startEdit">
+                <div v-if="menuOpen" class="menu-dropdown glass-menu">
+                    <button class="menu-item glass-menu-item" @click="startEdit">
                         <mdicon name="pencil" :size="18"/>
                         <span>Edit</span>
                     </button>
-                    <button class="menu-item danger" @click="openDeleteConfirm">
+                    <button class="menu-item glass-menu-item danger" @click="openDeleteConfirm">
                         <mdicon name="delete" :size="18"/>
                         <span>Delete</span>
                     </button>
@@ -95,13 +95,13 @@
         </div>
     </div>
 
-    <div v-if="showDeleteConfirm" class="confirm-overlay">
-        <div class="confirm-card">
-            <h3 class="confirm-title">Delete record?</h3>
-            <p class="confirm-text">This will permanently remove this body weight entry.</p>
-            <div class="confirm-actions">
+    <div v-if="showDeleteConfirm" class="confirm-overlay glass-confirm-overlay">
+        <div class="confirm-card glass-confirm-card">
+            <h3 class="confirm-title glass-confirm-title">Delete record?</h3>
+            <p class="confirm-text glass-confirm-text">This will permanently remove this body weight entry.</p>
+            <div class="confirm-actions glass-confirm-actions">
                 <button type="button" @click="showDeleteConfirm = false" :disabled="saving">Cancel</button>
-                <button type="button" class="danger" @click="confirmDelete" :disabled="saving">
+                <button type="button" class="danger glass-btn-primary" @click="confirmDelete" :disabled="saving">
                     {{ saving ? 'Deleting...' : 'Delete' }}
                 </button>
             </div>
