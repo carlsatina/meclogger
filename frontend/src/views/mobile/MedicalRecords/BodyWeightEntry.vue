@@ -192,17 +192,18 @@ export default {
 
         const confirmDelete = async () => {
             if (!record.value) return
-            if (!window.confirm('Delete this body weight record? This cannot be undone.')) return
             const token = localStorage.getItem('token')
             if (!token) return
             try {
                 saving.value = true
                 await deleteRecord(token, record.value.id)
+                showDeleteConfirm.value = false
                 router.push({ path: '/medical-records', query: { tab: 'health' } })
             } catch (err) {
                 formError.value = err.message || 'Unable to delete record.'
             } finally {
                 saving.value = false
+                showDeleteConfirm.value = false
             }
         }
 
@@ -330,21 +331,10 @@ export default {
 .info-row { display: flex; justify-content: space-between; font-size: 14px; color: #e2e8f0; }
 .state-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; padding: 16px; border-radius: 14px; text-align: center; box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
 .state-card.error { color: #f87171; border-color: rgba(239,68,68,0.35); }
-.menu-button { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 6px; color: #e2e8f0; }
-.menu-dropdown { position: absolute; top: 40px; right: 0; background: rgba(10,12,20,0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; box-shadow: 0 12px 24px rgba(0,0,0,0.32); display: flex; flex-direction: column; min-width: 140px; overflow: hidden; }
-.menu-item { background: transparent; border: none; color: #e2e8f0; padding: 10px 12px; display: flex; align-items: center; gap: 8px; text-align: left; }
-.menu-item.danger { color: #f87171; }
-.menu-item:active { background: rgba(255,255,255,0.08); }
+.menu-wrapper { position: relative; }
 .empty-hint { color: #94a3b8; font-size: 13px; margin: 0; }
 .edit-actions { display: flex; flex-direction: column; gap: 10px; }
 .edit-error { color: #f87171; font-size: 13px; margin: 0; }
 .edit-cancel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; color: #e2e8f0; font-weight: 700; }
 .edit-save { border-radius: 12px; padding: 12px; font-weight: 700; }
-.confirm-overlay { position: fixed; inset: 0; background: rgba(5,6,10,0.75); display: flex; align-items: center; justify-content: center; z-index: 1100; padding: 16px; }
-.confirm-card { background: rgba(10,12,20,0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 18px; width: 100%; max-width: 360px; box-shadow: 0 18px 36px rgba(0,0,0,0.4); color: #e2e8f0; display: flex; flex-direction: column; gap: 12px; }
-.confirm-title { margin: 0; font-size: 17px; font-weight: 800; }
-.confirm-text { margin: 0; font-size: 14px; color: #cbd5e1; }
-.confirm-actions { display: flex; gap: 10px; }
-.confirm-actions button { flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #e2e8f0; }
-.confirm-actions .danger { background: linear-gradient(135deg, #f97316, #ef4444); border: none; color: #0b1020; }
 </style>

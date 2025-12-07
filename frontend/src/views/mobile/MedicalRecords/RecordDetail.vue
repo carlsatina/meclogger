@@ -7,15 +7,15 @@
     >
         <template #actions>
             <div class="menu-wrapper" v-if="record" ref="menuRef">
-                <button class="menu-button" type="button" @click.stop="toggleMenu">
+                <button class="menu-button glass-menu-button" type="button" @click.stop="toggleMenu">
                     <mdicon name="menu" :size="20"/>
                 </button>
-                <div v-if="menuOpen" class="menu-dropdown">
-                    <button class="menu-item" @click="goToEdit">
+                <div v-if="menuOpen" class="menu-dropdown glass-menu">
+                    <button class="menu-item glass-menu-item" @click="goToEdit">
                         <mdicon name="pencil" :size="18"/>
                         <span>Edit</span>
                     </button>
-                    <button class="menu-item danger" @click="confirmDelete">
+                    <button class="menu-item glass-menu-item danger" @click="confirmDelete">
                         <mdicon name="trash-can-outline" :size="18"/>
                         <span>Delete</span>
                     </button>
@@ -123,13 +123,13 @@
         </div>
     </div>
 
-    <div v-if="showDeleteConfirm" class="confirm-overlay">
-        <div class="confirm-card">
-            <h3>Delete this record?</h3>
-            <p class="sub">This will remove the record and its attachments.</p>
-            <div class="confirm-actions">
-                <button class="ghost" @click="showDeleteConfirm = false">Cancel</button>
-                <button class="danger-btn" :disabled="deleting" @click="deleteRecordAction">
+    <div v-if="showDeleteConfirm" class="confirm-overlay glass-confirm-overlay">
+        <div class="confirm-card glass-confirm-card">
+            <h3 class="glass-confirm-title">Delete this record?</h3>
+            <p class="sub glass-confirm-text">This will remove the record and its attachments.</p>
+            <div class="confirm-actions glass-confirm-actions">
+                <button type="button" @click="showDeleteConfirm = false">Cancel</button>
+                <button class="danger" :disabled="deleting" @click="deleteRecordAction">
                     {{ deleting ? 'Deleting...' : 'Delete' }}
                 </button>
             </div>
@@ -844,109 +844,6 @@ export default {
 .menu-wrapper {
     position: relative;
 }
-
-.menu-button {
-    border: none;
-    background: transparent;
-    padding: 6px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #374151;
-}
-
-.menu-button:active {
-    background: #f3f4f6;
-}
-
-.menu-dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    padding: 6px 0;
-    z-index: 20;
-    min-width: 150px;
-}
-
-.menu-item {
-    width: 100%;
-    border: none;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    font-size: 14px;
-    color: #1f2937;
-    cursor: pointer;
-}
-
-.menu-item:active {
-    background: #f3f4f6;
-}
-
-.menu-item.danger {
-    color: #dc2626;
-}
-
-.confirm-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.55);
-    display: grid;
-    place-items: center;
-    padding: 20px;
-    z-index: 30;
-}
-
-.confirm-card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 14px;
-    width: 100%;
-    max-width: 360px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
-    display: grid;
-    gap: 10px;
-}
-
-.confirm-card h3 {
-    margin: 0;
-    font-size: 18px;
-}
-
-.confirm-card .sub {
-    margin: 0;
-    color: #475569;
-    font-size: 14px;
-}
-
-.confirm-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 4px;
-}
-
-.ghost {
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-weight: 700;
-}
-
-.danger-btn {
-    border: none;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: #fff;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-weight: 800;
-}
-
 .error-text {
     color: #dc2626;
     margin: 0;
