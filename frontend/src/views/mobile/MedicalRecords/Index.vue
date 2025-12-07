@@ -1211,6 +1211,22 @@ export default {
     }
 }
 
+@keyframes slideFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes floatPulse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
 /* Action Cards */
 .action-cards-grid {
     display: grid;
@@ -1233,6 +1249,11 @@ export default {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    animation: slideFadeUp 0.5s ease both;
+}
+
+.action-cards-grid .action-card-large:nth-child(2) {
+    animation-delay: 0.08s;
 }
 
 .action-card-large:hover {
@@ -1291,6 +1312,7 @@ export default {
     padding: 6px;
     margin-bottom: 28px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    animation: slideFadeUp 0.55s ease both;
 }
 
 .reminder-empty {
@@ -1399,7 +1421,11 @@ export default {
     border: 1px solid rgba(255,255,255,0.08);
     cursor: pointer;
     transition: all 0.25s ease;
+    animation: slideFadeUp 0.5s ease both;
 }
+
+.records-list .record-item:nth-child(2) { animation-delay: 0.05s; }
+.records-list .record-item:nth-child(3) { animation-delay: 0.1s; }
 
 .record-item:active {
     transform: translateY(1px) scale(0.99);
@@ -1543,10 +1569,16 @@ export default {
     cursor: pointer;
     transition: all 0.25s ease;
     box-shadow: 0 14px 30px rgba(0,0,0,0.3);
+    animation: slideFadeUp 0.55s ease both;
 }
+
+.health-card:nth-child(2) { animation-delay: 0.05s; }
+.health-card:nth-child(3) { animation-delay: 0.1s; }
+.health-card:nth-child(4) { animation-delay: 0.15s; }
 
 .health-card:hover {
     border-color: rgba(103,232,249,0.4);
+    animation: floatPulse 3s ease-in-out infinite;
 }
 
 .health-card-header {

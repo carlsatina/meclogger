@@ -3,14 +3,16 @@
     <div class="car-orb one"></div>
     <div class="car-orb two"></div>
     <div class="car-hero">
-        <button class="car-icon-btn" @click="goBack">
-            <mdicon name="home" :size="22"/>
+        <button class="car-icon-btn ghost" @click="goBackPage">
+            <mdicon name="chevron-left" :size="22"/>
         </button>
         <div>
             <h2 class="car-hero-title">Vehicle Details</h2>
             <p class="car-hero-sub">Specs and registration info</p>
         </div>
-        <span class="car-icon-btn ghost"></span>
+        <button class="car-icon-btn" @click="goBack">
+            <mdicon name="home" :size="22"/>
+        </button>
     </div>
 
     <div v-if="loading" class="empty-state car-card">Loading...</div>
@@ -57,18 +59,20 @@
         </div>
     </div>
 
-    <div v-if="showDelete" class="glass-confirm-overlay" @click.self="showDelete = false">
-        <div class="glass-confirm-card">
-            <h3 class="glass-confirm-title">Delete vehicle?</h3>
-            <p class="glass-confirm-text">This cannot be undone.</p>
-            <div class="glass-confirm-actions">
-                <button type="button" @click="showDelete = false" :disabled="deleting">Cancel</button>
-                <button type="button" class="danger" :disabled="deleting" @click="confirmDelete">
-                    {{ deleting ? 'Deleting...' : 'Delete' }}
-                </button>
+    <transition name="glass-fade">
+        <div v-if="showDelete" class="glass-confirm-overlay" @click.self="showDelete = false">
+            <div class="glass-confirm-card">
+                <h3 class="glass-confirm-title">Delete vehicle?</h3>
+                <p class="glass-confirm-text">This cannot be undone.</p>
+                <div class="glass-confirm-actions">
+                    <button type="button" @click="showDelete = false" :disabled="deleting">Cancel</button>
+                    <button type="button" class="danger" :disabled="deleting" @click="confirmDelete">
+                        {{ deleting ? 'Deleting...' : 'Delete' }}
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </transition>
 </div>
 </template>
 
@@ -91,6 +95,7 @@ export default {
         const showDelete = ref(false)
 
         const goBack = () => router.push('/')
+        const goBackPage = () => router.back()
 
         const loadVehicle = async() => {
             loading.value = true
@@ -151,6 +156,7 @@ export default {
             displayName,
             formatExpiry,
             goBack,
+            goBackPage,
             API_BASE_URL,
             showDelete,
             confirmDelete,
@@ -173,7 +179,8 @@ export default {
 .row { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--text-primary); }
 .label { font-weight: 700; color: var(--text-muted); }
 .value { font-weight: 600; }
-.actions { display: flex; gap: 10px; padding: 0 16px 16px; }
+.actions { display: flex; gap: 10px; padding: 0 16px 16px; width: 100%; }
+.actions .car-btn { flex: 1; text-align: center; }
 .car-btn.danger { background: var(--danger-gradient); color: #0b1020; }
 .empty-state { text-align: center; color: var(--text-muted); }
 </style>

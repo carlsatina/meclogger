@@ -3,14 +3,16 @@
     <div class="car-orb one"></div>
     <div class="car-orb two"></div>
     <div class="car-hero">
-        <button class="car-icon-btn" @click="goBack">
-            <mdicon name="home" :size="22"/>
+        <button class="car-icon-btn" @click="goBackPage">
+            <mdicon name="chevron-left" :size="22"/>
         </button>
         <div>
             <h2 class="car-hero-title">{{ isEditing ? 'Edit Vehicle' : 'Add Vehicle' }}</h2>
             <p class="car-hero-sub">Keep your garage organized</p>
         </div>
-        <span class="car-icon-btn ghost"></span>
+        <button class="car-icon-btn" @click="goBack">
+            <mdicon name="home" :size="22"/>
+        </button>
     </div>
 
     <form class="car-body car-form" @submit.prevent="submitVehicle">
@@ -133,6 +135,7 @@ export default {
         const existingImageUrl = ref('')
 
         const goBack = () => router.push('/')
+        const goBackPage = () => router.back()
 
         const triggerFileInput = () => {
             if (fileInput.value) {
@@ -272,6 +275,7 @@ export default {
             errorMessage,
             successMessage,
             goBack,
+            goBackPage,
             triggerFileInput,
             handleFileChange,
             submitVehicle,

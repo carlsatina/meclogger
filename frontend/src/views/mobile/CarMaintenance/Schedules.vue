@@ -3,13 +3,14 @@
     <div class="car-orb one"></div>
     <div class="car-orb two"></div>
     <div class="car-hero">
-        <button class="car-icon-btn" @click="goBack">
-            <mdicon name="home" :size="22"/>
-        </button>
+        <span class="car-icon-btn ghost"></span>
         <div>
             <h2 class="car-hero-title">Maintenance Schedules</h2>
             <p class="car-hero-sub">Never miss a service</p>
         </div>
+        <button class="car-icon-btn" @click="goBack">
+            <mdicon name="home" :size="22"/>
+        </button>
         <button class="car-icon-btn" @click="addSchedule">
             <mdicon name="plus" :size="20"/>
         </button>
@@ -129,30 +130,34 @@
         </div>
     </div>
 
-    <div v-if="showDeleteModal" class="glass-confirm-overlay" @click.self="cancelDelete">
-        <div class="glass-confirm-card">
-            <h3 class="glass-confirm-title">Delete schedule?</h3>
-            <p class="glass-confirm-text">This cannot be undone.</p>
-            <div class="glass-confirm-actions">
-                <button type="button" @click="cancelDelete">Cancel</button>
-                <button type="button" class="danger" @click="performDelete">Delete</button>
+    <transition name="glass-fade">
+        <div v-if="showDeleteModal" class="glass-confirm-overlay" @click.self="cancelDelete">
+            <div class="glass-confirm-card">
+                <h3 class="glass-confirm-title">Delete schedule?</h3>
+                <p class="glass-confirm-text">This cannot be undone.</p>
+                <div class="glass-confirm-actions">
+                    <button type="button" @click="cancelDelete">Cancel</button>
+                    <button type="button" class="danger" @click="performDelete">Delete</button>
+                </div>
             </div>
         </div>
-    </div>
+    </transition>
 
-    <div v-if="showOdometerModal" class="glass-confirm-overlay" @click.self="showOdometerModal = false">
-        <div class="glass-confirm-card">
-            <h3 class="glass-confirm-title">Update Odometer</h3>
-            <p class="glass-confirm-text">Current: {{ formattedOdometer }}</p>
-            <input v-model="odometerInput" type="number" min="0" class="modal-input" />
-            <div class="glass-confirm-actions">
-                <button type="button" @click="showOdometerModal = false">Cancel</button>
-                <button type="button" class="confirm" :disabled="savingOdometer" @click="saveOdometer">
-                    {{ savingOdometer ? 'Saving...' : 'Save' }}
-                </button>
+    <transition name="glass-fade">
+        <div v-if="showOdometerModal" class="glass-confirm-overlay" @click.self="showOdometerModal = false">
+            <div class="glass-confirm-card">
+                <h3 class="glass-confirm-title">Update Odometer</h3>
+                <p class="glass-confirm-text">Current: {{ formattedOdometer }}</p>
+                <input v-model="odometerInput" type="number" min="0" class="modal-input" />
+                <div class="glass-confirm-actions">
+                    <button type="button" @click="showOdometerModal = false">Cancel</button>
+                    <button type="button" class="confirm" :disabled="savingOdometer" @click="saveOdometer">
+                        {{ savingOdometer ? 'Saving...' : 'Save' }}
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </transition>
 
     <button class="car-fab" @click="addSchedule">
         <mdicon name="plus" :size="24"/>

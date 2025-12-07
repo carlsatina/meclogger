@@ -3,14 +3,16 @@
     <div class="car-orb one"></div>
     <div class="car-orb two"></div>
     <div class="car-hero">
-        <button class="car-icon-btn" @click="goBack">
-            <mdicon name="home" :size="22"/>
+        <button class="car-icon-btn" @click="goBackPage">
+            <mdicon name="chevron-left" :size="22"/>
         </button>
         <div>
             <h2 class="car-hero-title">{{ editingId ? 'Edit Schedule' : 'Add Schedule' }}</h2>
             <p class="car-hero-sub">Create reminders for maintenance</p>
         </div>
-        <span class="car-icon-btn ghost"></span>
+        <button class="car-icon-btn" @click="goBack">
+            <mdicon name="home" :size="22"/>
+        </button>
     </div>
 
     <form class="car-body car-form" @submit.prevent="submitSchedule">
@@ -181,6 +183,7 @@ export default {
         }
 
         const goBack = () => router.push('/')
+        const goBackPage = () => router.back()
 
         const loadReminder = async(id) => {
             try {
@@ -236,6 +239,7 @@ export default {
             successMessage,
             editingId,
             goBack,
+            goBackPage,
             submitSchedule,
             displayName,
             showTypeDropdown,

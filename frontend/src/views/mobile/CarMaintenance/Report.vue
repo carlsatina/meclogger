@@ -3,14 +3,14 @@
     <div class="car-orb one"></div>
     <div class="car-orb two"></div>
     <div class="car-hero">
-        <button class="car-icon-btn" @click="goBack">
-            <mdicon name="home" :size="22"/>
-        </button>
+        <span class="car-icon-btn ghost"></span>
         <div>
             <h2 class="car-hero-title">Report</h2>
             <p class="car-hero-sub">Service cost breakdown</p>
         </div>
-        <span class="car-icon-btn ghost"></span>
+        <button class="car-icon-btn" @click="goBack">
+            <mdicon name="home" :size="22"/>
+        </button>
     </div>
 
     <div class="car-body">

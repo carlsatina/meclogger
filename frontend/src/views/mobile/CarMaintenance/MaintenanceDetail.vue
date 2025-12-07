@@ -3,13 +3,14 @@
     <div class="car-orb one"></div>
     <div class="car-orb two"></div>
     <div class="car-hero">
-        <button class="car-icon-btn" @click="goBack">
-            <mdicon name="home" :size="22"/>
-        </button>
+        <span class="car-icon-btn ghost"></span>
         <div>
             <h2 class="car-hero-title">Maintenance Detail</h2>
             <p class="car-hero-sub">Service record overview</p>
         </div>
+        <button class="car-icon-btn" @click="goBack">
+            <mdicon name="home" :size="22"/>
+        </button>
         <button class="car-icon-btn" @click="editRecord">
             <mdicon name="pencil" :size="20"/>
         </button>
@@ -67,16 +68,18 @@
         </div>
     </div>
 
-    <div v-if="confirmDelete" class="glass-confirm-overlay" @click.self="confirmDelete = false">
-        <div class="glass-confirm-card">
-            <h3 class="glass-confirm-title">Delete maintenance record?</h3>
-            <p class="glass-confirm-text">This action cannot be undone.</p>
-            <div class="glass-confirm-actions">
-                <button type="button" @click="confirmDelete = false">Cancel</button>
-                <button type="button" class="danger" @click="deleteRecord">Delete</button>
+    <transition name="glass-fade">
+        <div v-if="confirmDelete" class="glass-confirm-overlay" @click.self="confirmDelete = false">
+            <div class="glass-confirm-card">
+                <h3 class="glass-confirm-title">Delete maintenance record?</h3>
+                <p class="glass-confirm-text">This action cannot be undone.</p>
+                <div class="glass-confirm-actions">
+                    <button type="button" @click="confirmDelete = false">Cancel</button>
+                    <button type="button" class="danger" @click="deleteRecord">Delete</button>
+                </div>
             </div>
         </div>
-    </div>
+    </transition>
 </div>
 </template>
 
