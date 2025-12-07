@@ -6,8 +6,7 @@
     <TopBar 
         :title="getTabTitle()"
         :profile-name="activeProfileName"
-        :show-back="activeTab === 'home'"
-        back-route="/"
+        :show-back="false"
     >
         <template #actions>
             <div class="top-bar-actions">
@@ -22,10 +21,10 @@
                     class="action-icon"
                 />
                 <mdicon 
-                    name="plus" 
+                    name="home-outline" 
                     :size="24" 
                     class="action-icon"
-                    @click="showHealthModal = true"
+                    @click="router.push('/')"
                 />
             </div>
         </template>

@@ -4,7 +4,7 @@
     <div class="car-orb two"></div>
     <div class="car-hero">
         <button class="car-icon-btn" @click="goBack">
-            <mdicon name="chevron-left" :size="22"/>
+            <mdicon name="home" :size="22"/>
         </button>
         <div>
             <h2 class="car-hero-title">Vehicles</h2>
@@ -119,7 +119,7 @@ export default {
         const errorMessage = ref('')
         const openMenuId = ref('')
 
-        const goBack = () => router.back()
+        const goBack = () => router.push('/')
         const goHome = () => router.push('/')
         const goDashboard = () => router.push('/car-maintenance')
         const goSchedules = () => router.push('/car-maintenance/schedules')

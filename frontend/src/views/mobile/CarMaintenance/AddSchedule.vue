@@ -4,7 +4,7 @@
     <div class="car-orb two"></div>
     <div class="car-hero">
         <button class="car-icon-btn" @click="goBack">
-            <mdicon name="chevron-left" :size="22"/>
+            <mdicon name="home" :size="22"/>
         </button>
         <div>
             <h2 class="car-hero-title">{{ editingId ? 'Edit Schedule' : 'Add Schedule' }}</h2>
@@ -180,7 +180,7 @@ export default {
             showTypeDropdown.value = false
         }
 
-        const goBack = () => router.back()
+        const goBack = () => router.push('/')
 
         const loadReminder = async(id) => {
             try {

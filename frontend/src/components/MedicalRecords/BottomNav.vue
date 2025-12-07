@@ -5,8 +5,8 @@
         :class="{ active: activeTab === 'home' }"
         @click="$emit('change-tab', 'home')"
     >
-        <mdicon name="home" :size="24"/>
-        <span class="nav-label">Home</span>
+        <mdicon name="view-dashboard-outline" :size="24"/>
+        <span class="nav-label">Dashboard</span>
     </div>
     
     <div 

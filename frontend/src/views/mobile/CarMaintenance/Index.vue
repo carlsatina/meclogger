@@ -4,7 +4,7 @@
     <div class="car-orb two"></div>
     <div class="car-hero">
         <button class="car-icon-btn" @click="goBack">
-            <mdicon name="chevron-left" :size="24"/>
+            <mdicon name="home" :size="24"/>
         </button>
         <div>
             <h2 class="car-hero-title">Vehicle Logs</h2>

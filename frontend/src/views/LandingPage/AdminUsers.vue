@@ -12,11 +12,11 @@
           <p class="sub">Review new registrations and set roles.</p>
         </div>
       </div>
+    </header>
       <button class="ghost glass-btn-ghost" @click="backToHome">
         <mdicon name="home" size="18" />
         <span>Home</span>
       </button>
-    </header>
 
     <section class="stack">
       <div v-if="loading" class="hint">Loading users…</div>
@@ -158,6 +158,8 @@ onMounted(() => {
   gap: 12px;
   position: relative;
   z-index: 1;
+  margin-bottom: 0;
+  padding-bottom: 4px;
 }
 .eyebrow {
   text-transform: uppercase;
@@ -207,16 +209,19 @@ h2 {
   font-size: 14px;
   backdrop-filter: blur(6px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  align-self: flex-start;
+  margin-top: 6px;
 }
 .stack {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   position: relative;
   z-index: 1;
+  margin-top: 0;
 }
 .cards {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 .user-card {
   background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));

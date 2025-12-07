@@ -4,7 +4,7 @@
     <div class="car-orb two"></div>
     <div class="car-hero">
         <button class="car-icon-btn" @click="goBack">
-            <mdicon name="chevron-left" :size="22"/>
+            <mdicon name="home" :size="22"/>
         </button>
         <div>
             <h2 class="car-hero-title">Maintenance Schedules</h2>
@@ -229,7 +229,7 @@ export default {
         const detailReminder = ref(null)
         const showDeleteModal = ref(false)
 
-        const goBack = () => router.back()
+        const goBack = () => router.push('/')
         const goHome = () => router.push('/car-maintenance')
         const addSchedule = () => {
             router.push({ path: '/car-maintenance/schedules/add', query: selectedVehicleId.value ? { vehicleId: selectedVehicleId.value } : {} })

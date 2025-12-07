@@ -531,6 +531,15 @@
   font-weight: 800;
 }
 
+.expense-theme .profile-cards {
+  display: grid;
+  gap: 12px;
+}
+
+.expense-theme .profile-card {
+  padding: 16px;
+}
+
 .expense-theme .category-list {
   display: grid;
   gap: 10px;

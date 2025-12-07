@@ -4,7 +4,7 @@
     <div class="car-orb two"></div>
     <div class="car-hero">
         <button class="car-icon-btn" @click="goBack">
-            <mdicon name="chevron-left" :size="22"/>
+            <mdicon name="home" :size="22"/>
         </button>
         <div>
             <h2 class="car-hero-title">Vehicle Details</h2>
@@ -90,7 +90,7 @@ export default {
         const errorMessage = ref('')
         const showDelete = ref(false)
 
-        const goBack = () => router.back()
+        const goBack = () => router.push('/')
 
         const loadVehicle = async() => {
             loading.value = true

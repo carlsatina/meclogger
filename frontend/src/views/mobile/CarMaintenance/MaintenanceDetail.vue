@@ -4,7 +4,7 @@
     <div class="car-orb two"></div>
     <div class="car-hero">
         <button class="car-icon-btn" @click="goBack">
-            <mdicon name="chevron-left" :size="22"/>
+            <mdicon name="home" :size="22"/>
         </button>
         <div>
             <h2 class="car-hero-title">Maintenance Detail</h2>
@@ -151,7 +151,7 @@ export default {
             }
         }
 
-        const goBack = () => router.back()
+        const goBack = () => router.push('/')
         const editRecord = () => {
             if (!record.value) return
             router.push({ path: '/car-maintenance/maintenance/add', query: { edit: 'true', id: record.value.id, vehicleId: record.value.vehicleId } })
