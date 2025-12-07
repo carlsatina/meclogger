@@ -1,5 +1,5 @@
 <template>
-<div class="top-bar glass-nav">
+<div class="top-bar glass-nav glass-nav-orb">
     <div class="top-bar-content">
         <div class="left-section">
             <mdicon 
@@ -73,11 +73,11 @@ export default {
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(5, 6, 10, 0.6);
+    background: var(--glass-ghost-bg);
     z-index: 999;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    border-bottom: 1px solid var(--glass-card-border);
 }
 
 .top-bar-content {
@@ -97,21 +97,21 @@ export default {
 
 .back-button {
     cursor: pointer;
-    color: #67e8f9;
+    color: var(--accent-2);
     transition: all 0.2s ease;
     padding: 4px;
     border-radius: 8px;
 }
 
 .back-button:active {
-    background: rgba(255,255,255,0.08);
+    background: var(--glass-ghost-bg);
     transform: scale(0.95);
 }
 
 .title {
     font-size: 20px;
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin: 0;
     letter-spacing: -0.3px;
 }
@@ -132,11 +132,11 @@ export default {
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: var(--glass-ghost-bg);
+    border: 1px solid var(--glass-card-border);
     border-radius: 999px;
     font-size: 12px;
-    color: #e2e8f0;
+    color: var(--text-primary);
     backdrop-filter: blur(6px);
 }
 

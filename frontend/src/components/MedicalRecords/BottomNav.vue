@@ -1,5 +1,5 @@
 <template>
-<div class="bottom-nav">
+<div class="bottom-nav glass-nav-orb">
     <div 
         class="nav-item" 
         :class="{ active: activeTab === 'home' }"
@@ -57,7 +57,7 @@ export default {
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(5, 6, 10, 0.85);
+    background: var(--glass-ghost-bg);
     backdrop-filter: blur(12px);
     display: flex;
     justify-content: space-around;
@@ -65,7 +65,7 @@ export default {
     padding: 10px 8px 14px;
     box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35);
     z-index: 1000;
-    border-top: 1px solid rgba(148, 163, 184, 0.14);
+    border-top: 1px solid var(--glass-card-border);
 }
 
 .nav-item {
@@ -76,7 +76,7 @@ export default {
     padding: 10px 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: #94a3b8;
+    color: var(--text-muted);
     flex: 1;
     max-width: 100px;
     border-radius: 12px;
@@ -89,7 +89,7 @@ export default {
 
 .nav-item.active {
     color: #0b1020;
-    background: linear-gradient(135deg, #22d3ee, #a855f7);
+    background: linear-gradient(135deg, var(--accent-2), var(--accent-4));
     border-color: rgba(255,255,255,0.18);
     box-shadow: 0 10px 30px rgba(168, 85, 247, 0.35);
 }

@@ -121,13 +121,13 @@ onMounted(() => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #05060a;
+  background: var(--bg-main);
   padding: 20px 16px 80px;
   display: grid;
   gap: 16px;
   position: relative;
   overflow: hidden;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 .bg-orb {
   position: absolute;
@@ -170,11 +170,11 @@ onMounted(() => {
 h2 {
   margin: 2px 0;
   font-size: 20px;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 .sub {
   margin: 0;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 .hero-left {
@@ -199,7 +199,7 @@ h2 {
   border-radius: 12px;
   border: 1px solid rgba(226, 232, 240, 0.3);
   background: rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
+  color: var(--text-primary);
   display: inline-flex;
   gap: 6px;
   align-items: center;
@@ -247,16 +247,16 @@ h2 {
   margin: 0;
   font-weight: 700;
   font-size: 16px;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 .meta {
   margin: 0;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 12px;
 }
 .email {
   margin: 0;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 14px;
   word-break: break-word;
 }
@@ -279,7 +279,7 @@ h2 {
 }
 .label {
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-weight: 700;
 }
 .select {
@@ -288,7 +288,7 @@ h2 {
   border: 1px solid rgba(148, 163, 184, 0.4);
   font-size: 14px;
   background: rgba(255,255,255,0.04);
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 .primary {
   padding: 12px;
@@ -304,7 +304,7 @@ h2 {
 }
 .hint {
   padding: 12px 0;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .error-text {

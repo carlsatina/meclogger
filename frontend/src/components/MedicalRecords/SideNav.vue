@@ -68,8 +68,8 @@ export default {
 .side-nav {
     width: 260px;
     height: 100vh;
-    background: white;
-    border-right: 1px solid #e5e7eb;
+    background: var(--glass-card-bg);
+    border-right: 1px solid var(--glass-card-border);
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -80,13 +80,13 @@ export default {
 
 .nav-header {
     padding: 24px 20px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--glass-card-border);
 }
 
 .nav-title {
     font-size: 20px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--text-primary);
     margin: 0;
     letter-spacing: -0.3px;
 }
@@ -106,21 +106,21 @@ export default {
     cursor: pointer;
     border-radius: 12px;
     transition: all 0.2s ease;
-    color: #6b7280;
+    color: var(--text-muted);
 }
 
 .nav-item:hover {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--glass-ghost-bg);
+    color: var(--text-primary);
 }
 
 .nav-item.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-4) 100%);
+    color: #0b1020;
 }
 
 .nav-item.active:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-4) 100%);
 }
 
 .nav-label {
@@ -130,7 +130,7 @@ export default {
 
 .nav-footer {
     padding: 16px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--glass-card-border);
 }
 
 .back-button {
@@ -141,14 +141,14 @@ export default {
     cursor: pointer;
     border-radius: 10px;
     transition: all 0.2s ease;
-    color: #6b7280;
+    color: var(--text-muted);
     font-size: 14px;
     font-weight: 500;
 }
 
 .back-button:hover {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--glass-ghost-bg);
+    color: var(--text-primary);
 }
 
 .back-button:active {

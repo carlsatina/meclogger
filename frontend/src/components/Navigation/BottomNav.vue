@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-nav shadow">
+  <div class="mobile-nav shadow glass-nav-orb">
     <div class="bloc-icon w-100">
       <router-link to="/"  class="icon w-100 p-3 text-center">
         <mdicon name="home-outline" size="30"/><br>
@@ -51,13 +51,16 @@ export default {
 
 <style scoped>
 .mobile-nav {
-  background: transparent;
+  background: var(--glass-ghost-bg);
   position: fixed;
   bottom: 0;
   height: 65px;
   width: 100%;
   display: flex;
   justify-content: space-around;
+  border-top: 1px solid var(--glass-card-border);
+  backdrop-filter: blur(10px);
+  z-index: 900;
 }
 
 .bloc-icon {
@@ -65,13 +68,13 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: black;
+  color: var(--text-primary);
   font-size: 12px;
 }
 
 a.router-link-active {
   border-top: 2px;
-  color: #F39C12;
+  color: var(--accent-1);
   border-top-style: solid;
   width: 100%;
 }
@@ -83,7 +86,7 @@ a.router-link-active {
 } */
 
 .icon{
-  color: black;
+  color: var(--text-primary);
   text-decoration: none;
 }
 </style>

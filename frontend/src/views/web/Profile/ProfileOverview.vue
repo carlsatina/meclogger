@@ -368,7 +368,7 @@ export default {
 
 .family-empty {
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
@@ -437,7 +437,7 @@ export default {
 .label {
     font-size: 12px;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--text-muted);
     letter-spacing: 1px;
 }
 
@@ -475,7 +475,7 @@ export default {
 }
 
 .info-card ul span {
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-right: 6px;
 }
 
@@ -500,7 +500,7 @@ export default {
 }
 
 .muted {
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 

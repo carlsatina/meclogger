@@ -237,7 +237,7 @@ export default {
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: white;
     display: flex;
     align-items: center;
@@ -270,7 +270,7 @@ export default {
 .icon-btn {
     width: 42px;
     height: 42px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 12px;
     background: white;
     display: flex;
@@ -527,7 +527,7 @@ export default {
 
 .placeholder {
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-muted);
     padding: 20px 0;
 }
 
@@ -540,7 +540,7 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
 }
 
@@ -558,7 +558,7 @@ export default {
     display: flex;
     justify-content: space-between;
     margin-top: 6px;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
 }
 
@@ -566,7 +566,7 @@ export default {
     position: absolute;
     top: 0;
     right: 0;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
 }
 

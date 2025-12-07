@@ -520,7 +520,7 @@ export default {
     text-transform: uppercase;
     font-size: 12px;
     letter-spacing: 1px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0 0 6px 0;
 }
 

@@ -6,10 +6,16 @@
                 <span class="user-label">Signed in as</span>
                 <h2 class="user-name">{{ userName }}</h2>
             </div>
-            <button class="logout-btn" @click="logout">
-                <mdicon name="logout" size="20"/>
-                <span>Logout</span>
-            </button>
+            <div class="user-actions">
+                <button class="theme-toggle-pill" type="button" @click="toggleTheme">
+                    <mdicon :name="isDark ? 'white-balance-sunny' : 'moon-waning-crescent'" size="18"/>
+                    <span>{{ isDark ? 'Dark' : 'Light' }}</span>
+                </button>
+                <button class="logout-btn" @click="logout">
+                    <mdicon name="logout" size="20"/>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
         <h2 class="text-center mt-4 mb-3">Record Keeper</h2>
         <p class="text-center text-muted">Choose a feature to get started</p>
@@ -64,6 +70,7 @@ import Datepicker from 'vuejs3-datepicker'
 import getProfile from '@/composables/getProfile'
 import { useMedicineReminders } from '@/composables/medicineReminders'
 import { Role } from '@/constants/enums'
+import { useTheme } from '@/composables/theme'
 
 export default {
     name: "HomeWeb",
@@ -75,6 +82,7 @@ export default {
     setup() {
         const router = useRouter()
         const activeProfileId = ref(localStorage.getItem('selectedProfileId') || null)
+        const { isDark, toggleTheme } = useTheme()
 
         const navigateTo = (path) => {
             router.push(path)
@@ -175,7 +183,9 @@ export default {
             remindersLoading,
             remindersError,
             activeProfileId,
-            isAdmin
+            isAdmin,
+            isDark,
+            toggleTheme
         }
     }
 }
@@ -185,11 +195,16 @@ export default {
 .home-container {
     min-height: 100vh;
     padding: 40px 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: var(--home-bg-web);
+    color: var(--text-primary);
 }
 
 .header {
     margin-bottom: 40px;
+}
+
+.header p {
+    color: var(--text-secondary);
 }
 
 .reminders-section {
@@ -199,10 +214,11 @@ export default {
 }
 
 .reminders-card {
-    background: white;
+    background: var(--glass-card-bg);
     border-radius: 20px;
     padding: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--glass-card-shadow);
+    border: 1px solid var(--glass-card-border);
 }
 
 .reminders-header {
@@ -216,7 +232,7 @@ export default {
     margin: 0;
     font-size: 22px;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -241,15 +257,15 @@ export default {
 }
 
 .reminder-item {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--glass-card-border);
     border-radius: 16px;
     padding: 16px 20px;
-    background: #f8fafc;
+    background: var(--surface-plain);
     transition: all 0.2s ease;
 }
 
 .reminder-item:hover {
-    border-color: #667eea;
+    border-color: var(--accent-1);
     transform: translateY(-2px);
 }
 
@@ -263,13 +279,13 @@ export default {
 .reminder-name {
     font-size: 16px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--text-primary);
     margin: 0;
 }
 
 .reminder-method {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--text-muted);
     margin: 0 0 12px 0;
 }
 
@@ -280,15 +296,15 @@ export default {
 }
 
 .time-slot {
-    background: white;
+    background: var(--glass-ghost-bg);
     border-radius: 999px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--glass-card-border);
     padding: 6px 12px;
     font-size: 13px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #374151;
+    color: var(--text-primary);
 }
 
 .time-slot.taken {
@@ -310,7 +326,7 @@ export default {
 .reminders-empty {
     text-align: center;
     padding: 30px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .reminders-error {
@@ -323,11 +339,11 @@ export default {
 .reminders-loading {
     text-align: center;
     padding: 30px;
-    color: #6b7280;
+    color: var(--text-muted);
 }
 
 .header h2 {
-    color: #2c3e50;
+    color: var(--text-primary);
     font-weight: 700;
     font-size: 36px;
 }
@@ -348,10 +364,11 @@ export default {
 }
 
 .feature-card {
-    background: white;
+    background: var(--glass-card-bg);
     border-radius: 20px;
     padding: 40px 30px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--glass-card-shadow);
+    border: 1px solid var(--glass-card-border);
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
@@ -363,7 +380,7 @@ export default {
 
 .feature-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
 }
 
 .feature-card:active {
@@ -399,22 +416,22 @@ export default {
 .feature-title {
     font-size: 24px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 15px;
 }
 
 .feature-description {
     font-size: 15px;
-    color: #7f8c8d;
+    color: var(--text-secondary);
     margin: 0;
     line-height: 1.6;
 }
 
 .admin-title {
-    color: #312e81;
+    color: var(--text-primary);
 }
 .admin-desc {
-    color: #4338ca;
+    color: var(--text-secondary);
 }
 
 
@@ -437,13 +454,21 @@ export default {
     font-size: 13px;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: #6b7280;
+    color: var(--text-muted);
 }
 
 .user-name {
     margin: 4px 0 0;
     font-size: 28px;
-    color: #1f2937;
+    color: var(--text-primary);
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .logout-btn {

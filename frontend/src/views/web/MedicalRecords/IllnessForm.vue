@@ -233,7 +233,7 @@ export default {
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: white;
     display: flex;
     align-items: center;
@@ -284,7 +284,7 @@ textarea,
 select {
     padding: 12px;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     font-size: 14px;
 }
 
@@ -306,7 +306,7 @@ textarea {
 }
 
 .secondary-btn {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: #f8fafc;
     border-radius: 12px;
     padding: 10px 14px;

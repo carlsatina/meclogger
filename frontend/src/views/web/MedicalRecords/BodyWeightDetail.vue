@@ -261,7 +261,7 @@ export default {
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -349,7 +349,7 @@ export default {
 }
 
 .empty-hint {
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 

@@ -235,7 +235,7 @@ export default {
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -255,7 +255,7 @@ export default {
     background: #f8fafc;
     border-radius: 24px;
     padding: 24px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
 }
 
 .measurement-header {
@@ -317,7 +317,7 @@ export default {
 }
 
 .empty-hint {
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -345,7 +345,7 @@ export default {
     grid-template-columns: 160px 1fr auto;
     align-items: center;
     background: white;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 16px;
     padding: 16px 20px;
 }
@@ -357,7 +357,7 @@ export default {
 
 .history-time {
     margin: 4px 0 0;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .reading-value {
@@ -368,7 +368,7 @@ export default {
 
 .reading-sub {
     margin: 2px 0 0;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .status-chip {

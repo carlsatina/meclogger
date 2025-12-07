@@ -454,7 +454,7 @@ export default {
 <style scoped>
 .add-record-container {
     min-height: 100vh;
-    background: #05060a;
+    background: var(--bg-main);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -486,7 +486,7 @@ export default {
 
 /* Header */
 .header {
-    background: rgba(5,6,10,0.8);
+    background: var(--glass-ghost-bg);
     padding: 14px 16px;
     display: flex;
     align-items: center;
@@ -495,15 +495,15 @@ export default {
     top: 0;
     z-index: 10;
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    border-bottom: 1px solid var(--glass-card-border);
 }
 
 .close-btn {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--glass-ghost-bg);
+    border: 1px solid var(--glass-card-border);
     padding: 8px;
     cursor: pointer;
-    color: #e2e8f0;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -519,7 +519,7 @@ export default {
 .page-title {
     font-size: 19px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin: 0;
 }
 
@@ -567,7 +567,7 @@ export default {
     align-items: center;
     justify-content: center;
     background: rgba(11,16,32,0.8);
-    color: #e2e8f0;
+    color: var(--text-primary);
     cursor: pointer;
     border: 1px solid rgba(255,255,255,0.08);
 }
@@ -584,7 +584,7 @@ export default {
     gap: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: #e2e8f0;
+    color: var(--text-primary);
     box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
@@ -599,12 +599,12 @@ export default {
 }
 
 .plus-icon {
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .add-image-card p {
     font-size: 13px;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     margin: 0;
     font-weight: 600;
 }
@@ -631,7 +631,7 @@ export default {
 .form-label {
     font-size: 14px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .form-input,
@@ -641,13 +641,13 @@ export default {
     border-radius: 12px;
     padding: 12px 14px;
     font-size: 14px;
-    color: #e2e8f0;
+    color: var(--text-primary);
     transition: all 0.2s ease;
 }
 
 .form-input::placeholder,
 .glass-input::placeholder {
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .form-input:focus,
@@ -668,7 +668,7 @@ export default {
     border-radius: 12px;
     padding: 12px 38px 12px 14px;
     font-size: 14px;
-    color: #e2e8f0;
+    color: var(--text-primary);
     width: 100%;
     appearance: none;
     cursor: pointer;
@@ -676,7 +676,7 @@ export default {
 }
 
 .form-select option:first-child {
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .form-select:focus {
@@ -690,7 +690,7 @@ export default {
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
+    color: var(--text-muted);
     pointer-events: none;
 }
 
@@ -712,7 +712,7 @@ export default {
     gap: 8px;
     cursor: pointer;
     transition: all 0.25s ease;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .record-type-card:active {

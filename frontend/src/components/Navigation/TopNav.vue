@@ -1,17 +1,7 @@
 <template>
-<nav class="navbar sticky-top navbar-expand-lg" style="background-color: white;">
+    <nav class="navbar sticky-top navbar-expand-lg themed-nav glass-nav-orb">
         <div class="container-fluid">
-            <!-- <router-link to="/" class="navbar-brand" href="#">
-                 <span>Medical Records : {{ full_name }}</span>
-            </router-link>
-
-            <div v-if="!store.state.isUserLoggedIn">
-                <button type="button" class="btn btn-outline fw-bold text-light" @click="router.push('/login')" v-if="route.path != '/login'">Login</button>
-            </div>
-
-            <div>
-                <mdicon name="logout"  size="30"/>
-            </div> -->
+            <!-- add brand/actions here if needed -->
         </div>
     </nav>
 </template>
@@ -68,5 +58,12 @@ export default {
 .signout {
     color: white;
     font-weight: bold;
+}
+
+.themed-nav {
+    background: var(--glass-ghost-bg) !important;
+    border-bottom: 1px solid var(--glass-card-border);
+    color: var(--text-primary);
+    backdrop-filter: blur(8px);
 }
 </style>

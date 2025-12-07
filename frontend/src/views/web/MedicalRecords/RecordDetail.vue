@@ -355,7 +355,7 @@ export default {
     background: #f8fafc;
     border-radius: 20px;
     padding: 24px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
 }
 
 .attachments-panel {
@@ -382,7 +382,7 @@ export default {
 .summary-label {
     font-size: 12px;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0 0 4px;
 }
 
@@ -406,7 +406,7 @@ export default {
 
 .section-hint {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .notes-text {
@@ -416,7 +416,7 @@ export default {
 }
 
 .empty-hint {
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -439,7 +439,7 @@ export default {
     position: relative;
     background: white;
     border-radius: 20px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     height: 320px;
     display: flex;
     align-items: center;
@@ -496,7 +496,7 @@ export default {
 
 .viewer-count {
     margin: 0;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
@@ -513,7 +513,7 @@ export default {
     justify-content: space-between;
     padding: 12px 16px;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     text-decoration: none;
     color: inherit;
     gap: 12px;
@@ -547,7 +547,7 @@ export default {
 
 .file-size {
     margin: 2px 0 0;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 13px;
 }
 

@@ -1140,7 +1140,7 @@ export default {
     background: radial-gradient(circle at 20% 20%, rgba(79,70,229,0.15), transparent 40%),
                 radial-gradient(circle at 80% 10%, rgba(14,165,233,0.18), transparent 35%),
                 radial-gradient(circle at 50% 100%, rgba(34,197,94,0.12), transparent 40%),
-                #05060a;
+                var(--bg-main);
     padding-bottom: 96px;
     position: relative;
     overflow: hidden;
@@ -1256,7 +1256,7 @@ export default {
 .action-card-large h4 {
     font-size: 14px;
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin: 0;
     line-height: 1.4;
 }
@@ -1272,7 +1272,7 @@ export default {
 .section-title {
     font-size: 17px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin: 0;
     letter-spacing: -0.2px;
 }
@@ -1297,7 +1297,7 @@ export default {
 .reminder-empty {
     text-align: center;
     padding: 18px;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
@@ -1368,7 +1368,7 @@ export default {
 .records-loading {
     padding: 16px;
     text-align: center;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     font-size: 14px;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -1425,18 +1425,18 @@ export default {
 .record-name {
     font-size: 15px;
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin: 0 0 2px 0;
 }
 
 .record-type {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 
 .record-arrow {
-    color: #94a3b8;
+    color: var(--text-muted);
     flex-shrink: 0;
 }
 
@@ -1493,7 +1493,7 @@ export default {
 
 .record-meta {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -1566,12 +1566,12 @@ export default {
 
 .health-subtitle {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 
 .health-chevron {
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .health-chart {
@@ -1585,7 +1585,7 @@ export default {
     flex-direction: column;
     justify-content: space-between;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
     padding: 10px 0;
     min-width: 32px;
 }
@@ -1600,14 +1600,14 @@ export default {
     top: 0;
     right: 0;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .chart-unit-bottom {
     display: block;
     text-align: right;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-top: 8px;
 }
 
@@ -1657,7 +1657,7 @@ export default {
 
 .chart-label {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .line-chart {
@@ -1673,7 +1673,7 @@ export default {
 
 .chart-x-labels span {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .health-reading {
@@ -1686,7 +1686,7 @@ export default {
 .reading-value {
     font-size: 22px;
     font-weight: 800;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .reading-status {
@@ -1704,7 +1704,7 @@ export default {
 }
 
 .illness-card .health-subtitle {
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .illness-summary {
@@ -1749,7 +1749,7 @@ export default {
 
 .pill-badge.subtle {
     background: rgba(255,255,255,0.05);
-    color: #cbd5e1;
+    color: var(--text-secondary);
     border-color: rgba(255,255,255,0.08);
 }
 
@@ -1783,12 +1783,12 @@ export default {
 
 .illness-date {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .symptom-chip {
     background: rgba(255,255,255,0.05);
-    color: #e2e8f0;
+    color: var(--text-primary);
     border-radius: 999px;
     padding: 6px 10px;
     font-size: 12px;
@@ -1809,7 +1809,7 @@ export default {
 
 .placeholder-text {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -1821,7 +1821,7 @@ export default {
     justify-content: center;
     padding: 60px 20px;
     text-align: center;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .empty-icon {
@@ -1832,13 +1832,13 @@ export default {
 .empty-title {
     font-size: 18px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .empty-text {
     font-size: 14px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
     line-height: 1.5;
     max-width: 280px;
@@ -1861,7 +1861,7 @@ export default {
     margin: 0;
     font-size: 20px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .back-btn,
@@ -1873,7 +1873,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .profile-switcher {
@@ -1905,7 +1905,7 @@ export default {
     align-items: center;
     justify-content: center;
     background: rgba(255,255,255,0.05);
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .profile-avatar.active .avatar-circle {
@@ -1916,7 +1916,7 @@ export default {
 
 .profile-avatar span {
     font-size: 12px;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .profile-avatar.add .avatar-circle {
@@ -1938,7 +1938,7 @@ export default {
     justify-content: space-between;
     padding: 14px 16px;
     border-bottom: 1px solid rgba(148,163,184,0.12);
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .profile-row:last-child {
@@ -2011,7 +2011,7 @@ export default {
     cursor: pointer;
     transition: background 0.2s ease;
     border-radius: 12px;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .modal-option:active {
@@ -2044,7 +2044,7 @@ export default {
 
 .option-label {
     font-size: 15px;
-    color: #e2e8f0;
+    color: var(--text-primary);
     font-weight: 500;
 }
 
@@ -2113,7 +2113,7 @@ export default {
     padding: 16px;
     box-shadow: 0 18px 36px rgba(0,0,0,0.35);
     border: 1px solid rgba(255,255,255,0.08);
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .confirm-sheet {

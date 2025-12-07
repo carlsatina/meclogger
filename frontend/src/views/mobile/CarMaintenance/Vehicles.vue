@@ -232,7 +232,7 @@ export default {
     margin-top: 20px;
     padding: 18px;
     border-radius: 14px;
-    border: 1px dashed #cbd5e1;
+    border: 1px dashed var(--text-secondary);
     background: #f8fafc;
     text-align: center;
     display: grid;

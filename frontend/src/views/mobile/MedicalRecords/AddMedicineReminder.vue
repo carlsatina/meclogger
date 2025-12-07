@@ -316,7 +316,7 @@ export default {
 <style scoped>
 .add-medicine-page {
     min-height: 100vh;
-    background: #05060a;
+    background: var(--bg-main);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -351,19 +351,19 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    background: rgba(5,6,10,0.8);
-    border-bottom: 1px solid rgba(148,163,184,0.16);
+    background: var(--glass-ghost-bg);
+    border-bottom: 1px solid var(--glass-card-border);
     position: sticky;
     top: 0;
     z-index: 5;
 }
 
 .icon-btn {
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-card-border);
+    background: var(--glass-ghost-bg);
     padding: 8px;
     border-radius: 12px;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .icon-btn.ghost {
@@ -375,7 +375,7 @@ export default {
     margin: 0;
     font-size: 20px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .spacer {
@@ -403,7 +403,7 @@ export default {
 .input-label {
     display: block;
     font-size: 13px;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     margin-bottom: 8px;
     font-weight: 700;
 }
@@ -416,7 +416,7 @@ export default {
     background: rgba(255,255,255,0.05);
     font-size: 15px;
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .select-field {
@@ -430,7 +430,7 @@ export default {
     font-weight: 700;
     cursor: pointer;
     border: 1px solid rgba(255,255,255,0.12);
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .option-list {
@@ -448,7 +448,7 @@ export default {
     padding: 12px 16px;
     text-align: left;
     font-size: 14px;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .option-item:active {
@@ -458,7 +458,7 @@ export default {
 .section-label {
     font-size: 14px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin-bottom: 10px;
 }
 
@@ -474,7 +474,7 @@ export default {
     justify-content: space-between;
     font-size: 14px;
     font-weight: 600;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .dosage-value {
@@ -530,7 +530,7 @@ export default {
     font-size: 14px;
     font-weight: 600;
     appearance: none;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .styled-select select:focus,
@@ -560,7 +560,7 @@ export default {
 .remove-time {
     border: 1px solid rgba(255,255,255,0.12);
     background: rgba(255,255,255,0.06);
-    color: #e2e8f0;
+    color: var(--text-primary);
     width: 32px;
     height: 32px;
     border-radius: 50%;

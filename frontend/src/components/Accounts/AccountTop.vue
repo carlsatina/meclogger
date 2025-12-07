@@ -1,5 +1,5 @@
 <template>
-<nav class="navbar sticky-top navbar-expand-lg" style="background-color: lightslategray;">
+<nav class="navbar sticky-top navbar-expand-lg themed-nav glass-nav-orb">
     <div class="container-fluid" v-if="isPlatformMobile">
         <div class="d-flex flex-row justify-content-start align-items-center mt-5">
             <img src="@/assets/female-avatar.png" width="60" style="border-radius: 50%;">
@@ -99,5 +99,12 @@ export default {
     position: absolute;
     top: 0;
     right:0;
+}
+
+.themed-nav {
+    background: var(--glass-ghost-bg) !important;
+    border-bottom: 1px solid var(--glass-card-border);
+    color: var(--text-primary);
+    backdrop-filter: blur(8px);
 }
 </style>

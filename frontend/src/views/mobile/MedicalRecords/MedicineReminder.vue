@@ -416,7 +416,7 @@ export default {
 <style scoped>
 .medicine-reminder-page {
     min-height: 100vh;
-    background: #05060a;
+    background: var(--bg-main);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -451,19 +451,19 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    background: rgba(5,6,10,0.8);
-    border-bottom: 1px solid rgba(148,163,184,0.16);
+    background: var(--glass-ghost-bg);
+    border-bottom: 1px solid var(--glass-card-border);
     position: sticky;
     top: 0;
     z-index: 5;
 }
 
 .icon-btn {
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-card-border);
+    background: var(--glass-ghost-bg);
     padding: 8px;
     border-radius: 12px;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .icon-btn.ghost {
@@ -475,7 +475,7 @@ export default {
     margin: 0;
     font-size: 20px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .calendar-card {
@@ -505,7 +505,7 @@ export default {
 .month-nav {
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.06);
-    color: #e2e8f0;
+    color: var(--text-primary);
     width: 32px;
     height: 32px;
     border-radius: 10px;
@@ -520,7 +520,7 @@ export default {
     gap: 6px;
     font-size: 15px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
     padding: 6px 12px;
     border-radius: 12px;
     background: rgba(103,232,249,0.12);
@@ -540,7 +540,7 @@ export default {
     padding: 8px;
     background: rgba(255,255,255,0.05);
     font-size: 13px;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .history-btn {
@@ -559,13 +559,13 @@ export default {
 
 .week-label {
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .week-nav {
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.06);
-    color: #e2e8f0;
+    color: var(--text-primary);
     width: 32px;
     height: 32px;
     border-radius: 10px;
@@ -585,7 +585,7 @@ export default {
     border-radius: 14px;
     text-align: center;
     background: rgba(255,255,255,0.05);
-    color: #cbd5e1;
+    color: var(--text-secondary);
     cursor: pointer;
     border: 1px solid rgba(255,255,255,0.08);
     transition: all 0.2s ease;
@@ -671,18 +671,18 @@ export default {
     margin: 0;
     font-size: 16px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .reminder-details {
     margin: 2px 0 0;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
 }
 
 .reminder-start {
     margin: 0;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     font-size: 12px;
 }
 
@@ -724,7 +724,7 @@ export default {
 .empty-state {
     padding: 32px 16px;
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .empty-state.small {
@@ -821,7 +821,7 @@ export default {
 
 .message {
     font-size: 16px;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin: 0;
 }
 

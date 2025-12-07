@@ -254,7 +254,7 @@ export default {
 <style scoped>
 .add-illness-container {
     min-height: 100vh;
-    background: #05060a;
+    background: var(--bg-main);
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -305,7 +305,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 h2 {
@@ -313,7 +313,7 @@ h2 {
     margin: 0;
     font-size: 20px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
     text-align: center;
 }
 
@@ -342,7 +342,7 @@ h2 {
 
 .field span {
     font-size: 13px;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     font-weight: 700;
 }
 
@@ -355,7 +355,7 @@ select {
     border: 1px solid rgba(255,255,255,0.12);
     background: rgba(255,255,255,0.05);
     font-size: 14px;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 input:focus,
@@ -403,7 +403,7 @@ textarea {
 .submit-btn.ghost {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .submit-btn.danger {

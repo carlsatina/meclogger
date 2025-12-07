@@ -345,7 +345,7 @@ input, textarea, select {
 }
 
 .upload-box {
-    border: 1px dashed #cbd5e1;
+    border: 1px dashed var(--text-secondary);
     padding: 12px;
     border-radius: 12px;
     display: inline-flex;

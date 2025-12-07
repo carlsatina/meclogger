@@ -463,7 +463,7 @@ export default {
 
 .hero {
     background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: #e2e8f0;
+    color: var(--text-primary);
     border-radius: 18px;
     padding: 16px;
     display: flex;
@@ -480,13 +480,13 @@ export default {
 
 .hero .sub {
     margin: 0;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .label {
     margin: 0;
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .primary-chip {
@@ -505,7 +505,7 @@ export default {
 .ghost-chip {
     background: #f8fafc;
     color: #0f172a;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     box-shadow: none;
 }
 
@@ -592,7 +592,7 @@ export default {
 
 .empty {
     margin: 0;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
@@ -642,7 +642,7 @@ export default {
 }
 
 .field input {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 12px;
     padding: 12px;
     font-size: 15px;

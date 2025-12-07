@@ -208,7 +208,7 @@ input, select, textarea {
 }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .upload-box {
-    border: 1px dashed #cbd5e1;
+    border: 1px dashed var(--text-secondary);
     padding: 10px 12px;
     border-radius: 12px;
     display: inline-flex;

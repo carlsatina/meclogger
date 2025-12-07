@@ -114,7 +114,7 @@
                 <div class="item" v-for="exp in expenses.slice(0,5)" :key="exp.id">
                     <div class="icon-circle"
                         :style="{
-                            background: exp.categoryColor || '#e2e8f0',
+                            background: exp.categoryColor || 'var(--text-primary)',
                             color: exp.categoryColor ? '#fff' : '#0f172a'
                         }"
                     >
@@ -205,7 +205,7 @@
                     <div
                         class="icon-circle"
                         :style="{
-                            background: item.iconBg || '#e2e8f0',
+                            background: item.iconBg || 'var(--text-primary)',
                             color: item.iconColor || '#0f172a'
                         }"
                     >
@@ -271,7 +271,7 @@
                         <div class="item compact-item mt-1 swipeable" v-for="exp in transactionsForMonth" :key="exp.id">
                             <div class="icon-circle"
                                 :style="{
-                                    background: exp.categoryColor || '#e2e8f0',
+                                    background: exp.categoryColor || 'var(--text-primary)',
                                     color: exp.categoryColor ? '#fff' : '#0f172a'
                                 }"
                             >
@@ -353,7 +353,7 @@
                 <span class="micro muted">Highest spend</span>
             </div>
             <div class="cat-row">
-                <div class="icon-circle" :style="{ background: topCategory.color || '#e2e8f0', color: topCategory.color ? '#fff' : '#0f172a' }">
+                <div class="icon-circle" :style="{ background: topCategory.color || 'var(--text-primary)', color: topCategory.color ? '#fff' : '#0f172a' }">
                     <mdicon :name="topCategory.icon || 'star'" size="20" />
                 </div>
                 <div class="cat-main">
@@ -374,7 +374,7 @@
             </div>
             <div class="category-list">
                 <div class="cat-row" v-for="cat in categoryBreakdown" :key="cat.id || cat.name">
-                    <div class="icon-circle" :style="{ background: cat.color || '#e2e8f0', color: cat.color ? '#fff' : '#0f172a' }">
+                    <div class="icon-circle" :style="{ background: cat.color || 'var(--text-primary)', color: cat.color ? '#fff' : '#0f172a' }">
                         <mdicon :name="cat.icon || 'label-outline'" size="18" />
                     </div>
                     <div class="cat-main">
@@ -443,7 +443,7 @@
                         v-for="cat in categories"
                         :key="cat.id || cat.name"
                         class="pill ghost chip-with-icon"
-                        :style="{ borderColor: cat.color || '#e2e8f0' }"
+                        :style="{ borderColor: cat.color || 'var(--text-primary)' }"
                     >
                         <mdicon
                             :name="cat.icon || 'label-outline'"
@@ -471,7 +471,7 @@
                         v-for="cur in currencies"
                         :key="cur.id || cur.code"
                         class="pill ghost chip-with-icon"
-                        :style="{ borderColor: cur.isDefault ? '#4f46e5' : '#e2e8f0', color: '#0f172a' }"
+                        :style="{ borderColor: cur.isDefault ? '#4f46e5' : 'var(--text-primary)', color: '#0f172a' }"
                     >
                         <mdicon :name="cur.isDefault ? 'star' : 'cash-multiple'" size="16" :style="{ color: cur.isDefault ? '#4f46e5' : '#475569' }" />
                         {{ cur.code }}
@@ -480,7 +480,7 @@
                         v-for="acct in accounts"
                         :key="acct.id || acct.name"
                         class="pill ghost chip-with-icon"
-                        :style="{ borderColor: acct.isDefault ? '#22c55e' : '#e2e8f0', color: '#0f172a' }"
+                        :style="{ borderColor: acct.isDefault ? '#22c55e' : 'var(--text-primary)', color: '#0f172a' }"
                     >
                         <mdicon :name="acct.isDefault ? 'star' : 'credit-card-outline'" size="16" :style="{ color: acct.isDefault ? '#22c55e' : '#475569' }" />
                         {{ acct.name }}
@@ -638,7 +638,7 @@
                             class="pill-option compact"
                             :class="{ active: expenseForm.categoryId === cat.id }"
                             @click="expenseForm.categoryId = cat.id"
-                            :style="{ borderColor: cat.color || '#e2e8f0', color: '#0f172a' }"
+                            :style="{ borderColor: cat.color || 'var(--text-primary)', color: '#0f172a' }"
                         >
                             <mdicon :name="cat.icon || 'label-outline'" size="18" :style="{ color: cat.color || '#4f46e5' }" />
                             <span>{{ cat.name }}</span>
@@ -869,7 +869,7 @@
                             class="pill-option compact"
                             :class="{ active: scheduleForm.categoryId === cat.id }"
                             @click="scheduleForm.categoryId = cat.id"
-                            :style="{ borderColor: cat.color || '#e2e8f0', color: '#0f172a' }"
+                            :style="{ borderColor: cat.color || 'var(--text-primary)', color: '#0f172a' }"
                         >
                             <mdicon :name="cat.icon || 'label-outline'" size="18" :style="{ color: cat.color || '#4f46e5' }" />
                             <span>{{ cat.name }}</span>
@@ -1232,7 +1232,7 @@ export default {
             const map = new Map()
             insightsExpenses.value.forEach(exp => {
                 const key = exp.categoryId || 'uncategorized'
-                const existing = map.get(key) || { total: 0, name: 'Uncategorized', icon: 'shape-outline', color: '#e2e8f0', id: key }
+                const existing = map.get(key) || { total: 0, name: 'Uncategorized', icon: 'shape-outline', color: 'var(--text-primary)', id: key }
                 existing.total += Number(exp.amount || 0)
                 const cat = categories.value.find(c => c.id === exp.categoryId)
                 existing.name = cat?.name || existing.name
@@ -1298,7 +1298,7 @@ export default {
                     planned: true,
                     type,
                     categoryIcon: src.categoryIcon || src.icon || cat?.icon || 'calendar-clock',
-                    categoryColor: src.categoryColor || src.iconBg || cat?.color || '#e2e8f0',
+                    categoryColor: src.categoryColor || src.iconBg || cat?.color || 'var(--text-primary)',
                     categoryId: src.categoryId || ''
                 })
             }
@@ -1516,7 +1516,7 @@ export default {
             '#ef4444', '#f97316', '#f59e0b', '#84cc16',
             '#22c55e', '#14b8a6', '#06b6d4', '#0ea5e9',
             '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7',
-            '#ec4899', '#f472b6', '#94a3b8', '#475569',
+            '#ec4899', '#f472b6', 'var(--text-muted)', '#475569',
             '#000000', '#ffffff'
         ])
         const selectedColor = ref(colorPalette.value[9])
@@ -2497,7 +2497,7 @@ export default {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow: 0 14px 28px rgba(15, 23, 42, 0.35);
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .budget-card .budget-list {
@@ -2548,7 +2548,7 @@ export default {
 .budget-slide {
     min-width: 100%;
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 16px;
     padding: 12px;
     scroll-snap-align: start;
@@ -2572,7 +2572,7 @@ export default {
     width: 8px;
     height: 8px;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--text-secondary);
     transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -2588,7 +2588,7 @@ export default {
 
 .progress.big {
     height: 10px;
-    background: #e2e8f0;
+    background: var(--text-primary);
 }
 
 .progress .bar.gradient {
@@ -2627,7 +2627,7 @@ export default {
     justify-content: space-between;
     gap: 10px;
     padding: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 12px;
     background: #f8fafc;
 }
@@ -2717,7 +2717,7 @@ export default {
     width: 100%;
     height: 8px;
     border-radius: 8px;
-    background: #e2e8f0;
+    background: var(--text-primary);
     margin: 10px 0 6px;
     overflow: hidden;
 }
@@ -2891,7 +2891,7 @@ export default {
     padding: 16px;
     border-radius: 16px;
     background: #fff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     color: #0f172a;
 }
@@ -2915,7 +2915,7 @@ export default {
 .insight-block {
     background: #fff;
     border-radius: 16px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
     padding: 14px;
 }
@@ -2933,7 +2933,7 @@ export default {
     align-items: center;
     padding: 10px;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: #f8fafc;
     color: #0f172a;
 }
@@ -2958,7 +2958,7 @@ export default {
 
 .budget-health-card {
     padding: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 14px;
     background: #f8fafc;
     box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
@@ -2968,7 +2968,7 @@ export default {
 .chip.glass {
     background: rgba(255, 255, 255, 0.75);
     color: #0f172a;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
 }
 
@@ -2988,7 +2988,7 @@ export default {
 .bar-track {
     width: 100%;
     height: 120px;
-    background: #e2e8f0;
+    background: var(--text-primary);
     border-radius: 10px;
     display: flex;
     align-items: flex-end;
@@ -3026,7 +3026,7 @@ export default {
     grid-template-columns: repeat(3, 1fr);
     align-items: center;
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 14px;
     padding: 10px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
@@ -3048,7 +3048,7 @@ export default {
     gap: 10px;
     align-items: center;
     padding: 10px 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 14px;
     background: linear-gradient(135deg, #eef2ff, #f8fafc);
     box-shadow: 0 8px 18px rgba(79, 70, 229, 0.08);
@@ -3058,7 +3058,7 @@ export default {
     width: 100%;
     height: 8px;
     border-radius: 999px;
-    background: #e2e8f0;
+    background: var(--text-primary);
     overflow: hidden;
 }
 
@@ -3151,7 +3151,7 @@ export default {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: #f8fafc;
     border-radius: 999px;
     padding: 6px 10px;
@@ -3179,7 +3179,7 @@ export default {
     background: radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.22), transparent 50%),
         radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.18), transparent 50%),
         #0f172a;
-    color: #e2e8f0;
+    color: var(--text-primary);
     border-radius: 18px;
     padding: 16px;
     overflow: hidden;
@@ -3223,7 +3223,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--text-primary);
 }
 
 .category-row:last-child {
@@ -3247,7 +3247,7 @@ export default {
 .circle.amber { background: #f59e0b; }
 
 .chip {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: #fff;
     padding: 6px 10px;
     border-radius: 999px;
@@ -3277,7 +3277,7 @@ export default {
 
 .bar-label {
     font-size: 10px;
-    color: #94a3b8;
+    color: var(--text-muted);
     letter-spacing: 0.2px;
 }
 
@@ -3299,7 +3299,7 @@ export default {
 
 .hero-schedules {
     background: #0f172a;
-    color: #e2e8f0;
+    color: var(--text-primary);
     border-radius: 18px;
     padding: 14px 16px;
     display: flex;
@@ -3334,7 +3334,7 @@ export default {
 }
 
 .toggle-pill {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: #fff;
     padding: 10px 12px;
     border-radius: 12px;
@@ -3377,7 +3377,7 @@ export default {
     border-radius: 10px;
     font-weight: 800;
     color: #0f172a;
-    background: #e2e8f0;
+    background: var(--text-primary);
 }
 
 .badge.pink { background: #fce7f3; color: #be185d; }
@@ -3421,7 +3421,7 @@ export default {
 }
 
 .profile-card {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
 }
 
 .budget-manage-list {
@@ -3435,7 +3435,7 @@ export default {
     grid-template-columns: 1fr auto;
     align-items: center;
     padding: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 12px;
     background: #f8fafc;
 }
@@ -3459,7 +3459,7 @@ export default {
 .ghost-chip {
     background: #f8fafc;
     color: #0f172a;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     box-shadow: none;
 }
 
@@ -3480,7 +3480,7 @@ export default {
     width: 42px;
     height: 24px;
     border-radius: 999px;
-    background: #e2e8f0;
+    background: var(--text-primary);
     position: relative;
 }
 
@@ -3548,7 +3548,7 @@ export default {
     padding: 12px;
     background: #f8fafc;
     border-radius: 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     margin: 8px 0 12px;
 }
 
@@ -3575,7 +3575,7 @@ export default {
     gap: 10px;
     align-items: center;
     padding: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: #f8fafc;
     border-radius: 14px;
 }
@@ -3607,7 +3607,7 @@ export default {
 }
 
 .field input {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 12px;
     padding: 12px;
     font-size: 15px;
@@ -3615,7 +3615,7 @@ export default {
 }
 
 .field select {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 12px;
     padding: 12px;
     font-size: 15px;
@@ -3637,7 +3637,7 @@ export default {
     gap: 6px;
     padding: 8px 12px;
     border-radius: 999px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     background: #f8fafc;
     font-weight: 700;
     color: #0f172a;
@@ -3724,7 +3724,7 @@ export default {
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     display: grid;
     place-items: center;
     background: #f8fafc;
@@ -3823,7 +3823,7 @@ export default {
     grid-template-columns: repeat(4, 1fr);
     background: #fff;
     padding: 8px 10px 12px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--text-primary);
     box-shadow: 0 -8px 20px rgba(15, 23, 42, 0.08);
 }
 
@@ -3833,7 +3833,7 @@ export default {
     display: grid;
     justify-items: center;
     gap: 4px;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
 }

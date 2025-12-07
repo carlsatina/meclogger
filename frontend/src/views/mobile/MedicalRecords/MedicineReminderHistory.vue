@@ -215,7 +215,7 @@ export default {
 
 .empty-state {
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 14px;
     padding: 24px 12px;
 }

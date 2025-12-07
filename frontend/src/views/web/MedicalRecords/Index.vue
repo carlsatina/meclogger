@@ -1020,11 +1020,11 @@ export default {
 
 .home-empty {
     margin: 0;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .reminder-card {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 16px;
     padding: 16px 20px;
     background: #f8fafc;
@@ -1064,7 +1064,7 @@ export default {
 .slot-chip {
     background: white;
     border-radius: 999px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     padding: 6px 12px;
     font-size: 13px;
     display: inline-flex;
@@ -1098,7 +1098,7 @@ export default {
     align-items: center;
     gap: 12px;
     padding: 14px 16px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--text-primary);
     border-radius: 16px;
     cursor: pointer;
     transition: border-color 0.2s ease, transform 0.2s ease;
@@ -1133,7 +1133,7 @@ export default {
 
 .home-record-chevron {
     margin-left: auto;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 /* Records Header */
@@ -1373,7 +1373,7 @@ export default {
 }
 
 .health-empty {
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -1396,7 +1396,7 @@ export default {
     flex-direction: column;
     justify-content: space-between;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
     min-width: 32px;
 }
 
@@ -1410,7 +1410,7 @@ export default {
     top: 12px;
     right: 16px;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .chart-bars {
@@ -1486,7 +1486,7 @@ export default {
 }
 
 .placeholder-text {
-    color: #94a3b8;
+    color: var(--text-muted);
     margin: 0;
     font-size: 14px;
 }

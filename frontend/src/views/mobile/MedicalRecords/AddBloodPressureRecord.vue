@@ -195,7 +195,7 @@ export default {
 <style scoped>
 .add-record-container {
     min-height: 100vh;
-    background: #05060a;
+    background: var(--bg-main);
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -239,7 +239,7 @@ export default {
 .screen-title {
     font-size: 20px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .icon-btn {
@@ -251,7 +251,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .icon-btn.ghost {
@@ -280,13 +280,13 @@ export default {
     font-size: 16px;
     font-weight: 700;
     margin: 0;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .card-subtitle {
     margin: 4px 0 0;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .card-icon {
@@ -302,7 +302,7 @@ export default {
     font-size: 14px;
     resize: vertical;
     background: rgba(255,255,255,0.05);
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .bp-inputs {
@@ -325,7 +325,7 @@ export default {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-bottom: 6px;
 }
 
@@ -335,7 +335,7 @@ export default {
     background: transparent;
     font-size: 20px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .bp-input input:focus {
@@ -345,7 +345,7 @@ export default {
 .divider {
     font-size: 26px;
     font-weight: 700;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .status-pill {
@@ -390,7 +390,7 @@ export default {
 .input-block label {
     font-size: 13px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .input-block input {
@@ -398,7 +398,7 @@ export default {
     border-radius: 12px;
     padding: 12px;
     font-size: 14px;
-    color: #e2e8f0;
+    color: var(--text-primary);
     background: rgba(255,255,255,0.05);
 }
 
@@ -411,6 +411,6 @@ export default {
 .profile-chip {
     margin: 0;
     font-size: 14px;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 </style>

@@ -13,10 +13,16 @@
                     <p class="eyebrow">Hi, {{ userName }}</p>
                 </div>
             </div>
-            <button class="ghost-btn" @click="logout">
-                <mdicon name="logout" size="18" />
-                <span>Logout</span>
-            </button>
+            <div class="hero-actions">
+                <button class="theme-toggle-pill" type="button" @click="toggleTheme">
+                    <mdicon :name="isDark ? 'white-balance-sunny' : 'moon-waning-crescent'" size="18" />
+                    <span>{{ isDark ? 'Dark' : 'Light' }}</span>
+                </button>
+                <button class="ghost-btn" @click="logout">
+                    <mdicon name="logout" size="18" />
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
         <p class="hero-sub">Health, maintenance, and finances—unified in a sleek console.</p>
     </header>
@@ -86,6 +92,7 @@ import store from '@/store'
 import Datepicker from 'vuejs3-datepicker'
 import getProfile from '@/composables/getProfile'
 import { Role } from '@/constants/enums'
+import { useTheme } from '@/composables/theme'
 
 export default {
     name: "HomeMobile",
@@ -96,6 +103,7 @@ export default {
     },
     setup() {
         const router = useRouter()
+        const { isDark, toggleTheme } = useTheme()
 
         const navigateTo = (path) => {
             router.push(path)
@@ -139,7 +147,9 @@ export default {
             navigateTo,
             logout,
             userName,
-            isAdmin
+            isAdmin,
+            isDark,
+            toggleTheme
         }
     }
 }
@@ -150,10 +160,8 @@ export default {
     position: relative;
     min-height: 100vh;
     padding: 18px 16px 80px;
-    background: radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.25), transparent 25%), 
-                radial-gradient(circle at 80% 0%, rgba(6, 182, 212, 0.25), transparent 22%),
-                #05060a;
-    color: #e5e7eb;
+    background: var(--home-bg-mobile);
+    color: var(--text-primary);
     overflow: hidden;
 }
 
@@ -193,6 +201,7 @@ export default {
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
+    flex-wrap: wrap;
 }
 
 .brand {
@@ -205,7 +214,7 @@ export default {
     width: 48px;
     height: 48px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
     color: #0b1020;
     display: grid;
     place-items: center;
@@ -219,7 +228,7 @@ export default {
     font-size: 12px;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: #a5b4fc;
+    color: var(--text-secondary);
     font-weight: 700;
 }
 
@@ -235,20 +244,28 @@ export default {
 
 .eyebrow {
     margin: 0;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
 .hero-sub {
     margin: 0;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     font-size: 14px;
 }
 
+.hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
 .ghost-btn {
-    border: 1px solid rgba(226, 232, 240, 0.3);
-    background: rgba(255, 255, 255, 0.06);
-    color: #e2e8f0;
+    border: 1px solid var(--glass-ghost-border);
+    background: var(--glass-ghost-bg);
+    color: var(--text-primary);
     border-radius: 12px;
     padding: 10px 12px;
     display: inline-flex;
@@ -268,11 +285,11 @@ export default {
 }
 
 .glass-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--glass-card-bg);
+    border: 1px solid var(--glass-card-border);
     border-radius: 16px;
     padding: 14px;
-    box-shadow: 0 18px 36px rgba(0,0,0,0.25);
+    box-shadow: var(--glass-card-shadow);
     cursor: pointer;
     display: grid;
     gap: 10px;
@@ -292,7 +309,7 @@ export default {
     font-weight: 700;
     font-size: 11px;
     color: #0b1020;
-    background: linear-gradient(135deg, #67e8f9, #a855f7);
+    background: var(--pill-gradient);
     box-shadow: 0 6px 14px rgba(6, 182, 212, 0.3);
     width: fit-content;
 }
@@ -312,7 +329,7 @@ export default {
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
     display: grid;
     place-items: center;
     color: #0b1020;
@@ -326,14 +343,14 @@ export default {
 .glass-card h3 {
     margin: 0;
     font-size: 16px;
-    color: #e2e8f0;
+    color: var(--text-primary);
     letter-spacing: -0.2px;
 }
 
 .glass-card p {
     margin: 2px 0 0;
     font-size: 13px;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     line-height: 1.4;
 }
 

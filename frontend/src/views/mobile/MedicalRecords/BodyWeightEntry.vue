@@ -308,7 +308,7 @@ export default {
 </script>
 
 <style scoped>
-.vital-entry-page { min-height: 100vh; background: #05060a; position: relative; overflow: hidden; padding-bottom: 80px; }
+.vital-entry-page { min-height: 100vh; background: var(--bg-main); position: relative; overflow: hidden; padding-bottom: 80px; }
 .bg-orb { position: absolute; filter: blur(60px); opacity: 0.28; z-index: 0; }
 .orb-1 { width: 320px; height: 320px; border-radius: 50%; background: linear-gradient(135deg, #22d3ee, #a855f7); top: -140px; left: -110px; }
 .orb-2 { width: 260px; height: 260px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #06b6d4); bottom: -120px; right: -90px; }
@@ -318,23 +318,25 @@ export default {
 .measurement-card { display: flex; flex-direction: column; gap: 12px; }
 .measurement-header { display: flex; align-items: center; gap: 12px; }
 .measurement-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #22d3ee, #a855f7); color: #0b1020; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
-.measurement-label { margin: 0; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-.measurement-status { margin: 2px 0 0; font-size: 16px; font-weight: 800; color: #e2e8f0; }
+.measurement-label { margin: 0; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.measurement-status { margin: 2px 0 0; font-size: 16px; font-weight: 800; color: var(--text-primary); }
 .measurement-display { display: flex; align-items: baseline; gap: 8px; }
-.measurement-value { margin: 0; font-size: 28px; font-weight: 800; color: #e2e8f0; }
-.measurement-value span { font-size: 14px; color: #94a3b8; margin-left: 4px; }
+.measurement-value { margin: 0; font-size: 28px; font-weight: 800; color: var(--text-primary); }
+.measurement-value span { font-size: 14px; color: var(--text-muted); margin-left: 4px; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 12px; color: #94a3b8; font-weight: 700; }
-.form-group input, .form-group textarea, .form-group select { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px; background: rgba(255,255,255,0.05); color: #e2e8f0; }
+.form-group label { font-size: 12px; color: var(--text-muted); font-weight: 700; }
+.form-group input, .form-group textarea, .form-group select { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px; background: rgba(255,255,255,0.05); color: var(--text-primary); }
 .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: rgba(103,232,249,0.6); box-shadow: 0 0 0 2px rgba(103,232,249,0.25); }
-.info-row { display: flex; justify-content: space-between; font-size: 14px; color: #e2e8f0; }
-.state-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; padding: 16px; border-radius: 14px; text-align: center; box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
+.card textarea { width: 100%; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px; background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 14px; }
+.card textarea:focus { outline: none; border-color: rgba(103,232,249,0.6); box-shadow: 0 0 0 2px rgba(103,232,249,0.25); }
+.info-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-primary); }
+.state-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary); padding: 16px; border-radius: 14px; text-align: center; box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
 .state-card.error { color: #f87171; border-color: rgba(239,68,68,0.35); }
 .menu-wrapper { position: relative; }
-.empty-hint { color: #94a3b8; font-size: 13px; margin: 0; }
+.empty-hint { color: var(--text-muted); font-size: 13px; margin: 0; }
 .edit-actions { display: flex; flex-direction: column; gap: 10px; }
 .edit-error { color: #f87171; font-size: 13px; margin: 0; }
-.edit-cancel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; color: #e2e8f0; font-weight: 700; }
+.edit-cancel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; color: var(--text-primary); font-weight: 700; }
 .edit-save { border-radius: 12px; padding: 12px; font-weight: 700; }
 </style>

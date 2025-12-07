@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import initFacebookSdk from '@/_helpers/init-facebook-sdk'
 import vue3GoogleLogin from 'vue3-google-login'
+import { initTheme } from './composables/theme'
 
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap"
@@ -15,6 +16,11 @@ import * as mdijs from '@mdi/js'
 
 const googleClientId =
   import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.VUE_APP_GOOGLE_CLIENT_ID || ''
+
+// Apply the saved or preferred theme before the app mounts to avoid flashes.
+if (typeof window !== 'undefined') {
+    initTheme()
+}
 
 initFacebookSdk().then(createApp)
 
