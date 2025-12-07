@@ -1,6 +1,8 @@
 <template>
-<div class="page">
-    <header class="hero">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <header class="car-hero">
         <div class="brand">
             <button class="logo-circle" @click="goLanding">
                 <mdicon name="home" :size="22"/>
@@ -10,7 +12,7 @@
                 <h1 class="headline">Keep every ride in peak shape</h1>
             </div>
         </div>
-        <nav class="tabs">
+        <nav class="car-tabs">
             <button :class="{ active: currentTab === 'home' }" @click="setTab('home')">Home</button>
             <button :class="{ active: currentTab === 'schedules' }" @click="setTab('schedules')">Schedules</button>
             <button :class="{ active: currentTab === 'report' }" @click="setTab('report')">Report</button>
@@ -19,46 +21,46 @@
         </nav>
     </header>
 
-    <main class="content">
-        <section v-if="currentTab === 'home'" class="panel">
-            <div class="panel-header">
+    <main class="car-body">
+        <section v-if="currentTab === 'home'" class="car-panel">
+            <div class="car-panel-header">
                 <div class="vehicle-select">
                     <label>Vehicle</label>
                     <div class="select-wrapper">
-                        <select v-model="selectedVehicleId" @change="handleVehicleChange">
+                        <select class="car-select" v-model="selectedVehicleId" @change="handleVehicleChange">
                             <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ displayName(v) }}</option>
                         </select>
                     </div>
                 </div>
-                <button class="primary-btn" @click="goAddMaintenance">
+                <button class="car-btn" @click="goAddMaintenance">
                     <mdicon name="plus" :size="18"/><span>Add Maintenance</span>
                 </button>
             </div>
 
-            <div class="search-bar">
+            <div class="car-search">
                 <mdicon name="magnify" :size="20"/>
                 <input v-model="searchTerm" type="text" placeholder="Search maintenance..." @input="debouncedSearch">
             </div>
 
-            <div v-if="loading" class="empty">Loading maintenance...</div>
-            <div v-else-if="errorMessage" class="empty">{{ errorMessage }}</div>
-            <div v-else-if="!maintenanceRecords.length" class="empty">No maintenance records yet. Add one to get started.</div>
+            <div v-if="loading" class="car-empty">Loading maintenance...</div>
+            <div v-else-if="errorMessage" class="car-empty">{{ errorMessage }}</div>
+            <div v-else-if="!maintenanceRecords.length" class="car-empty">No maintenance records yet. Add one to get started.</div>
 
-            <div v-else class="records">
-                <div class="record-card" v-for="item in maintenanceRecords" :key="item.id" @click="openRecordDetail(item.id)">
-                    <div class="record-top">
+            <div v-else class="car-records">
+                <div class="car-record-card" v-for="item in maintenanceRecords" :key="item.id" @click="openRecordDetail(item.id)">
+                    <div class="car-record-top">
                         <div>
-                            <p class="record-title">{{ item.maintenanceType || 'Maintenance' }}</p>
-                            <p class="record-date">{{ formatDate(item.serviceDate) }}</p>
+                            <p class="car-record-title">{{ item.maintenanceType || 'Maintenance' }}</p>
+                            <p class="car-record-date">{{ formatDate(item.serviceDate) }}</p>
                         </div>
-                        <span class="pill">{{ formatMileage(item.mileageAtService) }}</span>
+                        <span class="car-pill">{{ formatMileage(item.mileageAtService) }}</span>
                     </div>
-                    <div class="record-bottom">
-                        <div class="meta">
+                    <div class="car-record-bottom">
+                        <div class="car-meta">
                             <mdicon name="cash" :size="18"/>
                             <span>{{ formatCurrency(item.cost, item.currency || defaultCurrency) }}</span>
                         </div>
-                        <div class="meta">
+                        <div class="car-meta">
                             <mdicon name="map-marker" :size="18"/>
                             <span>{{ item.location || '—' }}</span>
                         </div>
@@ -67,47 +69,47 @@
             </div>
         </section>
 
-        <section v-else-if="currentTab === 'schedules'" class="panel">
-            <div class="panel-header">
+        <section v-else-if="currentTab === 'schedules'" class="car-panel">
+            <div class="car-panel-header">
                 <div class="vehicle-select">
                     <label>Vehicle</label>
                     <div class="select-wrapper">
-                        <select v-model="selectedVehicleId" @change="handleVehicleChange">
+                        <select class="car-select" v-model="selectedVehicleId" @change="handleVehicleChange">
                             <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ displayName(v) }}</option>
                         </select>
                     </div>
                 </div>
-                <button class="primary-btn" @click="goAddSchedule">
+                <button class="car-btn" @click="goAddSchedule">
                     <mdicon name="plus" :size="18"/><span>Add Schedule</span>
                 </button>
             </div>
 
-            <div class="search-bar">
+            <div class="car-search">
                 <mdicon name="magnify" :size="20"/>
                 <input v-model="scheduleSearch" type="text" placeholder="Search schedules..." @input="debouncedScheduleSearch">
             </div>
 
-            <div v-if="loadingReminders" class="empty">Loading schedules...</div>
-            <div v-else-if="errorMessage" class="empty">{{ errorMessage }}</div>
-            <div v-else-if="!filteredReminders.length" class="empty">No schedules found.</div>
-            <div class="schedule-grid" v-else>
-                <div class="schedule-card" v-for="item in filteredReminders" :key="item.id" @click="openScheduleDetail(item.id)">
-                    <div class="record-top">
+            <div v-if="loadingReminders" class="car-empty">Loading schedules...</div>
+            <div v-else-if="errorMessage" class="car-empty">{{ errorMessage }}</div>
+            <div v-else-if="!filteredReminders.length" class="car-empty">No schedules found.</div>
+            <div class="car-schedule-grid" v-else>
+                <div class="car-schedule-card" v-for="item in filteredReminders" :key="item.id" @click="openScheduleDetail(item.id)">
+                    <div class="car-record-top">
                         <div>
-                            <p class="record-title">{{ item.maintenanceType || 'Schedule' }}</p>
-                            <p class="record-date">{{ formatDate(item.dueDate) }}</p>
+                            <p class="car-record-title">{{ item.maintenanceType || 'Schedule' }}</p>
+                            <p class="car-record-date">{{ formatDate(item.dueDate) }}</p>
                         </div>
-                        <button class="status-pill" :class="statusFor(item).class" @click="toggleStatus(item)">
+                        <button class="car-status-pill" :class="statusFor(item).class" @click.stop="toggleStatus(item)">
                             <mdicon :name="statusFor(item).icon" :size="18"/>
                             <span>{{ statusFor(item).label }}</span>
                         </button>
                     </div>
-                    <div class="meta-row">
-                        <div class="meta">
+                    <div class="car-meta-row">
+                        <div class="car-meta">
                             <mdicon name="counter" :size="18"/>
                             <span>{{ formatMileage(item.dueMileage) }}</span>
                         </div>
-                        <div class="meta">
+                        <div class="car-meta">
                             <mdicon name="timer-sand" :size="18"/>
                             <span>{{ deadlineText(item) }}</span>
                         </div>
@@ -116,43 +118,45 @@
             </div>
         </section>
 
-        <section v-else-if="currentTab === 'report'" class="panel">
-            <div class="panel-header">
+        <section v-else-if="currentTab === 'report'" class="car-panel">
+            <div class="car-panel-header">
                 <div class="vehicle-select">
                     <label>Vehicle</label>
                     <div class="select-wrapper">
-                        <select v-model="selectedVehicleId" @change="handleVehicleChange">
+                        <select class="car-select" v-model="selectedVehicleId" @change="handleVehicleChange">
                             <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ displayName(v) }}</option>
                         </select>
                     </div>
                 </div>
             </div>
-            <div v-if="!chartData.length" class="empty">No maintenance records to show.</div>
-            <div v-else class="chart-card">
-                <div class="donut">
-                    <svg viewBox="0 0 42 42">
-                        <circle class="donut-ring" cx="21" cy="21" r="15.91549431" fill="transparent" stroke-width="5"></circle>
-                        <circle
-                            v-for="(slice, idx) in chartSlices"
-                            :key="idx"
-                            class="donut-segment"
-                            cx="21" cy="21" r="15.91549431"
-                            fill="transparent"
-                            stroke-width="5"
-                            :stroke="slice.color"
-                            :stroke-dasharray="slice.dash"
-                            :stroke-dashoffset="slice.offset"
-                        ></circle>
-                    </svg>
-                    <div class="donut-center">
-                        <p class="total">Total: {{ formatCurrency(totalCost, defaultCurrency) }}</p>
-                        <p class="range">Across {{ chartData.length }} types</p>
+            <div v-if="!chartData.length" class="car-empty">No maintenance records to show.</div>
+            <div v-else class="car-chart-card">
+                <div class="car-donut">
+                    <div class="car-donut-visual">
+                        <svg viewBox="0 0 42 42">
+                            <circle class="car-donut-ring" cx="21" cy="21" r="15.91549431" fill="transparent" stroke-width="5"></circle>
+                            <circle
+                                v-for="(slice, idx) in chartSlices"
+                                :key="idx"
+                                class="car-donut-segment"
+                                cx="21" cy="21" r="15.91549431"
+                                fill="transparent"
+                                stroke-width="5"
+                                :stroke="slice.color"
+                                :stroke-dasharray="slice.dash"
+                                :stroke-dashoffset="slice.offset"
+                            ></circle>
+                        </svg>
+                        <div class="car-donut-center">
+                            <p class="car-donut-total">{{ formatCurrency(totalCost, defaultCurrency) }}</p>
+                            <p class="car-donut-range">Across {{ chartData.length }} types</p>
+                        </div>
                     </div>
                 </div>
-                <div class="legend">
-                    <div class="legend-item" v-for="item in chartData" :key="item.type">
-                        <span class="dot" :style="{ background: item.color }"></span>
-                        <div class="legend-meta">
+                <div class="car-legend">
+                    <div class="car-legend-item" v-for="item in chartData" :key="item.type">
+                        <span class="car-legend-dot" :style="{ background: item.color }"></span>
+                        <div class="car-legend-meta">
                             <p class="label">{{ item.type }}</p>
                             <p class="value">{{ formatCurrency(item.cost, defaultCurrency) }} ({{ item.percent }}%)</p>
                         </div>
@@ -161,67 +165,67 @@
             </div>
         </section>
 
-        <section v-else-if="currentTab === 'vehicles'" class="panel">
-            <div class="panel-header">
-                <h3 class="section-title">Vehicles</h3>
-                <button class="primary-btn" @click="addVehicle">
+        <section v-else-if="currentTab === 'vehicles'" class="car-panel">
+            <div class="car-panel-header">
+                <h3 class="car-record-title" style="margin: 0;">Vehicles</h3>
+                <button class="car-btn" @click="addVehicle">
                     <mdicon name="plus" :size="18"/><span>Add Vehicle</span>
                 </button>
             </div>
-            <div class="search-bar">
+            <div class="car-search">
                 <mdicon name="magnify" :size="20"/>
                 <input v-model="vehicleSearch" type="text" placeholder="Search vehicle..." />
             </div>
-            <div v-if="loading" class="empty">Loading vehicles...</div>
-            <div v-else-if="errorMessage" class="empty">{{ errorMessage }}</div>
-            <div v-else-if="!filteredVehicles.length" class="empty">No vehicles yet. Add your first vehicle.</div>
-            <div class="vehicle-grid" v-else>
-                <div class="vehicle-card" v-for="v in filteredVehicles" :key="v.id" @click="openVehicle(v.id)">
-                    <div class="thumb">
+            <div v-if="loading" class="car-empty">Loading vehicles...</div>
+            <div v-else-if="errorMessage" class="car-empty">{{ errorMessage }}</div>
+            <div v-else-if="!filteredVehicles.length" class="car-empty">No vehicles yet. Add your first vehicle.</div>
+            <div class="car-vehicle-grid" v-else>
+                <div class="car-vehicle-card" v-for="v in filteredVehicles" :key="v.id" @click="openVehicle(v.id)">
+                    <div class="car-thumb">
                         <img v-if="v.imageUrl" :src="v.imageUrl.startsWith('http') ? v.imageUrl : `${API_BASE_URL}${v.imageUrl}`" alt="vehicle" />
                         <mdicon v-else name="clipboard-list-outline" :size="28"/>
                     </div>
-                    <div class="info">
-                        <p class="name">{{ displayName(v) }}</p>
-                        <p class="sub">License: {{ v.licensePlate || '—' }}</p>
-                        <p class="sub">VIN: {{ v.vin || '—' }}</p>
+                    <div class="car-info">
+                        <p class="car-name">{{ displayName(v) }}</p>
+                        <p class="car-sub">License: {{ v.licensePlate || '—' }}</p>
+                        <p class="car-sub">VIN: {{ v.vin || '—' }}</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section v-else-if="currentTab === 'settings'" class="panel">
-            <div class="profile">
-                <div class="avatar"><mdicon name="account-circle" :size="36"/></div>
+        <section v-else-if="currentTab === 'settings'" class="car-panel">
+            <div class="car-profile">
+                <div class="car-avatar"><mdicon name="account-circle" :size="36"/></div>
                 <div>
-                    <p class="name">{{ userName }}</p>
-                    <p class="email">{{ userEmail }}</p>
+                    <p class="car-record-title">{{ userName }}</p>
+                    <p class="car-record-date">{{ userEmail }}</p>
                 </div>
             </div>
-            <div class="pref-grid">
-                <div class="pref-card">
-                    <p class="label">Distance Unit</p>
-                    <div class="inline-row">
+            <div class="car-card-grid">
+                <div class="car-card">
+                    <p class="car-record-title">Distance Unit</p>
+                    <div class="car-inline">
                         <label><input type="radio" value="km" v-model="distanceUnit" @change="persistPreferences"> Kilometers</label>
                         <label><input type="radio" value="mi" v-model="distanceUnit" @change="persistPreferences"> Miles</label>
                     </div>
                 </div>
-                <div class="pref-card">
-                    <p class="label">Currency</p>
-                    <select v-model="defaultCurrency" @change="persistPreferences">
+                <div class="car-card">
+                    <p class="car-record-title">Currency</p>
+                    <select class="car-select" v-model="defaultCurrency" @change="persistPreferences">
                         <option v-for="c in currencyOptions" :key="c" :value="c">{{ c }}</option>
                     </select>
                 </div>
-                <div class="pref-card span-2">
-                    <p class="label">Maintenance Types</p>
-                    <div class="type-row">
-                        <input v-model="newMaintenanceType" type="text" placeholder="Add type" />
-                        <button class="add-btn" @click="addType">Add</button>
+                <div class="car-card">
+                    <p class="car-record-title">Maintenance Types</p>
+                    <div class="car-inline">
+                        <input class="car-input" v-model="newMaintenanceType" type="text" placeholder="Add type" />
+                        <button class="car-btn" type="button" @click="addType">Add</button>
                     </div>
-                    <div class="chip-row">
-                        <span v-for="t in maintenanceTypes" :key="t" class="chip">
+                    <div class="car-chip-row">
+                        <span v-for="t in visibleTypes" :key="t" class="car-chip">
                             {{ t }}
-                            <button class="chip-remove" @click="removeType(t)">
+                            <button @click="removeType(t)">
                                 <mdicon name="close" :size="14"/>
                             </button>
                         </span>
@@ -269,6 +273,7 @@ export default {
         const defaultCurrency = ref('USD')
         const maintenanceTypes = ref([])
         const newMaintenanceType = ref('')
+        const visibleTypes = computed(() => maintenanceTypes.value?.length ? maintenanceTypes.value : ['Oil Change', 'Brake Pad Replacement', 'Tire Rotation', 'Tire Replacement', 'Battery Replacement', 'Air Filter Replacement', 'Transmission Service', 'Coolant Flush', 'Spark Plug Replacement', 'Brake Fluid Change', 'Alignment', 'Inspection', 'Repair', 'Other'])
         const userName = ref('User')
         const userEmail = ref('user@example.com')
         const currencyOptions = ref(['USD', 'PHP', 'EUR', 'JPY', 'SGD'])
@@ -600,6 +605,7 @@ export default {
             userName,
             userEmail,
             maintenanceTypes,
+            visibleTypes,
             currencyOptions,
             vehicleSearch,
             persistPreferences,
@@ -611,354 +617,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.page {
-    min-height: 100vh;
-    background: #f6f7fb;
-    color: #111827;
-}
-
-.hero {
-    padding: 28px;
-    background: linear-gradient(135deg, #f093fb 0%, #6f6cf7 50%, #4f46e5 100%);
-    color: white;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.logo-circle {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    /* shadow */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-
-    /* remove any borders/outlines */
-    outline: none;
-    border: none;
-}
-
-
-.eyebrow {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 12px;
-    opacity: 0.85;
-}
-
-.headline {
-    margin: 2px 0 0;
-    font-weight: 800;
-    font-size: 24px;
-}
-
-.tabs {
-    margin-top: 18px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.tabs button {
-    border: none;
-    background: rgba(255,255,255,0.15);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.tabs button.active {
-    background: white;
-    color: #4f46e5;
-}
-
-.content {
-    padding: 20px 24px 40px;
-    max-width: 1100px;
-    margin: 0 auto;
-}
-
-.panel {
-    background: white;
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
-}
-
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 14px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.vehicle-select label {
-    font-weight: 700;
-    color: #374151;
-}
-
-.select-wrapper select {
-    margin-top: 6px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    min-width: 240px;
-}
-
-.primary-btn {
-    border: none;
-    background: linear-gradient(135deg, #f093fb, #6f6cf7);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.search-bar {
-    margin: 14px 0;
-    background: #f8fafc;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.search-bar input {
-    border: none;
-    outline: none;
-    flex: 1;
-    font-size: 14px;
-    background: transparent;
-}
-
-.records {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
-}
-
-.record-card {
-    background: #f9fafb;
-    border: 1px solid #eef2f7;
-    border-radius: 14px;
-    padding: 12px;
-}
-
-.record-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-
-.record-title {
-    margin: 0;
-    font-weight: 800;
-    font-size: 16px;
-    color: #111827;
-}
-
-.record-date {
-    margin: 0;
-    color: #6b7280;
-    font-size: 13px;
-}
-
-.pill {
-    background: #eef2ff;
-    color: #4338ca;
-    padding: 6px 10px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 12px;
-}
-
-.record-bottom {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 10px;
-    color: #4b5563;
-}
-
-.meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-}
-
-.empty {
-    padding: 14px;
-    text-align: center;
-    color: #6b7280;
-}
-
-/* Schedules tab */
-.schedule-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
-}
-.schedule-card {
-    background: linear-gradient(145deg, #f9fafb, #f1f5f9);
-    border: 1px solid #eef2f7;
-    border-radius: 16px;
-    padding: 14px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.05);
-}
-.status-pill {
-    border: none;
-    border-radius: 18px;
-    padding: 8px 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-}
-.status-pill:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
-.status-pill.upcoming { background: #eef2ff; color: #4f46e5; }
-.status-pill.done { background: #e7f8ef; color: #059669; }
-.status-pill.missed { background: #fee2e2; color: #dc2626; }
-.meta-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    gap: 8px;
-}
-
-/* Report tab */
-.chart-card {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 18px;
-    align-items: center;
-}
-.donut {
-    position: relative;
-    width: 260px;
-    height: 260px;
-}
-.donut svg {
-    transform: rotate(-90deg);
-    width: 260px;
-    height: 260px;
-}
-.donut-center {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 2px;
-}
-.donut-center .total { margin: 0; font-weight: 700; color: #6b7280; font-size: 14px; }
-.donut-center .value { margin: 0; font-weight: 800; font-size: 18px; }
-.donut-center .range { margin: 0; color: #9ca3af; font-size: 12px; }
-.legend { display: flex; flex-direction: column; gap: 10px; }
-.legend-item { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: #f9fafb; border: 1px solid #eef2f7; }
-.dot { width: 12px; height: 12px; border-radius: 6px; display: inline-block; }
-.label { margin: 0; font-weight: 700; }
-.value { margin: 0; color: #4b5563; font-size: 13px; }
-
-/* Vehicles tab */
-.vehicle-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px;
-}
-.vehicle-card {
-    background: white;
-    border-radius: 14px;
-    padding: 12px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-    display: grid;
-    grid-template-columns: 88px 1fr;
-    gap: 10px;
-    cursor: pointer;
-    border: 1px solid #eef2f7;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-.vehicle-card:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(0,0,0,0.12); }
-.thumb {
-    width: 88px;
-    height: 82px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-.thumb img { width: 100%; height: 100%; object-fit: cover; }
-.info { display: flex; flex-direction: column; gap: 4px; }
-.name { margin: 0; font-weight: 800; color: #111827; }
-.sub { margin: 0; color: #6b7280; font-size: 13px; }
-
-/* Settings tab */
-.profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-}
-.avatar { width: 52px; height: 52px; border-radius: 14px; background: #e0e7ff; display: flex; align-items: center; justify-content: center; }
-.pref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-.pref-card { background: #f9fafb; border: 1px solid #eef2f7; border-radius: 12px; padding: 12px; }
-.pref-card.span-2 { grid-column: span 2; }
-.inline-row { display: flex; gap: 14px; }
-.pref-card select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; }
-.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { background: #eef2ff; color: #4338ca; padding: 6px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
-.chip-remove {
-    border: none;
-    background: #e5e7eb;
-    color: #374151;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-.chip-remove:hover { background: #fecdd3; color: #b91c1c; }
-.type-row { display: flex; gap: 8px; margin-bottom: 8px; }
-.type-row input { flex: 1; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 10px; }
-.add-btn { border: none; background: linear-gradient(135deg, #f093fb, #6f6cf7); color: white; padding: 8px 12px; border-radius: 10px; font-weight: 700; cursor: pointer; }
-
-@media (max-width: 900px) {
-    .chart-card { grid-template-columns: 1fr; }
-    .donut, .donut svg { width: 220px; height: 220px; }
-}
-</style>

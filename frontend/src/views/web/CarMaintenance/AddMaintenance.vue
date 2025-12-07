@@ -1,100 +1,105 @@
 <template>
-<div class="page">
-    <header class="hero">
-        <div class="brand">
-            <button class="icon-btn" @click="router.back()">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <header class="car-hero">
+        <div class="car-brand">
+            <button class="car-icon-btn" @click="router.back()">
                 <mdicon name="chevron-left" :size="22"/>
             </button>
-            <h2 class="title">Add Maintenance</h2>
+            <div>
+                <p class="eyebrow">Car Maintenance</p>
+                <h2 class="headline">Add Maintenance</h2>
+            </div>
         </div>
     </header>
-    <main class="content">
-        <form class="panel form" @submit.prevent="submitRecord">
-            <div class="field">
+    <main class="car-body">
+        <form class="car-panel car-form" @submit.prevent="submitRecord">
+            <div class="car-field">
                 <label>Vehicle</label>
-                <select v-model="form.vehicleId" required>
+                <select class="car-select" v-model="form.vehicleId" required>
                     <option value="" disabled>Select vehicle</option>
                     <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ displayName(v) }}</option>
                 </select>
             </div>
 
-            <div class="field">
+            <div class="car-field">
                 <label>Maintenance Type</label>
-                <div class="type-input">
-                    <input v-model="form.maintenanceType" type="text" placeholder="Select or type" />
-                    <button type="button" class="type-toggle" @click="showTypeList = !showTypeList">
+                <div class="car-type-input">
+                    <input class="car-input" v-model="form.maintenanceType" type="text" placeholder="Select or type" />
+                    <button type="button" class="car-type-toggle" @click="showTypeList = !showTypeList">
                         <mdicon name="menu-down" :size="20"/>
                     </button>
                 </div>
-                <div v-if="showTypeList" class="type-list">
-                    <button v-for="option in typeOptions" :key="option" type="button" class="type-option" @click="selectType(option)">
+                <div v-if="showTypeList" class="car-type-list car-card">
+                    <button v-for="option in typeOptions" :key="option" type="button" class="car-type-option" @click="selectType(option)">
                         {{ option }}
                     </button>
                 </div>
             </div>
 
-            <div class="two-col">
-                <div class="field">
+            <div class="car-two-col">
+                <div class="car-field">
                     <label>Service Date</label>
-                    <input v-model="form.serviceDate" type="date" required />
+                    <input class="car-input" v-model="form.serviceDate" type="date" required />
                 </div>
-                <div class="field">
+                <div class="car-field">
                     <label>Mileage at Service</label>
-                    <input v-model="form.mileageAtService" type="number" min="0" :placeholder="distanceUnit === 'mi' ? '50000' : '80456'" />
+                    <input class="car-input" v-model="form.mileageAtService" type="number" min="0" :placeholder="distanceUnit === 'mi' ? '50000' : '80456'" />
                 </div>
             </div>
 
-            <div class="two-col">
-                <div class="field">
+            <div class="car-two-col">
+                <div class="car-field">
                     <label>Cost</label>
-                    <input v-model="form.cost" type="number" min="0" step="0.01" placeholder="4000" />
+                    <input class="car-input" v-model="form.cost" type="number" min="0" step="0.01" placeholder="4000" />
                 </div>
-                <div class="field">
+                <div class="car-field">
                     <label>Currency</label>
-                    <select v-model="form.currency">
+                    <select class="car-select" v-model="form.currency">
                         <option v-for="c in currencyOptions" :key="c" :value="c">{{ c }}</option>
                     </select>
                 </div>
             </div>
 
-            <div class="two-col">
-                <div class="field">
+            <div class="car-two-col">
+                <div class="car-field">
                     <label>Serviced By</label>
-                    <input v-model="form.servicedBy" type="text" placeholder="Service Center" />
+                    <input class="car-input" v-model="form.servicedBy" type="text" placeholder="Service Center" />
                 </div>
-                <div class="field">
+                <div class="car-field">
                     <label>Location</label>
-                    <input v-model="form.location" type="text" placeholder="City / Garage" />
+                    <input class="car-input" v-model="form.location" type="text" placeholder="City / Garage" />
                 </div>
             </div>
 
-            <div class="field">
+            <div class="car-field">
                 <label>Parts Used</label>
-                <textarea v-model="form.partsUsed" rows="2" placeholder="List parts used"></textarea>
+                <textarea class="car-textarea" v-model="form.partsUsed" rows="2" placeholder="List parts used"></textarea>
             </div>
 
-            <div class="field">
+            <div class="car-field">
                 <label>Labor Hours</label>
-                <input v-model="form.laborHours" type="number" min="0" step="0.1" placeholder="2.5" />
+                <input class="car-input" v-model="form.laborHours" type="number" min="0" step="0.1" placeholder="2.5" />
             </div>
 
-            <div class="field">
+            <div class="car-field">
                 <label>Description</label>
-                <textarea v-model="form.description" rows="3" placeholder="Notes or details"></textarea>
+                <textarea class="car-textarea" v-model="form.description" rows="3" placeholder="Notes or details"></textarea>
             </div>
 
-            <button class="primary-btn" type="submit" :disabled="submitting">
+            <button class="car-btn" type="submit" :disabled="submitting">
                 {{ submitting ? 'Saving...' : 'Save Maintenance' }}
             </button>
-            <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-            <p v-if="successMessage" class="success">{{ successMessage }}</p>
+            <p v-if="errorMessage" class="car-text-error">{{ errorMessage }}</p>
+            <p v-if="successMessage" class="car-text-success">{{ successMessage }}</p>
         </form>
     </main>
 </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useCarMaintenance } from '@/composables/carMaintenance'
 
@@ -199,14 +204,15 @@ export default {
             try {
                 const token = localStorage.getItem('token')
                 if (!token) throw new Error('You must be logged in.')
-                await createMaintenanceRecord(token, {
+                const payload = {
                     ...form.value,
-                    mileageAtService: form.value.mileageAtService || undefined,
-                    cost: form.value.cost || undefined,
-                    laborHours: form.value.laborHours || undefined
-                })
+                    mileageAtService: form.value.mileageAtService ? Number(form.value.mileageAtService) : null,
+                    cost: form.value.cost ? Number(form.value.cost) : null,
+                    laborHours: form.value.laborHours ? Number(form.value.laborHours) : null
+                }
+                await createMaintenanceRecord(token, payload)
                 successMessage.value = 'Maintenance saved'
-                setTimeout(() => router.push('/web/car-maintenance'), 600)
+                setTimeout(() => router.push('/web/car-maintenance'), 500)
             } catch (err) {
                 errorMessage.value = err?.message || 'Unable to save maintenance'
             } finally {
@@ -214,109 +220,24 @@ export default {
             }
         }
 
-        onMounted(async() => {
-            await loadPreferences()
-            await loadVehicles()
-        })
+        loadPreferences()
+        loadVehicles()
 
         return {
             router,
             vehicles,
             form,
-            displayName,
             typeOptions,
             currencyOptions,
             distanceUnit,
             showTypeList,
-            selectType,
-            submitRecord,
             submitting,
             errorMessage,
-            successMessage
+            successMessage,
+            displayName,
+            selectType,
+            submitRecord
         }
     }
 }
 </script>
-
-<style scoped>
-.page { min-height: 100vh; background: #f6f7fb; }
-.hero {
-    padding: 18px 22px;
-    background: linear-gradient(135deg, #6f6cf7, #f093fb);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
-}
-.brand { display: flex; align-items: center; gap: 10px; }
-.title { margin: 0; font-weight: 800; }
-.icon-btn { border: none; background: transparent; color: inherit; }
-.content { padding: 20px 24px 40px; max-width: 900px; margin: 0 auto; }
-.panel {
-    background: white;
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
-}
-.form { display: flex; flex-direction: column; gap: 12px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-label { font-weight: 700; color: #374151; }
-input, select, textarea {
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 14px;
-    background: #fff;
-}
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.type-input { position: relative; display: flex; align-items: center; }
-.type-input input { flex: 1; padding-right: 40px; }
-.type-toggle {
-    position: absolute;
-    right: 6px;
-    top: 6px;
-    bottom: 6px;
-    width: 34px;
-    border: none;
-    border-radius: 10px;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.type-list {
-    margin-top: 6px;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-}
-.type-option {
-    width: 100%;
-    border: none;
-    background: transparent;
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 14px;
-    color: #111827;
-}
-.type-option + .type-option { border-top: 1px solid #f3f4f6; }
-.primary-btn {
-    border: none;
-    background: linear-gradient(135deg, #f093fb, #6f6cf7);
-    color: white;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 15px;
-    cursor: pointer;
-}
-.error { color: #dc2626; margin: 0; }
-.success { color: #16a34a; margin: 0; }
-
-@media (max-width: 720px) {
-    .two-col { grid-template-columns: 1fr; }
-}
-</style>

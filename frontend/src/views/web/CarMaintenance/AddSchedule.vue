@@ -1,37 +1,42 @@
 <template>
-<div class="page">
-    <header class="hero">
-        <div class="brand">
-            <button class="icon-btn" @click="router.back()">
+<div class="car-shell">
+    <div class="car-orb one"></div>
+    <div class="car-orb two"></div>
+    <header class="car-hero">
+        <div class="car-brand">
+            <button class="car-icon-btn" @click="router.back()">
                 <mdicon name="chevron-left" :size="22"/>
             </button>
-            <h2 class="title">Add Schedule</h2>
+            <div>
+                <p class="eyebrow">Car Maintenance</p>
+                <h2 class="headline">Add Schedule</h2>
+            </div>
         </div>
     </header>
-    <main class="content">
-        <form class="panel form" @submit.prevent="submitSchedule">
-            <div class="field">
+    <main class="car-body">
+        <form class="car-panel car-form" @submit.prevent="submitSchedule">
+            <div class="car-field">
                 <label>Vehicle</label>
-                <select v-model="form.vehicleId" required>
+                <select class="car-select" v-model="form.vehicleId" required>
                     <option value="" disabled>Select vehicle</option>
                     <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ displayName(v) }}</option>
                 </select>
             </div>
 
-            <div class="field">
+            <div class="car-field">
                 <label>Maintenance Type</label>
-                <div class="type-input">
-                    <input v-model="form.maintenanceType" type="text" placeholder="Select or type" />
-                    <button type="button" class="type-toggle" @click="showTypeDropdown = !showTypeDropdown">
+                <div class="car-type-input">
+                    <input class="car-input" v-model="form.maintenanceType" type="text" placeholder="Select or type" />
+                    <button type="button" class="car-type-toggle" @click="toggleTypeDropdown">
                         <mdicon name="menu-down" :size="20"/>
                     </button>
                 </div>
-                <div v-if="showTypeDropdown" class="type-list">
+                <div v-if="showTypeDropdown" class="car-type-list">
                     <button
                         v-for="option in typeOptions"
                         :key="option"
                         type="button"
-                        class="type-option"
+                        class="car-type-option"
                         @click="chooseType(option)"
                     >
                         {{ option }}
@@ -39,26 +44,26 @@
                 </div>
             </div>
 
-            <div class="two-col">
-                <div class="field">
+            <div class="car-two-col">
+                <div class="car-field">
                     <label>Due Date</label>
-                    <input v-model="form.dueDate" type="date" required />
+                    <input class="car-input" v-model="form.dueDate" type="date" required />
                 </div>
-                <div class="field">
+                <div class="car-field">
                     <label>Due Mileage</label>
-                    <input v-model="form.dueMileage" type="number" min="0" placeholder="100000" />
+                    <input class="car-input" v-model="form.dueMileage" type="number" min="0" placeholder="100000" />
                 </div>
             </div>
-            <div class="field">
+            <div class="car-field">
                 <label>Notes</label>
-                <textarea v-model="form.notes" rows="3" placeholder="Add details"></textarea>
+                <textarea class="car-textarea" v-model="form.notes" rows="3" placeholder="Add details"></textarea>
             </div>
 
-            <button class="primary-btn" type="submit" :disabled="submitting">
+            <button class="car-btn" type="submit" :disabled="submitting">
                 {{ submitting ? 'Saving...' : 'Save Schedule' }}
             </button>
-            <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-            <p v-if="successMessage" class="success">{{ successMessage }}</p>
+            <p v-if="errorMessage" class="car-text-error">{{ errorMessage }}</p>
+            <p v-if="successMessage" class="car-text-success">{{ successMessage }}</p>
         </form>
     </main>
 </div>
@@ -199,83 +204,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.page { min-height: 100vh; background: #f6f7fb; }
-.hero {
-    display: flex; align-items: center; gap: 10px;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, #6f6cf7, #f093fb);
-    color: white;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
-}
-.title { margin: 0; font-weight: 800; }
-.icon-btn { border: none; background: transparent; color: inherit; }
-.content { padding: 20px 24px 40px; max-width: 900px; margin: 0 auto; }
-.panel {
-    background: white;
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
-}
-.form { display: flex; flex-direction: column; gap: 12px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-label { font-weight: 700; color: #374151; }
-input, select, textarea {
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 14px;
-    background: #fff;
-}
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.type-input { position: relative; display: flex; align-items: center; }
-.type-input input { flex: 1; padding-right: 40px; }
-.type-toggle {
-    position: absolute;
-    right: 6px;
-    top: 6px;
-    bottom: 6px;
-    width: 34px;
-    border: none;
-    border-radius: 10px;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.type-list {
-    margin-top: 6px;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-}
-.type-option {
-    width: 100%;
-    border: none;
-    background: transparent;
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 14px;
-    color: #111827;
-}
-.type-option + .type-option { border-top: 1px solid #f3f4f6; }
-.primary-btn {
-    border: none;
-    background: linear-gradient(135deg, #f093fb, #6f6cf7);
-    color: white;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 15px;
-    cursor: pointer;
-}
-.error { color: #dc2626; margin: 0; }
-.success { color: #16a34a; margin: 0; }
-
-@media (max-width: 720px) {
-    .two-col { grid-template-columns: 1fr; }
-}
-</style>
