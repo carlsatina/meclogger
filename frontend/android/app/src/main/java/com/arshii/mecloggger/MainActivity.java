@@ -1,4 +1,4 @@
-package com.arshii.recordkeeper;
+package com.arshii.meclogger;
 
 import com.getcapacitor.BridgeActivity;
 
