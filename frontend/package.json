@@ -1,11 +1,12 @@
 {
   "name": "meclogger",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "bump:version": "node scripts/bump-version.js",
     "server:json": "json-server --watch db.json --port 5000 --id 'uuid'"
   },
   "dependencies": {
