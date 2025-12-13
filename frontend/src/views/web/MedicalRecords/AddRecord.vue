@@ -3,6 +3,12 @@
     <div class="medical-orb orb-1"></div>
     <div class="medical-orb orb-2"></div>
     <div class="add-record-wrapper glass-card">
+        <div v-if="uploading" class="upload-overlay">
+            <div class="upload-modal glass-card">
+                <mdicon name="loading" :size="32" class="spin"/>
+                <p>Optimizing your images...</p>
+            </div>
+        </div>
         <!-- Header -->
         <div class="header">
             <button class="close-btn" @click="goBack">
@@ -21,28 +27,48 @@
                             <p class="section-label">Attachments</p>
                             <h3 class="section-title">Upload supporting files</h3>
                         </div>
-                        <span class="section-hint">PNG, JPG, PDF up to 10MB</span>
+                        <span class="section-hint">PNG, JPG up to 5MB (images >2MB auto-resized)</span>
                     </div>
                     <div class="image-upload-section">
-                        <div class="image-preview" v-if="uploadedImage">
-                            <img :src="uploadedImage" alt="Uploaded record" />
+                        <div 
+                            class="image-preview" 
+                            v-for="(fileEntry, index) in selectedFiles" 
+                            :key="fileEntry.id"
+                        >
+                            <img 
+                                v-if="isImageFile(fileEntry.mimeType)" 
+                                :src="fileEntry.preview" 
+                                :alt="fileEntry.file?.name || 'Uploaded record'" 
+                            />
+                            <div v-else class="doc-preview">
+                                <mdicon :name="fileEntry.mimeType?.includes('pdf') ? 'file-pdf-box' : 'file-document-outline'" :size="44"/>
+                                <p class="doc-name">{{ fileEntry.file?.name || 'Document' }}</p>
+                            </div>
                             <button 
                                 type="button" 
                                 class="remove-image-btn" 
-                                @click="clearUpload"
+                                @click="removeSelectedFile(index)"
                             >
                                 <mdicon name="close" :size="18"/>
                             </button>
                         </div>
-                        <div class="add-image-card" @click="triggerFileUpload">
+                        <div 
+                            class="add-image-card" 
+                            :class="{ dragging: isDragging }"
+                            @click="triggerFileUpload"
+                            @dragover.prevent="onDragOver"
+                            @dragleave.prevent="onDragLeave"
+                            @drop.prevent="onDrop"
+                        >
                             <mdicon name="cloud-upload" :size="56" class="plus-icon"/>
-                            <p>Upload file</p>
-                            <span>Drag & drop or browse</span>
+                            <p>Upload files</p>
+                            <span>Drag & drop or browse (max {{ maxAttachments }})</span>
                             <input 
                                 type="file" 
                                 ref="fileInput" 
                                 @change="handleFileUpload" 
-                                accept="image/*,application/pdf"
+                                accept="image/*"
+                                multiple
                                 style="display: none"
                             />
                         </div>
@@ -194,8 +220,9 @@ export default {
         const router = useRouter()
         const route = useRoute()
         const fileInput = ref(null)
-        const uploadedImage = ref('')
-        const uploadedFile = ref(null)
+        const selectedFiles = ref([])
+        const isDragging = ref(false)
+        const maxAttachments = 5
         const recordFor = ref(localStorage.getItem('selectedProfileId') || '')
         const fileName = ref('')
         const recordDate = ref(today())
@@ -207,6 +234,7 @@ export default {
         const profiles = ref([])
         const profilesLoading = ref(false)
         const saving = ref(false)
+        const uploading = ref(false)
         const formError = ref('')
         const { fetchProfiles } = useProfiles()
         const { createRecord, fetchRecordById, updateRecord } = useMedicalRecords()
@@ -228,24 +256,100 @@ export default {
             fileInput.value?.click()
         }
 
-        const handleFileUpload = (event) => {
-            const [file] = event.target.files || []
-            if (!file) return
-            uploadedFile.value = file
+        const isImageFile = (mime = '') => (mime || '').startsWith('image/')
+
+        const readAsDataURL = (file) => new Promise((resolve) => {
             const reader = new FileReader()
-            reader.onload = (e) => {
-                uploadedImage.value = typeof e.target?.result === 'string' ? e.target.result : ''
-            }
+            reader.onload = (e) => resolve(typeof e.target?.result === 'string' ? e.target.result : '')
             reader.readAsDataURL(file)
+        })
+
+        const compressImageIfNeeded = async (file) => {
+            if (!isImageFile(file.type) || file.size <= 2 * 1024 * 1024) {
+                return file
+            }
+            return new Promise((resolve) => {
+                const img = new Image()
+                img.onload = () => {
+                    const scale = Math.sqrt(1_000_000 / file.size)
+                    const ratio = Math.min(scale, 1)
+                    const canvas = document.createElement('canvas')
+                    canvas.width = Math.max(1, Math.floor(img.width * ratio))
+                    canvas.height = Math.max(1, Math.floor(img.height * ratio))
+                    const ctx = canvas.getContext('2d')
+                    if (!ctx) {
+                        resolve(file)
+                        return
+                    }
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            resolve(file)
+                            return
+                        }
+                        // Prefer original MIME when possible
+                        const compressed = new File([blob], file.name, { type: file.type || blob.type })
+                        resolve(compressed.size < file.size ? compressed : file)
+                    }, file.type || 'image/jpeg', 0.8)
+                }
+                img.onerror = () => resolve(file)
+                img.src = URL.createObjectURL(file)
+            })
+        }
+
+        const toPreviewEntry = async (file) => {
+            const processed = await compressImageIfNeeded(file)
+            const preview = isImageFile(processed.type) ? await readAsDataURL(processed) : ''
+            return {
+                id: `${processed.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                file: processed,
+                preview,
+                mimeType: processed.type
+            }
+        }
+
+        const handleFiles = async (files = []) => {
+            const availableSlots = maxAttachments - selectedFiles.value.length
+            if (availableSlots <= 0) {
+                formError.value = `You can upload up to ${maxAttachments} files.`
+                return
+            }
+            uploading.value = true
+            const imageFiles = files.filter(file => isImageFile(file.type))
+            const rejected = files.length - imageFiles.length
+            if (rejected > 0) {
+                formError.value = 'Only image files (PNG/JPG) are allowed.'
+            }
+            const filesToUse = imageFiles.slice(0, availableSlots)
+            try {
+                const previews = await Promise.all(filesToUse.map(toPreviewEntry))
+                selectedFiles.value = [...selectedFiles.value, ...previews]
+                if (rejected === 0) {
+                    formError.value = ''
+                }
+            } finally {
+                uploading.value = false
+            }
+        }
+
+        const handleFileUpload = async (event) => {
+            const files = Array.from(event.target.files || [])
+            if (!files.length) return
+            await handleFiles(files)
             event.target.value = ''
         }
 
-        const clearUpload = () => {
-            uploadedImage.value = ''
-            uploadedFile.value = null
-            if (fileInput.value) {
-                fileInput.value.value = ''
-            }
+        const onDragOver = () => { isDragging.value = true }
+        const onDragLeave = () => { isDragging.value = false }
+        const onDrop = async (event) => {
+            isDragging.value = false
+            const files = Array.from(event.dataTransfer?.files || [])
+            if (!files.length) return
+            await handleFiles(files)
+        }
+
+        const removeSelectedFile = (index) => {
+            selectedFiles.value.splice(index, 1)
         }
 
         const addTagFromInput = () => {
@@ -269,8 +373,8 @@ export default {
             tags.value = []
             tagInput.value = ''
             notes.value = ''
-            uploadedImage.value = ''
-            uploadedFile.value = null
+            selectedFiles.value = []
+            isDragging.value = false
         }
 
         const loadProfiles = async () => {
@@ -318,8 +422,7 @@ export default {
                 recordType.value = data.recordType || 'LAB_RESULT'
                 notes.value = data.notes || ''
                 tags.value = Array.isArray(data.tags) ? data.tags : []
-                uploadedImage.value = ''
-                uploadedFile.value = null
+                selectedFiles.value = []
             } catch (err) {
                 formError.value = err.message || 'Unable to load record details.'
             }
@@ -339,6 +442,10 @@ export default {
                 formError.value = 'Please select the record date.'
                 return
             }
+            if (!selectedFiles.value.length) {
+                formError.value = 'Please attach at least one file.'
+                return
+            }
             const token = localStorage.getItem('token')
             if (!token) {
                 router.push('/login')
@@ -350,9 +457,9 @@ export default {
             formData.append('title', fileName.value.trim())
             formData.append('recordType', recordType.value)
             formData.append('recordDate', recordDate.value)
-            if (uploadedFile.value) {
-                formData.append('files', uploadedFile.value)
-            }
+            selectedFiles.value.forEach(entry => {
+                formData.append('files', entry.file)
+            })
             if (providerName.value.trim()) {
                 formData.append('providerName', providerName.value.trim())
             }
@@ -397,7 +504,9 @@ export default {
 
         return {
             fileInput,
-            uploadedImage,
+            selectedFiles,
+            isDragging,
+            maxAttachments,
             recordFor,
             fileName,
             recordDate,
@@ -409,6 +518,7 @@ export default {
             profiles,
             profilesLoading,
             saving,
+            uploading,
             formError,
             isEditing,
             headerTitle,
@@ -416,11 +526,111 @@ export default {
             goBack,
             triggerFileUpload,
             handleFileUpload,
-            clearUpload,
+            onDragOver,
+            onDragLeave,
+            onDrop,
+            removeSelectedFile,
             addTagFromInput,
             removeTag,
-            saveRecord
+            saveRecord,
+            isImageFile
         }
     }
 }
 </script>
+
+<style scoped>
+.image-upload-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.image-preview {
+    position: relative;
+    border: 1px dashed var(--glass-card-border);
+    border-radius: 14px;
+    min-height: 180px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: var(--glass-ghost-bg);
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.add-image-card {
+    border: 1px dashed rgba(103, 232, 249, 0.35);
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+.add-image-card.dragging {
+    border-color: rgba(103,232,249,0.65);
+    background: rgba(103,232,249,0.08);
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border: none;
+    border-radius: 999px;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    background: rgba(11,16,32,0.8);
+    color: var(--text-primary);
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.doc-preview {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    place-items: center;
+    gap: 8px;
+    text-align: center;
+    color: var(--text-primary);
+    padding: 12px;
+}
+
+.doc-name {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.upload-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 8, 20, 0.65);
+    display: grid;
+    place-items: center;
+    z-index: 10;
+    border-radius: 16px;
+}
+
+.upload-modal {
+    padding: 16px 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+</style>

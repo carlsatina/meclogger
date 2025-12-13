@@ -12,14 +12,22 @@
                 <h2 class="record-title">{{ record?.title || 'Record Detail' }}</h2>
                 <p class="record-date" v-if="record">{{ formattedDate }}</p>
             </div>
-            <button 
-                class="edit-btn"
-                v-if="record"
-                @click="goToEdit"
-            >
-                <mdicon name="pencil" :size="18"/>
-                <span>Edit</span>
-            </button>
+            <div class="header-actions" v-if="record">
+                <button 
+                    class="edit-btn"
+                    @click="goToEdit"
+                >
+                    <mdicon name="pencil" :size="18"/>
+                    <span>Edit</span>
+                </button>
+                <button 
+                    class="delete-btn"
+                    @click="showDeleteConfirm = true"
+                >
+                    <mdicon name="trash-can-outline" :size="18"/>
+                    <span>Delete</span>
+                </button>
+            </div>
         </div>
 
         <div v-if="loading" class="state-card">Loading record...</div>
@@ -172,6 +180,21 @@
             </div>
         </div>
     </div>
+
+    <div v-if="showDeleteConfirm" class="confirm-overlay">
+        <div class="confirm-modal glass-card">
+            <h3>Delete this record?</h3>
+            <p>This will remove the record and its attachments.</p>
+            <div class="confirm-actions">
+                <button class="glass-btn-ghost" type="button" @click="showDeleteConfirm = false">Cancel</button>
+                <button class="delete-btn" type="button" :disabled="deleting" @click="deleteRecordAction">
+                    <mdicon :name="deleting ? 'loading' : 'trash-can-outline'" :size="18" :class="{ spin: deleting }"/>
+                    <span>{{ deleting ? 'Deleting...' : 'Delete' }}</span>
+                </button>
+            </div>
+            <p v-if="deleteError" class="error-text">{{ deleteError }}</p>
+        </div>
+    </div>
 </div>
 </template>
 
@@ -197,11 +220,14 @@ export default {
     setup() {
         const router = useRouter()
         const route = useRoute()
-        const { fetchRecordById } = useMedicalRecords()
+        const { fetchRecordById, deleteRecord } = useMedicalRecords()
         const record = ref(null)
         const loading = ref(true)
         const errorMessage = ref('')
         const viewerIndex = ref(0)
+        const deleting = ref(false)
+        const deleteError = ref('')
+        const showDeleteConfirm = ref(false)
         const viewerState = reactive({
             open: false,
             zoom: 1,
@@ -459,6 +485,26 @@ export default {
             })
         }
 
+        const deleteRecordAction = async () => {
+            if (!recordId.value) return
+            const token = localStorage.getItem('token')
+            if (!token) {
+                deleteError.value = 'Please log in again.'
+                return
+            }
+            deleting.value = true
+            deleteError.value = ''
+            try {
+                await deleteRecord(token, recordId.value)
+                router.push('/medical-records?tab=records')
+            } catch (err) {
+                deleteError.value = err?.message || 'Unable to delete record.'
+            } finally {
+                deleting.value = false
+                showDeleteConfirm.value = false
+            }
+        }
+
         onMounted(() => {
             loadRecord()
             document.addEventListener('keydown', handleKeydown)
@@ -487,6 +533,10 @@ export default {
             formatFileSize,
             goBack,
             goToEdit,
+            deleteRecordAction,
+            deleting,
+            deleteError,
+            showDeleteConfirm,
             previousImage,
             nextImage,
             openFullSizeViewer,
@@ -498,7 +548,8 @@ export default {
             onImageMouseUp,
             onImageTouchStart,
             onImageTouchMove,
-            onImageTouchEnd
+            onImageTouchEnd,
+            deleteRecordAction
         }
     }
 }
@@ -560,6 +611,11 @@ export default {
     padding-bottom: 20px;
     margin-bottom: 24px;
 }
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
 .back-btn {
     border: 1px solid var(--glass-card-border);
@@ -599,6 +655,18 @@ export default {
     padding: 10px 18px;
     cursor: pointer;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+.delete-btn {
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    background: linear-gradient(135deg, #f97316, #ef4444);
+    color: #0b1020;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.25);
 }
 
 .state-card {
@@ -810,5 +878,47 @@ export default {
     justify-content: space-between;
     gap: 10px;
     color: #e2e8f0;
+}
+
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: grid;
+    place-items: center;
+    z-index: 3500;
+    padding: 20px;
+}
+
+.confirm-modal {
+    max-width: 420px;
+    width: 100%;
+    padding: 18px;
+    color: var(--text-primary);
+}
+
+.confirm-modal h3 {
+    margin: 0 0 6px;
+}
+
+.confirm-modal p {
+    margin: 0 0 14px;
+    color: var(--text-secondary);
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.confirm-actions .delete-btn {
+    min-width: 120px;
+    justify-content: center;
+}
+
+.error-text {
+    margin: 8px 0 0;
+    color: #f87171;
 }
 </style>

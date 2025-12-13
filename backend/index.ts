@@ -11,6 +11,7 @@ import prisma from './lib/prisma'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
 import { uploadLogo } from './src/middlewares/uploadLogo';
+import multer from 'multer'
 
 import swaggerJSDoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
@@ -59,6 +60,27 @@ app.use('/api/v1/medical-records', medicalRecordsRouter(dbClient, authenticateUs
 app.use('/api/v1/medicine-reminders', medicineReminderRouter(dbClient, authenticateUser))
 app.use('/api/v1/car-maintenance', carMaintenanceRouter(dbClient, authenticateUser))
 app.use('/api/v1/expenses', expenseRouter(dbClient, authenticateUser))
+
+// Global error handler for uploads and other middleware
+app.use((err: any, _req: any, res: any, _next: any) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(413).json({
+                status: 413,
+                message: 'File too large. Maximum size is 5MB per file.'
+            })
+        }
+        return res.status(400).json({
+            status: 400,
+            message: err.message || 'File upload error.'
+        })
+    }
+    console.error('Unhandled error:', err)
+    return res.status(500).json({
+        status: 500,
+        message: 'Unexpected server error.'
+    })
+})
 
 const options = {
     definition: {

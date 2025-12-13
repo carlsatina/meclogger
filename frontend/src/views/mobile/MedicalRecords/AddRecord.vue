@@ -12,6 +12,12 @@
 
     <!-- Content -->
     <div class="content">
+        <div v-if="uploading" class="upload-overlay">
+            <div class="upload-modal glass-card">
+                <mdicon name="loading" :size="28" class="spin"/>
+                <p>Optimizing your images...</p>
+            </div>
+        </div>
         <!-- Image Upload Section -->
         <div class="image-upload-section">
             <div 
@@ -213,6 +219,7 @@ export default {
         const { createRecord, fetchRecordById, updateRecord } = useMedicalRecords()
         const maxAttachments = 5
         const saving = ref(false)
+        const uploading = ref(false)
         const formError = ref('')
         const recordTypeOptions = [
             { id: 'LAB_RESULT', label: 'Lab Report', icon: 'file-document' },
@@ -222,6 +229,7 @@ export default {
 
         const isEditing = computed(() => !!recordId.value)
         const headerTitle = computed(() => (isEditing.value ? 'Edit Record' : 'Add Record'))
+        const isImageFile = (mime = '') => (mime || '').startsWith('image/')
 
         const goBack = () => {
             router.back()
@@ -237,17 +245,53 @@ export default {
             target?.click()
         }
 
-        const toPreviewEntry = (file) => new Promise((resolve) => {
+        const readAsDataURL = (file) => new Promise((resolve) => {
             const reader = new FileReader()
-            reader.onload = (e) => {
-                resolve({
-                    id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-                    file,
-                    preview: typeof e.target?.result === 'string' ? e.target.result : ''
-                })
-            }
+            reader.onload = (e) => resolve(typeof e.target?.result === 'string' ? e.target.result : '')
             reader.readAsDataURL(file)
         })
+
+        const compressImageIfNeeded = async (file) => {
+            if (!isImageFile(file.type) || file.size <= 2 * 1024 * 1024) {
+                return file
+            }
+            return new Promise((resolve) => {
+                const img = new Image()
+                img.onload = () => {
+                    const scale = Math.sqrt(1_000_000 / file.size)
+                    const ratio = Math.min(scale, 1)
+                    const canvas = document.createElement('canvas')
+                    canvas.width = Math.max(1, Math.floor(img.width * ratio))
+                    canvas.height = Math.max(1, Math.floor(img.height * ratio))
+                    const ctx = canvas.getContext('2d')
+                    if (!ctx) {
+                        resolve(file)
+                        return
+                    }
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            resolve(file)
+                            return
+                        }
+                        const compressed = new File([blob], file.name, { type: file.type || blob.type })
+                        resolve(compressed.size < file.size ? compressed : file)
+                    }, file.type || 'image/jpeg', 0.8)
+                }
+                img.onerror = () => resolve(file)
+                img.src = URL.createObjectURL(file)
+            })
+        }
+
+        const toPreviewEntry = async (file) => {
+            const processed = await compressImageIfNeeded(file)
+            const preview = await readAsDataURL(processed)
+            return {
+                id: `${processed.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                file: processed,
+                preview
+            }
+        }
 
         const handleFileUpload = async(event) => {
             const files = Array.from(event.target.files || [])
@@ -258,10 +302,22 @@ export default {
                 event.target.value = ''
                 return
             }
-            const filesToUse = files.slice(0, availableSlots)
-            const previews = await Promise.all(filesToUse.map(toPreviewEntry))
-            selectedFiles.value = [...selectedFiles.value, ...previews]
-            formError.value = ''
+            uploading.value = true
+            const imageFiles = files.filter(file => isImageFile(file.type))
+            const rejected = files.length - imageFiles.length
+            if (rejected > 0) {
+                formError.value = 'Only image files (PNG/JPG) are allowed.'
+            }
+            const filesToUse = imageFiles.slice(0, availableSlots)
+            try {
+                const previews = await Promise.all(filesToUse.map(toPreviewEntry))
+                selectedFiles.value = [...selectedFiles.value, ...previews]
+                if (rejected === 0) {
+                    formError.value = ''
+                }
+            } finally {
+                uploading.value = false
+            }
             event.target.value = ''
         }
 
@@ -322,6 +378,7 @@ export default {
             existingFiles.value = []
             filesToRemove.value = []
             formError.value = ''
+            uploading.value = false
         }
 
         const saveRecord = async() => {
@@ -444,8 +501,10 @@ export default {
             saveRecord,
             profileMembers,
             saving,
+            uploading,
             formError,
-            resolveFileUrl
+            resolveFileUrl,
+            isImageFile
         }
     }
 }
@@ -529,6 +588,24 @@ export default {
     padding: 18px 16px 32px;
     position: relative;
     z-index: 1;
+}
+.upload-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    border-radius: 20px;
+}
+
+.upload-modal {
+    padding: 14px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary);
 }
 
 /* Image Upload Section */
