@@ -143,9 +143,6 @@
                 <mdicon name="close" :size="24"/>
             </button>
             <div class="viewer-main">
-                <button class="viewer-nav" @click="previousImage" :disabled="!hasMultipleImages">
-                    <mdicon name="chevron-left" :size="28"/>
-                </button>
                 <div class="viewer-image-wrapper">
                                 <img 
                                     v-if="currentViewerImage"
@@ -163,11 +160,11 @@
                                     @mouseleave="onMouseUp"
                                 />
                 </div>
-                <button class="viewer-nav" @click="nextImage" :disabled="!hasMultipleImages">
-                    <mdicon name="chevron-right" :size="28"/>
-                </button>
             </div>
             <div class="viewer-controls" v-if="currentViewerImage">
+                <button class="viewer-nav" @click="previousImage" :disabled="!hasMultipleImages">
+                    <mdicon name="chevron-left" :size="24"/>
+                </button>
                 <label>Zoom</label>
                 <input 
                     type="range" 
@@ -176,6 +173,9 @@
                     step="0.1" 
                     v-model.number="viewerZoom"
                 />
+                <button class="viewer-nav" @click="nextImage" :disabled="!hasMultipleImages">
+                    <mdicon name="chevron-right" :size="24"/>
+                </button>
             </div>
         </div>
     </div>
@@ -846,6 +846,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 12px;
+    width: 100%;
 }
 
 .viewer-controls label {

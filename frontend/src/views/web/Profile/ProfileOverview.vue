@@ -269,13 +269,15 @@ export default {
     display: grid;
     grid-template-columns: 320px minmax(0, 1fr);
     gap: 24px;
+    color: var(--text-primary);
 }
 
 .family-card {
-    background: white;
+    background: var(--glass-card-bg);
+    border: 1px solid var(--glass-card-border);
     border-radius: 24px;
     padding: 24px;
-    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--glass-card-shadow);
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -291,12 +293,13 @@ export default {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .add-member-btn {
-    border: none;
-    background: rgba(124, 58, 237, 0.15);
-    color: #5b21b6;
+    border: 1px solid var(--glass-card-border);
+    background: var(--glass-ghost-bg);
+    color: var(--text-primary);
     padding: 8px 14px;
     border-radius: 999px;
     display: flex;
@@ -312,20 +315,22 @@ export default {
 }
 
 .family-item {
-    border: none;
-    background: #f8f7fb;
+    border: 1px solid var(--glass-card-border);
+    background: var(--glass-ghost-bg);
     border-radius: 18px;
     padding: 14px;
     display: flex;
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .family-item.active {
-    background: linear-gradient(135deg, #f5ecff, #e0defd);
-    box-shadow: 0 12px 24px rgba(128, 90, 213, 0.15);
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-4));
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+    color: #0b1020;
+    border-color: transparent;
 }
 
 .family-item:hover {
@@ -336,8 +341,8 @@ export default {
     width: 48px;
     height: 48px;
     border-radius: 16px;
-    background: rgba(124, 58, 237, 0.15);
-    color: #5b21b6;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #0b1020;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -354,16 +359,17 @@ export default {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
+    color: inherit;
 }
 
 .family-relation {
     margin: 2px 0 0;
-    color: #6b7280;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
 .family-arrow {
-    color: #a78bfa;
+    color: var(--text-primary);
 }
 
 .family-empty {
@@ -379,10 +385,12 @@ export default {
 }
 
 .summary-card {
-    background: white;
+    background: var(--glass-card-bg);
+    border: 1px solid var(--glass-card-border);
     border-radius: 24px;
     padding: 24px;
-    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--glass-card-shadow);
+    color: var(--text-primary);
 }
 
 .summary-header {
@@ -395,8 +403,8 @@ export default {
     width: 60px;
     height: 60px;
     border-radius: 18px;
-    background: linear-gradient(135deg, #c084fc, #7c3aed);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-4), var(--accent-1));
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -407,18 +415,19 @@ export default {
 .summary-header h2 {
     margin: 0;
     font-size: 22px;
+    color: var(--text-primary);
 }
 
 .summary-header p {
     margin: 4px 0 0;
-    color: #6b7280;
+    color: var(--text-muted);
 }
 
 .edit-btn {
     margin-left: auto;
-    border: none;
-    background: rgba(124, 58, 237, 0.12);
-    color: #5b21b6;
+    border: 1px solid var(--glass-card-border);
+    background: var(--glass-ghost-bg);
+    color: var(--text-primary);
     padding: 8px 16px;
     border-radius: 999px;
     display: flex;
@@ -445,6 +454,7 @@ export default {
     margin: 4px 0 0;
     font-size: 16px;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .info-grid {
@@ -454,15 +464,18 @@ export default {
 }
 
 .info-card {
-    background: white;
+    background: var(--glass-card-bg);
+    border: 1px solid var(--glass-card-border);
     border-radius: 24px;
     padding: 20px;
-    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.05);
+    box-shadow: var(--glass-card-shadow);
+    color: var(--text-primary);
 }
 
 .info-card h3 {
     margin: 0 0 12px;
     font-size: 18px;
+    color: var(--text-primary);
 }
 
 .info-card ul {
@@ -488,15 +501,15 @@ export default {
 .chip {
     padding: 6px 12px;
     border-radius: 999px;
-    background: rgba(124, 58, 237, 0.12);
-    color: #5b21b6;
+    background: color-mix(in srgb, var(--accent-1) 16%, transparent);
+    color: var(--accent-1);
     font-size: 12px;
     font-weight: 600;
 }
 
 .chip.danger {
-    background: rgba(239, 68, 68, 0.15);
-    color: #b91c1c;
+    background: color-mix(in srgb, #ef4444 16%, transparent);
+    color: #ef4444;
 }
 
 .muted {
@@ -511,15 +524,15 @@ export default {
 }
 
 .support-link {
-    border: none;
-    background: #f9fafb;
+    border: 1px solid var(--glass-card-border);
+    background: var(--glass-ghost-bg);
     border-radius: 14px;
     padding: 12px 14px;
     display: flex;
     align-items: center;
     gap: 8px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
     text-align: left;
 }
 
@@ -527,11 +540,11 @@ export default {
     position: fixed;
     bottom: 40px;
     right: 40px;
-    background: linear-gradient(135deg, #a855f7, #6d28d9);
+    background: linear-gradient(135deg, var(--accent-4), var(--accent-1));
     color: white;
     padding: 16px 20px;
     border-radius: 24px;
-    box-shadow: 0 20px 35px rgba(109, 40, 217, 0.45);
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.35);
     display: flex;
     align-items: center;
     gap: 12px;

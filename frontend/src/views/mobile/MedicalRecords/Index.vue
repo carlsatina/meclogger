@@ -1966,8 +1966,8 @@ export default {
 
 .back-btn,
 .icon-btn {
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-card-border);
+    background: var(--glass-ghost-bg);
     border-radius: 12px;
     padding: 10px;
     display: flex;
@@ -2000,18 +2000,19 @@ export default {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.12);
+    border: 1px solid var(--glass-card-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.05);
-    color: var(--text-secondary);
+    background: var(--glass-ghost-bg);
+    color: var(--text-primary);
 }
 
 .profile-avatar.active .avatar-circle {
-    border-color: rgba(103,232,249,0.5);
-    color: #67e8f9;
-    background: rgba(103,232,249,0.12);
+    border-color: var(--accent-2);
+    color: var(--accent-2);
+    background: var(--glass-ghost-bg);
+    background: color-mix(in srgb, var(--accent-2) 12%, transparent);
 }
 
 .profile-avatar span {
@@ -2020,8 +2021,8 @@ export default {
 }
 
 .profile-avatar.add .avatar-circle {
-    border-color: rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.04);
+    border-color: var(--glass-card-border);
+    background: var(--glass-ghost-bg);
 }
 
 .profile-card {
