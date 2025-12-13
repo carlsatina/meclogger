@@ -27,7 +27,13 @@ const port = process.env.PORT;
 const dbClient = prisma
 
 app.use(cors(corsOptions))
-app.options('*', cors(corsOptions))
+app.options(/.*/, cors(corsOptions))
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(corsOptions.optionsSuccessStatus || 200)
+    }
+    next()
+})
 app.use(express.static('public'))
 app.use(express.json({ limit: REQUEST_BODY_LIMIT }))
 app.use(express.urlencoded({ limit: REQUEST_BODY_LIMIT, extended: true }))

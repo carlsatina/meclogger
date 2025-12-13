@@ -15,10 +15,12 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const parseOrigins = (raw?: string | null): string[] => {
     if (!raw) return []
     return raw
-        .split(',')
+        .split(/[,\\s]+/) // allow comma or whitespace separated lists
         .map(origin => origin.trim())
         .filter(Boolean)
 }
+
+const allowAll = String(process.env.CORS_ALLOW_ALL || '').toLowerCase() === 'true'
 
 const allowedOrigins = (() => {
     const fromEnv = parseOrigins(process.env.CORS_ALLOWED_ORIGINS)
@@ -28,6 +30,9 @@ const allowedOrigins = (() => {
 
 export const corsOptions: CorsOptions = {
     origin: (origin, callback) => {
+        if (allowAll) {
+            return callback(null, true)
+        }
         // Allow non-browser clients (no origin) and any explicitly allowed origin.
         if (!origin || allowedOrigins.includes(origin)) {
             return callback(null, true)
@@ -37,7 +42,9 @@ export const corsOptions: CorsOptions = {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    optionsSuccessStatus: 200,
+    maxAge: 86400
 }
 
 export const allowedOriginsList = allowedOrigins

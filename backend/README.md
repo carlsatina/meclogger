@@ -51,6 +51,8 @@ PORT=9000
 ACCESS_TOKEN_SECRET="xxxxx"
 API_DOC_URL='http://localhost'
 CORS_ALLOWED_ORIGINS="https://meclogger.com,https://www.meclogger.com,https://api.meclogger.com"
+# Set to true to reflect any origin (useful while debugging infra/proxy CORS issues)
+# CORS_ALLOW_ALL=true
 # Optional overrides for upload/payload limits
 # MEDICAL_RECORD_MAX_FILE_MB=10
 # MEDICAL_RECORD_MAX_TOTAL_MB=50
