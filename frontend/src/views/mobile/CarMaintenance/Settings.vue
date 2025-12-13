@@ -129,7 +129,7 @@ export default {
         const newMaintenanceType = ref('')
 
         const goBack = () => router.back()
-        const goHome = () => router.push('/car-maintenance')
+        const goHome = () => router.push('/')
         const goSchedules = () => router.push('/car-maintenance/schedules')
         const goVehicles = () => router.push('/car-maintenance/vehicles')
 

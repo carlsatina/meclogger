@@ -107,7 +107,7 @@ export default {
         const newMaintenanceType = ref('')
         const visibleTypes = computed(() => maintenanceTypes.value?.length ? maintenanceTypes.value : defaultTypes)
 
-        const goHome = () => router.push('/car-maintenance')
+        const goHome = () => router.push('/')
         const goSchedules = () => router.push('/car-maintenance/schedules')
         const goVehicles = () => router.push('/car-maintenance/vehicles')
         const goReport = () => router.push('/car-maintenance/report')

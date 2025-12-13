@@ -170,7 +170,7 @@ export default {
             }
         }
 
-        const goHome = () => router.push('/car-maintenance')
+        const goHome = () => router.push('/')
         const goSchedules = () => router.push('/car-maintenance/schedules')
         const goReport = () => router.push('/car-maintenance/report')
         const goVehicles = () => router.push('/car-maintenance/vehicles')

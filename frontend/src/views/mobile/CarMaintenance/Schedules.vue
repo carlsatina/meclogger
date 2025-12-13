@@ -235,7 +235,7 @@ export default {
         const showDeleteModal = ref(false)
 
         const goBack = () => router.push('/')
-        const goHome = () => router.push('/car-maintenance')
+        const goHome = () => router.push('/')
         const addSchedule = () => {
             router.push({ path: '/car-maintenance/schedules/add', query: selectedVehicleId.value ? { vehicleId: selectedVehicleId.value } : {} })
         }

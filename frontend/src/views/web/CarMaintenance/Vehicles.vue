@@ -110,7 +110,7 @@ export default {
 
         const openDetail = (id) => router.push(`/car-maintenance/vehicles/${id}`)
         const addVehicle = () => router.push('/car-maintenance/vehicles/add')
-        const goHome = () => router.push('/car-maintenance')
+        const goHome = () => router.push('/')
         const goSchedules = () => router.push('/car-maintenance/schedules')
         const goReport = () => router.push('/car-maintenance/report')
         const goSettings = () => router.push('/car-maintenance/settings')

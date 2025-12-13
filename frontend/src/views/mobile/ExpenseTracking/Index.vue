@@ -2248,6 +2248,7 @@ export default {
                 loadBudgets()
                 loadCategories()
                 loadExpenses()
+                loadSubscriptions()
             }
             if (activeTab.value === 'schedules') {
                 loadSubscriptions()
