@@ -35,11 +35,19 @@
                     <button class="viewer-nav left" @click="previousImage" :disabled="!canGoPrevious">
                         <mdicon name="chevron-left" :size="22"/>
                     </button>
-                    <div class="viewer-frame">
+                    <div 
+                        class="viewer-frame" 
+                        role="button" 
+                        tabindex="0"
+                        @click="openFullSizeViewer(viewerIndex)"
+                        @keydown.enter.prevent="openFullSizeViewer(viewerIndex)"
+                        @keydown.space.prevent="openFullSizeViewer(viewerIndex)"
+                    >
                         <img 
                             :src="resolveFileUrl(currentImage?.url)" 
                             :alt="currentImage?.originalName || 'Attachment image'"
                         />
+                        <div class="viewer-frame-hint">Click to view full size</div>
                     </div>
                     <button class="viewer-nav right" @click="nextImage" :disabled="!canGoNext">
                         <mdicon name="chevron-right" :size="22"/>
@@ -111,11 +119,64 @@
             </div>
         </div>
     </div>
+
+    <div 
+        v-if="viewerState.open" 
+        class="lightbox-overlay"
+        @click.self="closeFullSizeViewer"
+    >
+        <div class="lightbox-content">
+            <button class="lightbox-close" @click="closeFullSizeViewer">
+                <mdicon name="close" :size="22"/>
+            </button>
+            <div class="lightbox-main">
+                <button class="lightbox-nav" @click="previousImage" :disabled="!canGoPrevious">
+                    <mdicon name="chevron-left" :size="26"/>
+                </button>
+                <div class="lightbox-frame">
+                    <img 
+                        v-if="currentImage"
+                        :src="resolveFileUrl(currentImage?.url)"
+                        :alt="currentImage?.originalName || 'Attachment image'"
+                        :style="expandedImageStyle"
+                        :class="{ dragging: viewerState.dragging }"
+                        @wheel.prevent="onWheelZoom"
+                        @mousedown.prevent="onImageMouseDown"
+                        @mousemove.prevent="onImageMouseMove"
+                        @mouseup="onImageMouseUp"
+                        @mouseleave="onImageMouseUp"
+                        @touchstart.prevent="onImageTouchStart"
+                        @touchmove.prevent="onImageTouchMove"
+                        @touchend="onImageTouchEnd"
+                        @touchcancel="onImageTouchEnd"
+                    />
+                </div>
+                <button class="lightbox-nav" @click="nextImage" :disabled="!canGoNext">
+                    <mdicon name="chevron-right" :size="26"/>
+                </button>
+            </div>
+            <div class="lightbox-controls" v-if="currentImage">
+                <label>Zoom</label>
+                <input 
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.1"
+                    v-model.number="viewerZoom"
+                />
+                <button class="reset-btn" type="button" @click="resetViewerTransform">Reset</button>
+            </div>
+            <div class="lightbox-caption" v-if="currentImage">
+                <p class="viewer-title">{{ currentImage?.originalName || 'Image attachment' }}</p>
+                <p class="viewer-count">Image {{ viewerIndex + 1 }} of {{ imageFiles.length }}</p>
+            </div>
+        </div>
+    </div>
 </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMedicalRecords } from '@/composables/medicalRecords'
 import { API_BASE_URL } from '@/constants/config'
@@ -141,6 +202,25 @@ export default {
         const loading = ref(true)
         const errorMessage = ref('')
         const viewerIndex = ref(0)
+        const viewerState = reactive({
+            open: false,
+            zoom: 1,
+            offsetX: 0,
+            offsetY: 0,
+            dragging: false
+        })
+        const pinchState = reactive({
+            active: false,
+            initialDistance: 0,
+            initialZoom: 1
+        })
+        const dragState = reactive({
+            active: false,
+            startX: 0,
+            startY: 0,
+            initialX: 0,
+            initialY: 0
+        })
 
         const recordId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
 
@@ -175,6 +255,21 @@ export default {
         const canGoPrevious = computed(() => viewerIndex.value > 0)
         const canGoNext = computed(() => viewerIndex.value < imageFiles.value.length - 1)
 
+        const viewerZoom = computed({
+            get: () => viewerState.zoom,
+            set: (value) => {
+                viewerState.zoom = clampZoom(Number(value) || 1)
+                if (viewerState.zoom === 1) {
+                    viewerState.offsetX = 0
+                    viewerState.offsetY = 0
+                }
+            }
+        })
+
+        const expandedImageStyle = computed(() => ({
+            transform: `translate(${viewerState.offsetX}px, ${viewerState.offsetY}px) scale(${viewerState.zoom})`
+        }))
+
         const previousImage = () => {
             if (!canGoPrevious.value) return
             viewerIndex.value -= 1
@@ -185,13 +280,137 @@ export default {
             viewerIndex.value += 1
         }
 
+        const clampZoom = (value) => Math.min(3, Math.max(1, value))
+
+        const resetViewerTransform = () => {
+            viewerState.zoom = 1
+            viewerState.offsetX = 0
+            viewerState.offsetY = 0
+            viewerState.dragging = false
+            dragState.active = false
+            pinchState.active = false
+        }
+
+        const openFullSizeViewer = (index = 0) => {
+            if (!imageFiles.value.length) return
+            viewerIndex.value = index
+            resetViewerTransform()
+            viewerState.open = true
+        }
+
+        const closeFullSizeViewer = () => {
+            viewerState.open = false
+            resetViewerTransform()
+        }
+
+        const distanceBetweenTouches = (touches) => {
+            if (touches.length < 2) return 0
+            const [touch1, touch2] = [touches[0], touches[1]]
+            const dx = touch2.clientX - touch1.clientX
+            const dy = touch2.clientY - touch1.clientY
+            return Math.hypot(dx, dy)
+        }
+
+        const startDrag = (x, y) => {
+            dragState.active = true
+            dragState.startX = x
+            dragState.startY = y
+            dragState.initialX = viewerState.offsetX
+            dragState.initialY = viewerState.offsetY
+            viewerState.dragging = true
+        }
+
+        const updateDrag = (x, y) => {
+            if (!dragState.active) return
+            const deltaX = (x - dragState.startX) / viewerState.zoom
+            const deltaY = (y - dragState.startY) / viewerState.zoom
+            viewerState.offsetX = dragState.initialX + deltaX
+            viewerState.offsetY = dragState.initialY + deltaY
+        }
+
+        const endDrag = () => {
+            dragState.active = false
+            viewerState.dragging = false
+        }
+
+        const onWheelZoom = (event) => {
+            if (!viewerState.open) return
+            const delta = event.deltaY < 0 ? 0.1 : -0.1
+            viewerZoom.value = clampZoom(viewerState.zoom + delta)
+        }
+
+        const onImageMouseDown = (event) => {
+            if (!viewerState.open) return
+            startDrag(event.clientX, event.clientY)
+        }
+
+        const onImageMouseMove = (event) => {
+            if (!viewerState.open || !dragState.active) return
+            updateDrag(event.clientX, event.clientY)
+        }
+
+        const onImageMouseUp = () => {
+            if (!viewerState.open) return
+            endDrag()
+        }
+
+        const onImageTouchStart = (event) => {
+            if (!viewerState.open) return
+            if (event.touches.length === 2) {
+                pinchState.active = true
+                pinchState.initialDistance = distanceBetweenTouches(event.touches)
+                pinchState.initialZoom = viewerState.zoom
+                endDrag()
+            } else if (event.touches.length === 1) {
+                const touch = event.touches[0]
+                startDrag(touch.clientX, touch.clientY)
+            }
+        }
+
+        const onImageTouchMove = (event) => {
+            if (!viewerState.open) return
+            if (pinchState.active && event.touches.length >= 2) {
+                const newDistance = distanceBetweenTouches(event.touches)
+                if (!pinchState.initialDistance) return
+                const scale = newDistance / pinchState.initialDistance
+                viewerZoom.value = clampZoom(pinchState.initialZoom * scale)
+                return
+            }
+            if (event.touches.length === 1 && dragState.active) {
+                const touch = event.touches[0]
+                updateDrag(touch.clientX, touch.clientY)
+            }
+        }
+
+        const onImageTouchEnd = () => {
+            if (pinchState.active) {
+                pinchState.active = false
+            }
+            if (dragState.active) {
+                endDrag()
+            }
+        }
+
+        const handleKeydown = (event) => {
+            if (event.key === 'Escape' && viewerState.open) {
+                closeFullSizeViewer()
+            }
+        }
+
         watch(imageFiles, (files) => {
             if (!files.length) {
                 viewerIndex.value = 0
+                closeFullSizeViewer()
                 return
             }
             if (viewerIndex.value >= files.length) {
                 viewerIndex.value = files.length - 1
+            }
+        })
+
+        watch(viewerIndex, () => {
+            if (viewerState.open) {
+                resetViewerTransform()
             }
         })
 
@@ -242,6 +461,11 @@ export default {
 
         onMounted(() => {
             loadRecord()
+            document.addEventListener('keydown', handleKeydown)
+        })
+
+        onBeforeUnmount(() => {
+            document.removeEventListener('keydown', handleKeydown)
         })
 
         return {
@@ -256,12 +480,25 @@ export default {
             viewerIndex,
             canGoPrevious,
             canGoNext,
+            viewerState,
+            viewerZoom,
+            expandedImageStyle,
             resolveFileUrl,
             formatFileSize,
             goBack,
             goToEdit,
             previousImage,
-            nextImage
+            nextImage,
+            openFullSizeViewer,
+            closeFullSizeViewer,
+            resetViewerTransform,
+            onWheelZoom,
+            onImageMouseDown,
+            onImageMouseMove,
+            onImageMouseUp,
+            onImageTouchStart,
+            onImageTouchMove,
+            onImageTouchEnd
         }
     }
 }
@@ -402,8 +639,18 @@ export default {
 
 .viewer-nav { background: rgba(255,255,255,0.08); border: none; color: white; height: 100%; padding: 12px; cursor: pointer; }
 .viewer-nav:disabled { opacity: 0.4; cursor: not-allowed; }
-.viewer-frame { width: 100%; height: 260px; display: grid; place-items: center; background: #0b1324; }
+.viewer-frame { width: 100%; height: 260px; display: grid; place-items: center; background: #0b1324; position: relative; }
 .viewer-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.viewer-frame-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 14px;
+    background: rgba(11, 19, 36, 0.75);
+    color: #e2e8f0;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+}
 .viewer-meta { display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); margin-top: 8px; }
 .viewer-title { margin: 0; font-weight: 700; }
 .viewer-count { margin: 0; color: var(--text-muted); }
@@ -448,4 +695,120 @@ export default {
 .action-buttons .danger { background: linear-gradient(135deg, #f97316, #ef4444); color: #0b1020; }
 
 @media (max-width: 1024px) { .detail-body { grid-template-columns: 1fr; } .record-detail-wrapper { padding: 20px; } }
+
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 8, 20, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.lightbox-content {
+    width: min(1100px, 100%);
+    color: #e2e8f0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    border: none;
+    background: rgba(255,255,255,0.14);
+    color: #0b1020;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+.lightbox-main {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.lightbox-frame {
+    background: #0b1324;
+    border-radius: 16px;
+    height: 70vh;
+    max-height: 760px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.lightbox-frame img {
+    max-width: 100%;
+    max-height: 100%;
+    transform-origin: center center;
+    transition: transform 0.15s ease;
+    cursor: grab;
+}
+
+.lightbox-frame img.dragging {
+    cursor: grabbing;
+}
+
+.lightbox-nav {
+    border: none;
+    background: rgba(255,255,255,0.14);
+    color: #0b1020;
+    border-radius: 12px;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+.lightbox-nav:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.lightbox-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+
+.lightbox-controls input[type="range"] {
+    flex: 1;
+}
+
+.reset-btn {
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.lightbox-caption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: #e2e8f0;
+}
 </style>

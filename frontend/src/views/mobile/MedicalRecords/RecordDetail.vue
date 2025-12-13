@@ -766,36 +766,42 @@ export default {
 .image-viewer-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.88);
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
     z-index: 2000;
-    padding: 24px;
+    padding: 12px;
 }
 
 .viewer-content {
     width: 100%;
-    max-width: 480px;
+    height: 100%;
     position: relative;
     color: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    max-width: none;
 }
 
 .viewer-close {
     position: absolute;
-    top: -12px;
-    right: 0;
+    top: 12px;
+    right: 12px;
     border: none;
-    background: transparent;
+    background: rgba(0, 0, 0, 0.4);
     color: white;
-    padding: 8px;
+    padding: 10px;
     cursor: pointer;
+    border-radius: 50%;
 }
 
 .viewer-main {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex: 1;
+    min-height: 0;
 }
 
 .viewer-nav {
@@ -816,7 +822,8 @@ export default {
 
 .viewer-image-wrapper {
     flex: 1;
-    max-height: 70vh;
+    height: 100%;
+    max-height: none;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -825,7 +832,7 @@ export default {
 
 .viewer-image-wrapper img {
     max-width: 100%;
-    max-height: 70vh;
+    max-height: 100%;
     transition: transform 0.2s ease;
     cursor: grab;
 }
