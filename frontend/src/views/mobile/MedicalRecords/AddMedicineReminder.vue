@@ -128,6 +128,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMedicineReminders } from '@/composables/medicineReminders'
+import { scheduleReminderNotifications } from '@/composables/localNotifications'
 
 export default {
     name: 'AddMedicineReminder',
@@ -244,6 +245,7 @@ export default {
             }
             saving.value = true
             try {
+                let savedReminder = null
                 const payload = {
                     medicineName: medicineName.value.trim(),
                     unit: unit.value,
@@ -256,12 +258,15 @@ export default {
                     startDate: startDate.value
                 }
                 if (isEditing.value) {
-                    await updateReminder(token, reminderId.value, payload)
+                    savedReminder = await updateReminder(token, reminderId.value, payload)
                 } else {
-                    await createReminder(token, {
+                    savedReminder = await createReminder(token, {
                         ...payload,
                         profileId
                     })
+                }
+                if (savedReminder) {
+                    await scheduleReminderNotifications(savedReminder)
                 }
                 router.replace('/medical-records/medicine-reminders')
             } catch (err) {

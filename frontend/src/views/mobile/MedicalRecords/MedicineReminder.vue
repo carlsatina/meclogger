@@ -85,9 +85,14 @@
                         </div>
                         <div class="reminder-meta">
                             <span class="reminder-start">{{ reminder.startDate }}</span>
-                            <button class="edit-btn" type="button" @click.stop="openEdit(reminder.id)">
-                                <mdicon name="pencil" :size="18"/>
-                            </button>
+                            <div class="reminder-actions">
+                                <button class="icon-btn ghost danger" type="button" :disabled="deletingId === reminder.id" @click.stop="removeReminder(reminder.id)">
+                                    <mdicon name="trash-can-outline" :size="18"/>
+                                </button>
+                                <button class="edit-btn" type="button" @click.stop="openEdit(reminder.id)">
+                                    <mdicon name="pencil" :size="18"/>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="reminder-slots">
@@ -137,18 +142,20 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMedicineReminders } from '@/composables/medicineReminders'
+import { cancelReminderNotifications, scheduleReminderNotifications } from '@/composables/localNotifications'
 
 export default {
     name: 'MedicineReminderView',
     setup() {
         const router = useRouter()
         const route = useRoute()
-        const { reminders, loading: remindersLoading, fetchReminders, setReminderStatus } = useMedicineReminders()
+        const { reminders, loading: remindersLoading, fetchReminders, setReminderStatus, deleteReminder } = useMedicineReminders()
         const activeProfileId = ref(
             Array.isArray(route.query.profileId) ? route.query.profileId[0] : route.query.profileId || localStorage.getItem('selectedProfileId')
         )
         const currentDate = ref(new Date())
         const showMonthPicker = ref(false)
+        const deletingId = ref(null)
 
         const goBack = () => router.back()
         const addReminder = () => {
@@ -380,8 +387,38 @@ export default {
                     }
                 }
                 slot.status = newStatus === 'pending' ? null : newStatus
+                if (newStatus === 'taken') {
+                    await cancelReminderNotifications(reminder.id)
+                    const tomorrow = new Date()
+                    tomorrow.setDate(tomorrow.getDate() + 1)
+                    await scheduleReminderNotifications({
+                        ...reminder,
+                        startDate: tomorrow.toISOString(),
+                    })
+                }
             } catch (err) {
                 alert(err.message || 'Unable to update reminder.')
+            }
+        }
+
+        const removeReminder = async(reminderId) => {
+            if (!reminderId || deletingId.value === reminderId) return
+            if (!window.confirm('Delete this reminder?')) return
+            const token = localStorage.getItem('token')
+            if (!token) {
+                alert('Please log in again.')
+                router.push('/login')
+                return
+            }
+            deletingId.value = reminderId
+            try {
+                await deleteReminder(token, reminderId)
+                await cancelReminderNotifications(reminderId)
+                await loadReminders()
+            } catch (err) {
+                alert(err.message || 'Unable to delete reminder.')
+            } finally {
+                deletingId.value = null
             }
         }
 
@@ -407,7 +444,9 @@ export default {
             selectDay,
             hasActiveProfile,
             goToProfileTab,
-            formatFrequency
+            formatFrequency,
+            removeReminder,
+            deletingId
         }
     }
 }
@@ -469,6 +508,14 @@ export default {
 .icon-btn.ghost {
     background: transparent;
     border-color: transparent;
+}
+
+.icon-btn.danger {
+    color: #f87171;
+}
+
+.icon-btn:disabled {
+    opacity: 0.6;
 }
 
 .title {
@@ -656,6 +703,11 @@ export default {
 .reminder-meta {
     display: flex;
     align-items: center;
+    gap: 6px;
+}
+
+.reminder-actions {
+    display: flex;
     gap: 6px;
 }
 

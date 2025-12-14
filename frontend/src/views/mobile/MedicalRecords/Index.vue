@@ -14,6 +14,7 @@
                     name="bell-outline" 
                     :size="24" 
                     class="action-icon"
+                    @click="handleNotificationBell"
                 />
                 <mdicon 
                     name="magnify" 
@@ -29,6 +30,37 @@
             </div>
         </template>
     </TopBar>
+
+    <div v-if="showNotificationsPanel" class="notification-overlay">
+        <div class="notification-backdrop" @click="showNotificationsPanel = false"></div>
+        <div class="notification-panel glass-card">
+            <div class="notification-header">
+                <div>
+                    <p class="label">Notifications</p>
+                    <h4>Overdue reminders</h4>
+                </div>
+                <button class="icon-btn ghost" @click="showNotificationsPanel = false">
+                    <mdicon name="close" :size="18" />
+                </button>
+            </div>
+            <div v-if="!overdueReminders.length" class="notification-empty">
+                <p class="sub">No overdue reminders.</p>
+            </div>
+            <div v-else class="notification-list">
+                <div class="notification-item" v-for="reminder in overdueReminders" :key="reminder.id">
+                    <div class="notif-main">
+                        <p class="notif-title">{{ reminder.medicineName || 'Reminder' }}</p>
+                        <p class="notif-sub">{{ reminder.intakeMethod || 'Anytime' }}</p>
+                    </div>
+                    <div class="notif-slots">
+                        <span class="notif-slot overdue" v-for="slot in reminder.slots" :key="slot.id">
+                            {{ slot.label }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Content Area -->
     <div class="content-wrapper">
@@ -502,6 +534,7 @@ import { useBloodSugar } from '@/composables/vitals/bloodSugar'
 import { useIllness } from '@/composables/vitals/illness'
 import { useMedicalRecords } from '@/composables/medicalRecords'
 import { useMedicineReminders } from '@/composables/medicineReminders'
+import { ensureLocalNotificationPermission, triggerImmediateReminderNotification, cancelReminderNotifications, scheduleReminderNotifications, clearNotificationsExcept } from '@/composables/localNotifications'
 import { API_BASE_URL } from '@/constants/config'
 
 export default {
@@ -519,6 +552,11 @@ export default {
         const showProfilePrompt = ref(false)
         const showToast = ref(false)
         const toastMessage = ref('')
+        const notificationBusy = ref(false)
+        const notifiedSlotsToday = ref(new Set())
+        const notifiedDateKey = ref(new Date().toISOString().slice(0, 10))
+        const previousReminderIds = ref(new Set())
+        const showNotificationsPanel = ref(false)
 
         const handleTabChange = (tab) => {
             activeTab.value = tab
@@ -580,6 +618,16 @@ export default {
 
         const goAddProfile = () => {
             router.push('/medical-records/profile/add')
+        }
+
+        const handleNotificationBell = async() => {
+            showNotificationsPanel.value = !showNotificationsPanel.value
+            if (!notificationBusy.value) {
+                notificationBusy.value = true
+                // Try to ensure permissions in the background so future notifications work
+                await ensureLocalNotificationPermission().catch(() => {})
+                notificationBusy.value = false
+            }
         }
 
         const ensureProfileSelected = () => {
@@ -714,6 +762,16 @@ export default {
                 return
             }
             await fetchMedicineReminders(token, profileId, { date: referenceDate })
+            // Cancel any scheduled notifications for reminders that no longer exist
+            const currentIds = new Set(medicineReminders.value.map(r => r.id))
+            previousReminderIds.value.forEach((id) => {
+                if (!currentIds.has(id)) {
+                    cancelReminderNotifications(id)
+                }
+            })
+            await clearNotificationsExcept(Array.from(currentIds))
+            previousReminderIds.value = currentIds
+            await notifyDueReminders()
         }
 
         const profileMembers = ref([])
@@ -824,6 +882,90 @@ export default {
             return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
         }
 
+        const toTodayDate = (timeString) => {
+            if (!timeString) return null
+            const [hour, minute] = timeString.split(':')
+            const date = new Date()
+            date.setHours(Number(hour) || 0, Number(minute) || 0, 0, 0)
+            return Number.isNaN(date.getTime()) ? null : date
+        }
+
+        const overdueReminders = computed(() => {
+            const now = new Date()
+            return medicineReminders.value
+                .map((reminder) => {
+                    const reminderSlots = reminder.slots && reminder.slots.length
+                        ? reminder.slots
+                        : [{ time: reminder.time, status: reminder.status }]
+                    const overdueSlots = reminderSlots
+                        .map((slot, index) => {
+                            const rawTime = typeof slot === 'string' ? slot : slot.time
+                            if (!rawTime || slot.status === 'taken') return null
+                            const slotDate = toTodayDate(rawTime)
+                            if (!slotDate || slotDate > now) return null
+                            return {
+                                id: `${reminder.id}-${rawTime}-${index}-overdue`,
+                                label: formatReminderTime(rawTime)
+                            }
+                        })
+                        .filter(Boolean)
+                    if (!overdueSlots.length) return null
+                    return {
+                        id: reminder.id,
+                        medicineName: reminder.medicineName,
+                        intakeMethod: reminder.intakeMethod,
+                        slots: overdueSlots
+                    }
+                })
+                .filter(Boolean)
+        })
+
+        const resetNotifiedIfNewDay = () => {
+            const todayKey = new Date().toISOString().slice(0, 10)
+            if (notifiedDateKey.value !== todayKey) {
+                notifiedDateKey.value = todayKey
+                notifiedSlotsToday.value = new Set()
+            }
+            return todayKey
+        }
+
+        const notifyDueReminders = async() => {
+            const todayKey = resetNotifiedIfNewDay()
+            const now = new Date()
+            const dueSlots = []
+
+            medicineReminders.value.forEach((reminder) => {
+                const reminderSlots = reminder.slots && reminder.slots.length
+                    ? reminder.slots
+                    : [{ time: reminder.time, status: reminder.status }]
+
+                reminderSlots.forEach((slot, index) => {
+                    const rawTime = typeof slot === 'string' ? slot : slot.time
+                    if (!rawTime) return
+                    const status = slot.status || null
+                    if (status === 'taken') return
+                    const slotDate = toTodayDate(rawTime)
+                    if (!slotDate || slotDate > now) return
+                    const key = `${reminder.id}-${rawTime}-${todayKey}`
+                    if (notifiedSlotsToday.value.has(key)) return
+                    dueSlots.push({ reminder, rawTime, index, key })
+                })
+            })
+
+            for (const item of dueSlots) {
+                const ok = await triggerImmediateReminderNotification({
+                    id: item.reminder.id,
+                    medicineName: item.reminder.medicineName,
+                    intakeMethod: item.reminder.intakeMethod,
+                    time: item.rawTime,
+                    slotLabel: formatReminderTime(item.rawTime)
+                }, item.index)
+                if (ok) {
+                    notifiedSlotsToday.value.add(item.key)
+                }
+            }
+        }
+
         const todaysReminders = computed(() => {
             const remindersList = medicineReminders.value.map((reminder) => {
                 const reminderSlots = reminder.slots && reminder.slots.length
@@ -892,6 +1034,18 @@ export default {
                     }
                 }
                 reminderSlot.status = newStatus === 'pending' ? null : newStatus
+                if (newStatus === 'taken') {
+                    await cancelReminderNotifications(reminderSlot.reminderId)
+                    const targetReminder = medicineReminders.value.find(r => r.id === reminderSlot.reminderId)
+                    if (targetReminder) {
+                        const tomorrow = new Date()
+                        tomorrow.setDate(tomorrow.getDate() + 1)
+                        await scheduleReminderNotifications({
+                            ...targetReminder,
+                            startDate: tomorrow.toISOString(),
+                        })
+                    }
+                }
             } catch (err) {
                 console.error(err)
             }
@@ -1092,6 +1246,10 @@ export default {
             }
         }, { immediate: true })
 
+        watch(medicineReminders, () => {
+            notifyDueReminders()
+        })
+
         const navigateProfileSection = (section) => {
             if (section === 'personal') {
                 router.push({
@@ -1144,8 +1302,12 @@ export default {
             loadProfiles,
             goProfileTab,
             goAddProfile,
+            handleNotificationBell,
+            showNotificationsPanel,
             showToast,
             toastMessage,
+            notifyDueReminders,
+            overdueReminders,
             bpLatest,
             bsLatest,
             bsStatusLabel,
@@ -1214,6 +1376,7 @@ export default {
     background: linear-gradient(145deg, rgba(103,232,249,0.25), rgba(168,85,247,0.3));
     border: 1px solid var(--glass-card-border);
     box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    color: var(--text-primary);
 }
 
 .action-icon:active {
@@ -1225,6 +1388,115 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.notification-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 80px 16px 16px;
+    pointer-events: none;
+}
+
+.notification-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+}
+
+.notification-panel {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    max-height: 70vh;
+    overflow: hidden;
+    pointer-events: auto;
+    z-index: 1;
+    padding: 16px;
+    background: rgba(12, 15, 30, 0.9);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+    color: var(--text-primary);
+}
+
+.notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.notification-header h4,
+.notification-header .label {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.notification-item {
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.06);
+}
+
+.notif-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.notif-title {
+    margin: 0;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.notif-sub {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.notif-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.notif-slot {
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(103,232,249,0.35);
+    background: rgba(103,232,249,0.08);
+    color: #67e8f9;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.notif-slot.overdue {
+    border-color: rgba(248,113,113,0.5);
+    background: rgba(248,113,113,0.12);
+    color: #fca5a5;
+}
+
+.notification-empty {
+    padding: 12px;
+    color: var(--text-secondary);
 }
 
 .content-wrapper {
