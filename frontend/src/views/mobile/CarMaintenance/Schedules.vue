@@ -11,9 +11,38 @@
         <button class="car-icon-btn" @click="goBack">
             <mdicon name="home" :size="22"/>
         </button>
-        <button class="car-icon-btn" @click="addSchedule">
-            <mdicon name="plus" :size="20"/>
+        <button class="car-icon-btn" @click="toggleNotifications">
+            <mdicon name="bell-outline" :size="20"/>
         </button>
+    </div>
+
+    <div v-if="showNotificationsPanel" class="car-notif-overlay" @click.self="showNotificationsPanel = false">
+        <div class="car-notif-card car-card">
+            <div class="notif-header">
+                <div>
+                    <p class="notif-label">Notifications</p>
+                    <h4 class="notif-title">Upcoming / Due</h4>
+                </div>
+                <button class="car-icon-btn ghost" @click="showNotificationsPanel = false">
+                    <mdicon name="close" :size="18"/>
+                </button>
+            </div>
+            <div v-if="!dueReminders.length" class="notif-empty">
+                <p>No upcoming schedules.</p>
+            </div>
+            <div v-else class="notif-list">
+                <div class="notif-item" v-for="item in dueReminders" :key="item.id">
+                    <div class="notif-main">
+                        <p class="notif-name">{{ item.maintenanceType || item.title }}</p>
+                        <p class="notif-meta">{{ deadlineText(item) }} · {{ formatDate(item.dueDate) || 'No date' }}</p>
+                    </div>
+                    <div class="notif-pill" :class="statusFor(item).class">
+                        <mdicon :name="statusFor(item).icon" :size="16"/>
+                        <span>{{ statusFor(item).class.replace('status-', '') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="car-body">
@@ -243,6 +272,7 @@ export default {
         const loadingOverlay = ref(false)
         const staggerReady = useStaggerReady()
         const notificationReady = ref(false)
+        const showNotificationsPanel = ref(false)
 
         const withOverlay = async(fn) => {
             loadingOverlay.value = true
@@ -426,6 +456,18 @@ export default {
             return `${d} days left`
         }
 
+        const dueReminders = computed(() => {
+            return reminders.value.filter(r => {
+                if (r.completed) return false
+                const d = daysLeft(r)
+                return d !== null && d <= 3
+            })
+        })
+
+        const toggleNotifications = () => {
+            showNotificationsPanel.value = !showNotificationsPanel.value
+        }
+
         const loadVehicles = async() => {
             await withOverlay(async() => {
                 try {
@@ -544,7 +586,10 @@ export default {
             debouncedSearch,
             loadingOverlay,
             staggerReady,
-            notificationReady
+            notificationReady,
+            showNotificationsPanel,
+            toggleNotifications,
+            dueReminders
         }
     }
 }
@@ -792,5 +837,112 @@ export default {
   margin: 8px 0 12px;
   background: var(--glass-ghost-bg);
   color: var(--text-primary);
+}
+
+.car-notif-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+}
+
+.car-notif-card {
+  width: 100%;
+  max-width: 520px;
+  max-height: 70vh;
+  overflow: auto;
+  animation: slideFadeUp 0.3s ease;
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notif-label {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.notif-title {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.notif-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 12px;
+}
+
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.notif-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--glass-ghost-bg);
+  border: 1px solid var(--glass-card-border);
+}
+
+.notif-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notif-name {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.notif-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.notif-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.notif-pill.status-done {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.notif-pill.status-missed {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.notif-pill.status-upcoming {
+  background: rgba(103, 232, 249, 0.12);
+  color: #67e8f9;
+  border-color: rgba(103, 232, 249, 0.2);
 }
 </style>
