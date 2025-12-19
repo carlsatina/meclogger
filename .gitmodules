@@ -1,0 +1,6 @@
+[submodule "frontend"]
+	path = frontend
+	url = git@github.com:carlsatina/meclogger-ui.git
+[submodule "backend"]
+	path = backend
+	url = git@github.com:carlsatina/meclogger-api.git
